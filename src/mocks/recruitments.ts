@@ -1,0 +1,32 @@
+export const recruitments = [
+  {
+    recruitmentId: 1,
+    title: '과외를 모집합니다',
+    status: 'OPEN',
+    category: 'STUDY',
+    announcementTitle: '어쩌구저쩌구',
+    recruiterName: '홍길동',
+    createdAt: '2026-03-08',
+    endAt: '2026-03-10',
+  },
+  {
+    recruitmentId: 2,
+    title: '프로젝트 팀원을 모집합니다',
+    status: 'OPEN',
+    category: 'PROJECT',
+    announcementTitle: 'TeamFlow 프론트엔드 같이 하실 분',
+    recruiterName: '김민수',
+    createdAt: '2026-03-08',
+    endAt: '2026-03-10',
+  },
+  {
+    recruitmentId: 3,
+    title: '동아리 부원을 모집합니다',
+    status: 'CLOSED',
+    category: 'CLUB',
+    announcementTitle: '신입 부원 모집 안내',
+    recruiterName: '이서연',
+    createdAt: '2026-03-08',
+    endAt: '2026-03-10',
+  },
+];
