@@ -23,7 +23,7 @@ export default function BottomNavItem({
     <li className="-mx-2 h-full flex-1">
       <Link
         href={href}
-        className={`flex h-full flex-col items-center justify-center rounded-full px-5 py-2 transition-all duration-200 ease-in-out ${
+        className={`flex h-full flex-col items-center justify-center rounded-full px-5 py-2 transition-all duration-200 ease-in-out md:px-5 ${
           isActive
             ? 'bg-[#EDF1F5]/60 text-[#2c2c2c]/80'
             : 'text-[#A2A9B2]/80 hover:text-gray-600'
@@ -31,7 +31,7 @@ export default function BottomNavItem({
       >
         <Icon size={22} strokeWidth={1.8} className="mb-1" />
 
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-medium whitespace-nowrap">{label}</span>
       </Link>
     </li>
   );
