@@ -4,22 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { ChevronLeft, Search, ChevronDown } from 'lucide-react';
+import { notices } from '@/mocks/notices';
 
-const notices = [
-  {
-    id: 1,
-    team: '팀명1',
-    title: '첫 번째 공지입니다',
-    date: '2026-05-01',
-  },
-  {
-    id: 2,
-    team: '팀명2',
-    title: '두 번째 공지입니다',
-    date: '2026-05-03',
-  },
-];
+import { ChevronLeft, Search, ChevronDown } from 'lucide-react';
 
 export default function Notice() {
   const router = useRouter();
@@ -29,9 +16,9 @@ export default function Notice() {
 
   const normalizedKeyword = keyword.replace(/\s/g, '');
 
-  const filtered = notices.filter((n) => {
-    const title = n.title.replace(/\s/g, '');
-    const team = n.team.replace(/\s/g, '');
+  const filtered = notices.filter((notice) => {
+    const title = notice.title.replace(/\s/g, '');
+    const team = notice.teamName.replace(/\s/g, '');
 
     if (searchType === 'title') {
       return title.includes(normalizedKeyword);
@@ -97,22 +84,21 @@ export default function Notice() {
       {/* 리스트 */}
       <section className="flex flex-col gap-3">
         {filtered.map((notice) => (
-          <Link key={notice.id} href={`/notice/${notice.id}`}>
-            <div className="rounded-xl bg-white p-4 transition hover:bg-gray-50">
+          <Link key={notice.noticeId} href={`/notice/${notice.noticeId}`}>
+            <div className="rounded-xl bg-white px-6 py-4 transition hover:bg-gray-50">
               <div className="flex items-center gap-2">
-                {/* 팀명 */}
-                <p className="text-lg font-semibold text-[#989898]">
-                  [ {notice.team} ]
+                <p className="truncate text-lg font-semibold text-[#989898]">
+                  [ {notice.teamName} ]
                 </p>
 
-                {/* 제목 */}
-                <h2 className="text-lg font-semibold text-[#2C2C2C]">
+                <h2 className="truncate text-lg font-semibold text-[#2C2C2C]">
                   {notice.title}
                 </h2>
               </div>
 
-              {/* 날짜 */}
-              <p className="mt-1 text-xs text-[#989898]/80">{notice.date}</p>
+              <p className="mt-1 text-xs text-[#989898]/80">
+                {notice.createdAt}
+              </p>
             </div>
           </Link>
         ))}
