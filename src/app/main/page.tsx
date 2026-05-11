@@ -2,6 +2,7 @@
 
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import Card from '@/components/main/Card';
+import NotificationButton from '@/components/common/notification/NotificationButton';
 
 import { ChevronRight } from 'lucide-react';
 import { FaBell } from 'react-icons/fa6';
@@ -9,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { recruitments } from '@/mocks/recruitments';
+import { notices } from '@/mocks/notices';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -39,6 +41,9 @@ export default function Main() {
     })
 
     .slice(0, 3);
+
+  const previewNotices = notices.slice(0, 4);
+
   return (
     <main className="min-h-screen p-6">
       <section className="relative mb-10 pt-4 md:min-h-[160px]">
@@ -49,22 +54,20 @@ export default function Main() {
         <div className="absolute top-4 left-1/2 hidden h-36 w-[50%] max-w-3xl -translate-x-1/2 rounded-2xl bg-white md:block" />
 
         {/* 알림 */}
-        <button className="fixed top-8 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border-[0.5] border-[#D6DDE5] bg-white">
-          <FaBell size={18} />
-        </button>
+        <NotificationButton />
       </section>
 
-      <section className="mb-30 grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <section className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* 캘린더 */}
-        <div className="xl:col-span-7">
-          <Card className="h-[420px] p-6">
+        <div className="lg:col-span-7">
+          <Card className="h-[400px] p-6">
             <h2 className="text-xl font-bold text-[#2C2C2C]">5월</h2>
           </Card>
         </div>
 
         {/* 공지사항 */}
-        <div className="xl:col-span-5">
-          <Card className="h-[420px] p-6">
+        <div className="lg:col-span-5">
+          <Card className="h-[400px] p-6">
             <div className="flex items-center justify-between border-b-[0.5] border-[#D6DDE5] pb-2">
               <h2 className="text-xl font-bold text-[#2C2C2C]">공지사항</h2>
               <button
@@ -74,9 +77,29 @@ export default function Main() {
                 <ChevronRight />
               </button>
             </div>
+
+            <div className="mt-1 flex flex-col">
+              {previewNotices.map((notice) => (
+                <button
+                  key={notice.noticeId}
+                  onClick={() => router.push(`/notice/${notice.noticeId}`)}
+                  className="border-b-[0.5px] border-[#D6DDE5] py-4 text-left last:border-b-0"
+                >
+                  <h3 className="cursor-pointer truncate text-base font-semibold text-[#2C2C2C]">
+                    [ {notice.teamName} ] {notice.title}
+                  </h3>
+
+                  <p className="mt-2 text-xs text-[#989898]">
+                    {notice.createdAt}
+                  </p>
+                </button>
+              ))}
+            </div>
           </Card>
         </div>
+      </section>
 
+      <section className="mb-30 grid grid-cols-1 gap-6 xl:grid-cols-12">
         {/* 모집 게시판 */}
         <div className="xl:col-span-6">
           <Card className="h-[350px] overflow-hidden p-6">
@@ -119,12 +142,18 @@ export default function Main() {
                   }
                   className="border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left last:border-b-0"
                 >
-                  <h3 className="text-base font-semibold text-[#2C2C2C]">
+                  <h3 className="truncate cursor-pointer text-base font-semibold text-[#2C2C2C]">
                     [ {categoryMap[recruitment.category]} ] {recruitment.title}
                   </h3>
-
-                  <p className="mt-1 truncate text-xs text-[#989898]">
-                    {recruitment.announcementTitle}
+                  <p
+                    className={`mt-1 truncate text-xs ${
+                      recruitment.announcementTitle
+                        ? 'text-[#2C2C2C]'
+                        : 'text-[#B0B0B0]'
+                    }`}
+                  >
+                    {recruitment.announcementTitle ||
+                      '연결된 정보글이 없습니다'}
                   </p>
                 </button>
               ))}

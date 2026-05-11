@@ -48,6 +48,23 @@ export default function Recruitment() {
     return matchesCategory && matchesKeyword;
   });
 
+  const getDDay = (endAt: string) => {
+    const today = new Date();
+    const endDate = new Date(endAt);
+
+    today.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+
+    const diff = endDate.getTime() - today.getTime();
+
+    const day = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    if (day > 0) return `D-${day}`;
+    if (day === 0) return 'D-Day';
+
+    return `D+${Math.abs(day)}`;
+  };
+
   return (
     <main className="min-h-screen p-6">
       {/* 헤더 */}
@@ -133,19 +150,34 @@ export default function Recruitment() {
           <div
             key={recruitment.recruitmentId}
             className="cursor-pointer rounded-2xl bg-white p-6"
+            onClick={() =>
+              router.push(`/recruitment/${recruitment.recruitmentId}`)
+            }
           >
-            <h2 className="text-lg font-bold text-[#2C2C2C]">
+            <h2 className="truncate text-lg font-bold text-[#2C2C2C]">
               [ {categoryMap[recruitment.category]} ] {recruitment.title}
             </h2>
 
-            <p className="mt-2 text-sm text-[#2C2C2C]">
-              {recruitment.announcementTitle}
+            <p
+              className={`mt-2 text-sm ${
+                recruitment.announcementTitle
+                  ? 'text-[#2C2C2C]'
+                  : 'text-[#B0B0B0]'
+              }`}
+            >
+              {recruitment.announcementTitle || '연결된 정보글이 없습니다'}
             </p>
 
             <div className="mt-6 flex items-center justify-between">
-              <p className="text-xs text-[#989898]">
-                {recruitment.createdAt} ~ {recruitment.endAt}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-[#989898]">
+                  {recruitment.createdAt} ~ {recruitment.endAt}
+                </p>
+
+                <span className="text-xs font-medium text-[#5E92F0]">
+                  {getDDay(recruitment.endAt)}
+                </span>
+              </div>
 
               <span
                 className={`rounded-full px-4 py-1.5 text-xs font-medium ${
