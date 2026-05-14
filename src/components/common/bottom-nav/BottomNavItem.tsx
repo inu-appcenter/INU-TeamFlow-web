@@ -20,18 +20,24 @@ export default function BottomNavItem({
   const isActive = pathname === href;
 
   return (
-    <li className="-mx-2 h-full flex-1">
+    <li className="h-full flex-1">
       <Link
         href={href}
-        className={`flex h-full flex-col items-center justify-center rounded-full px-5 py-2 transition-all duration-200 ease-in-out md:px-5 ${
+        className={`flex h-full flex-col items-center justify-center rounded-full px-2 py-2 transition-all duration-200 ease-in-out sm:px-5 ${
           isActive
-            ? 'bg-[#EDF1F5]/60 text-[#2c2c2c]/80'
+            ? 'bg-[#EDF1F5]/70 text-[#2c2c2c]/90'
             : 'text-[#A2A9B2]/80 hover:text-gray-600'
-        } `}
+        }`}
       >
-        <Icon size={22} strokeWidth={1.8} className="mb-1" />
+        <Icon
+          size={20}
+          strokeWidth={1.8}
+          className="mb-0.5 sm:mb-1 sm:h-[22px] sm:w-[22px]"
+        />
 
-        <span className="text-sm font-medium whitespace-nowrap">{label}</span>
+        <span className="text-[11px] font-medium whitespace-nowrap sm:text-sm">
+          {label}
+        </span>
       </Link>
     </li>
   );
