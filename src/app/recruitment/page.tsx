@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { recruitments } from '@/mocks/recruitments';
+import { getDday } from '@/utils/date/getDday';
 
 import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
 
@@ -48,25 +49,8 @@ export default function Recruitment() {
     return matchesCategory && matchesKeyword;
   });
 
-  const getDDay = (endAt: string) => {
-    const today = new Date();
-    const endDate = new Date(endAt);
-
-    today.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const diff = endDate.getTime() - today.getTime();
-
-    const day = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-    if (day > 0) return `D-${day}`;
-    if (day === 0) return 'D-Day';
-
-    return `D+${Math.abs(day)}`;
-  };
-
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen px-3 py-6 sm:px-6">
       {/* 헤더 */}
       <header className="mt-12 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -90,7 +74,7 @@ export default function Recruitment() {
           <button
             key={category.value}
             onClick={() => setSelectedCategory(category.value)}
-            className={`text-md cursor-pointer rounded-2xl border-[0.5] px-3 py-1.5 font-normal ${
+            className={`sm:text-md cursor-pointer rounded-2xl border-[0.5] px-3 py-1.5 text-[18px] font-normal ${
               selectedCategory === category.value
                 ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
                 : 'border-[#D6DDE5] bg-[#FBFBFB] text-[#2C2C2C]'
@@ -175,7 +159,8 @@ export default function Recruitment() {
                 </p>
 
                 <span className="text-xs font-medium text-[#5E92F0]">
-                  {getDDay(recruitment.endAt)}
+                  {getDday(recruitment.endAt)}
+                  {getDday(recruitment.endAt) === '오늘' && ' 마감'}
                 </span>
               </div>
 

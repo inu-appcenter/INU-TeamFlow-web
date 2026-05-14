@@ -32,7 +32,7 @@ export default function Notice() {
   });
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen px-3 py-6 sm:px-6">
       {/* 헤더 */}
       <header className="mt-12 mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
@@ -53,7 +53,7 @@ export default function Notice() {
         </div>
 
         {/* 검색바 */}
-        <div className="flex h-10 w-[400px] items-center overflow-hidden rounded-2xl border-[0.5] border-[#D6DDE5] bg-white">
+        <div className="flex h-10 w-[280px] items-center overflow-hidden rounded-2xl border-[0.5] border-[#D6DDE5] bg-white sm:w-[400px]">
           <div className="relative h-full">
             <select
               value={searchType}

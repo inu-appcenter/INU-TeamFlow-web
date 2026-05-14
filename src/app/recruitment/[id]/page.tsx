@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-
 import { ChevronLeft, Ellipsis } from 'lucide-react';
 
 import Card from '@/components/main/Card';
@@ -33,7 +32,7 @@ export default function RecruitmentDetail() {
   if (!recruitment) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
-        <p className="text-lg font-semibold text-[#2C2C2C]">
+        <p className="text-base font-semibold text-[#2C2C2C] sm:text-lg">
           존재하지 않는 게시글입니다.
         </p>
       </main>
@@ -55,7 +54,6 @@ export default function RecruitmentDetail() {
     endDate.setHours(0, 0, 0, 0);
 
     const diff = endDate.getTime() - today.getTime();
-
     const day = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
     if (day > 0) return `D-${day}`;
@@ -65,41 +63,45 @@ export default function RecruitmentDetail() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-6 pt-6">
-      <section className="mx-auto mt-12 max-w-3xl">
-        <Card className="overflow-hidden rounded-b-none p-0">
-          <div className="flex h-18 items-center justify-between bg-[#D6DDE5] px-6">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-3xl flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+        <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
+          <div className="flex h-16 items-center justify-between bg-[#D6DDE5] px-6 sm:h-18">
             <button
               onClick={() => router.back()}
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft size={28} strokeWidth={2.5} />
+              <ChevronLeft
+                size={24}
+                strokeWidth={2.5}
+                className="sm:h-7 sm:w-7"
+              />
             </button>
 
             <button className="cursor-pointer text-[#2C2C2C]">
-              <Ellipsis size={22} />
+              <Ellipsis size={20} className="sm:h-[22px] sm:w-[22px]" />
             </button>
           </div>
 
-          <div className="px-10 py-10">
-            <h1 className="text-3xl font-bold text-[#2C2C2C]">
+          <div className="px-8 py-7 sm:px-10 sm:py-10">
+            <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">
               {recruitment.title}
             </h1>
 
             {hasAnnouncement ? (
-              <button className="mt-4 cursor-pointer rounded-xl bg-[#EEF1F5] px-4 py-1.5 text-sm text-[#2C2C2C] transition hover:bg-[#E3E7EB]">
+              <button className="mt-3 cursor-pointer rounded-xl bg-[#EEF1F5] px-3 py-1.5 text-[12px] text-[#2C2C2C] transition hover:bg-[#E3E7EB] sm:mt-4 sm:px-4 sm:text-sm">
                 &lt;{recruitment.announcementTitle}&gt; 바로가기
               </button>
             ) : (
               <button
                 disabled
-                className="mt-4 cursor-not-allowed rounded-xl bg-[#EEF1F5] px-4 py-1.5 text-sm text-[#989898]"
+                className="mt-3 cursor-not-allowed rounded-xl bg-[#EEF1F5] px-3 py-1.5 text-[12px] text-[#989898] sm:mt-4 sm:px-4 sm:text-sm"
               >
                 연결된 정보글이 없습니다
               </button>
             )}
 
-            <div className="mt-8 grid grid-cols-[90px_1fr] gap-y-5 text-sm">
+            <div className="mt-7 grid grid-cols-[72px_1fr] gap-y-4 text-[13px] sm:mt-8 sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-sm">
               <span className="text-[#989898]">종류</span>
               <span className="text-[#2C2C2C]">
                 {categoryMap[recruitment.category]}
@@ -108,10 +110,10 @@ export default function RecruitmentDetail() {
               <span className="text-[#989898]">모집현황</span>
               <div>
                 <span
-                  className={`rounded-full px-4 py-1.5 text-xs font-medium ${
+                  className={`rounded-full px-3 py-1 text-[11px] font-medium sm:px-4 sm:py-1.5 sm:text-xs ${
                     isOpen
                       ? 'bg-[#A7ECA7] text-[#1F4D1A]'
-                      : 'bg-[#F67F8F] text-[#ffffff]'
+                      : 'bg-[#F67F8F] text-white'
                   }`}
                 >
                   {statusMap[recruitment.status]}
@@ -119,7 +121,7 @@ export default function RecruitmentDetail() {
               </div>
 
               <span className="text-[#989898]">모집마감</span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[#2c2c2c]">
                   {recruitment.createdAt} ~ {recruitment.endAt}
                 </p>
@@ -140,20 +142,22 @@ export default function RecruitmentDetail() {
               </span>
             </div>
 
-            <div className="mt-8 border-b border-[#D6DDE5]" />
+            <div className="mt-7 border-b border-[#D6DDE5] sm:mt-8" />
 
-            <section className="mt-6">
-              <h2 className="text-sm text-[#989898]">상세요강</h2>
+            <section className="mt-5 sm:mt-6">
+              <h2 className="text-[13px] text-[#989898] sm:text-sm">
+                상세요강
+              </h2>
 
-              <p className="mt-4 text-base leading-8 whitespace-pre-wrap text-[#2C2C2C]">
+              <p className="mt-3 text-[14px] leading-7 whitespace-pre-wrap text-[#2C2C2C] sm:mt-4 sm:text-base sm:leading-8">
                 {recruitment.description}
               </p>
             </section>
 
-            <div className="mt-20 border-b border-[#D6DDE5]" />
+            <div className="mt-14 border-b border-[#D6DDE5] sm:mt-20" />
 
             <div className="mt-6 flex justify-center">
-              <button className="cursor-pointer rounded-xl bg-[#5E92F0] px-6 py-2 text-base text-white transition hover:bg-[#5C86EB]">
+              <button className="cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2 text-[14px] text-white transition hover:bg-[#5C86EB] sm:px-6 sm:text-base">
                 지원하기
               </button>
             </div>

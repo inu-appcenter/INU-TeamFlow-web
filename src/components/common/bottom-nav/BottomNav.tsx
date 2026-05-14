@@ -28,8 +28,8 @@ const navItems = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-10 left-1/2 z-50 h-[72px] w-[70%] max-w-[700px] -translate-x-1/2 rounded-full border border-[#EDF1F5] bg-white/90 shadow-[6px_8px_24px_0px_rgba(149,157,165,0.20)] transition-all duration-300 ease-in-out">
-      <ul className="flex h-full items-center justify-center px-2">
+    <nav className="pointer-events-none fixed right-4 bottom-6 left-4 z-50 h-[68px] rounded-full border border-[#EDF1F5] bg-white/90 shadow-[6px_8px_24px_0px_rgba(149,157,165,0.20)] backdrop-blur-md transition-all duration-300 ease-in-out sm:right-auto sm:bottom-10 sm:left-1/2 sm:w-[70%] sm:max-w-[700px] sm:-translate-x-1/2">
+      <ul className="pointer-events-auto relative flex h-full items-center justify-between px-0 sm:px-0">
         {navItems.map((item) => (
           <BottomNavItem
             key={item.label}
