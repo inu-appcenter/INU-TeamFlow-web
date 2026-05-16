@@ -44,13 +44,15 @@ export default function CalendarDatePicker({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="h-[55px] w-full rounded-2xl bg-[#F6F8FA] px-6 text-left text-[16px] font-semibold text-[#2C2C2C]"
+        className={`h-[55px] w-full rounded-2xl bg-[#F6F8FA] px-6 text-left text-[16px] font-semibold transition-all duration-200 outline-none active:scale-95 ${
+          value ? 'text-[#2C2C2C]' : 'text-[#2C2C2C]/50'
+        }`}
       >
         {value || placeholder}
       </button>
 
       {isOpen && (
-        <div className="absolute top-[70px] left-0 z-[120] w-full rounded-2xl border-[0.5] border-[#D6DDE5] bg-[#F8F9FB] p-4">
+        <div className="absolute top-[60px] left-0 z-[120] w-full rounded-2xl border-[0.5] border-[#D6DDE5] bg-[#F8F9FB] p-4">
           <div className="mb-2 flex items-center justify-between px-2">
             <h3 className="text-[20px] font-bold text-[#2C2C2C]">
               {month + 1}월
@@ -75,7 +77,7 @@ export default function CalendarDatePicker({
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white px-2 py-2">
+          <div className="rounded-2xl bg-white px-2 py-2">
             <div className="mb-4 grid grid-cols-7 text-center text-[15px] font-medium text-[#D6DDE5]">
               {days.map((day) => (
                 <div key={day}>{day}</div>
