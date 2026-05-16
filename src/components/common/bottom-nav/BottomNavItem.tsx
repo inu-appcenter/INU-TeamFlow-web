@@ -35,7 +35,7 @@ export default function BottomNavItem({
           className="mb-0.5 sm:mb-1 sm:h-[22px] sm:w-[22px]"
         />
 
-        <span className="text-[11px] font-medium whitespace-nowrap sm:text-sm">
+        <span className="text-[11px] font-bold whitespace-nowrap sm:text-sm">
           {label}
         </span>
       </Link>

@@ -1,22 +1,38 @@
 'use client';
 
-import type { Schedule } from '@/mocks/schedules';
-import { X } from 'lucide-react';
+import { scheduleColors, type ScheduleColor } from '@/constants/scheduleColor';
+import { Repeat, X } from 'lucide-react';
 import { useState } from 'react';
-import { Repeat } from 'lucide-react';
 
 import CalendarDatePicker from './CalendarDatePicker';
+
+type RepeatType = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+
+interface Recurrence {
+  frequency: RepeatType;
+  interval: number;
+  daysOfWeek?: number[];
+}
+
+export interface CreateEventRequest {
+  title: string;
+  description: string;
+  startAt: string;
+  endAt: string;
+  isAllDay: boolean;
+  color: string;
+  recurrence: Recurrence | null;
+}
 
 interface CalendarAddModalProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (schedule: Schedule) => void;
+  onAdd: (request: CreateEventRequest) => void;
   selectedDate: Date;
   isEdit?: boolean;
 }
 
 type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
-type RepeatType = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -28,6 +44,10 @@ const formatDateKey = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
+const createDateTime = (date: string, time: string) => {
+  return `${date}T${time}`;
+};
+
 export default function CalendarAddModal({
   open,
   onClose,
@@ -35,72 +55,109 @@ export default function CalendarAddModal({
   selectedDate,
   isEdit = false,
 }: CalendarAddModalProps) {
-  const selectedDateKey = formatDateKey(selectedDate);
-
   const [isClosing, setIsClosing] = useState(false);
   const [scheduleType, setScheduleType] = useState<ScheduleType>('NORMAL');
+  const [isColorOpen, setIsColorOpen] = useState(false);
 
   const [repeatType, setRepeatType] = useState<RepeatType>('WEEKLY');
   const [repeatDays, setRepeatDays] = useState<number[]>([
     selectedDate.getDay(),
   ]);
 
-  const [form, setForm] = useState({
+  interface ScheduleForm {
+    title: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    startTime: string;
+    endTime: string;
+    color: ScheduleColor;
+    isAllDay: boolean;
+  }
+
+  const [form, setForm] = useState<ScheduleForm>({
     title: '',
     description: '',
-    startAt: `${selectedDateKey}T09:00`,
-    endAt: `${selectedDateKey}T10:00`,
-    color: '#FFF3B0',
+    startDate: '',
+    endDate: '',
+    startTime: '09:00',
+    endTime: '10:00',
+    color: scheduleColors[0],
     isAllDay: false,
   });
+
+  const resetForm = () => {
+    setScheduleType('NORMAL');
+    setRepeatType('WEEKLY');
+    setRepeatDays([selectedDate.getDay()]);
+    setIsColorOpen(false);
+
+    setForm({
+      title: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      startTime: '09:00',
+      endTime: '10:00',
+      color: scheduleColors[0],
+      isAllDay: false,
+    });
+  };
 
   const handleClose = () => {
     setIsClosing(true);
 
     setTimeout(() => {
       setIsClosing(false);
+      resetForm();
       onClose();
     }, 250);
   };
 
-  const resetForm = () => {
-    setScheduleType('NORMAL');
-    setRepeatType('WEEKLY');
-    setRepeatDays([selectedDate.getDay()]);
+  const handleScheduleTypeChange = (type: ScheduleType) => {
+    setScheduleType(type);
 
-    setForm({
-      title: '',
-      description: '',
-      startAt: `${selectedDateKey}T09:00`,
-      endAt: `${selectedDateKey}T10:00`,
-      color: '#FFF3B0',
-      isAllDay: false,
-    });
+    setForm((prev) => ({
+      ...prev,
+      endDate: type === 'NORMAL' ? prev.startDate : prev.endDate,
+      isAllDay: type === 'PERIOD' ? true : false,
+    }));
   };
 
   const handleSave = () => {
-    const newItem: Schedule = {
-      eventId: Date.now(),
-      teamId: 1,
-      teamName: '새 팀',
+    const isAllDay = scheduleType === 'PERIOD' ? true : form.isAllDay;
 
+    const startAt = isAllDay
+      ? createDateTime(form.startDate, '00:00')
+      : createDateTime(form.startDate, form.startTime);
+
+    const endAt = isAllDay
+      ? createDateTime(form.endDate, '23:59')
+      : createDateTime(
+          scheduleType === 'NORMAL' ? form.startDate : form.endDate,
+          form.endTime
+        );
+
+    const requestBody: CreateEventRequest = {
       title: form.title,
       description: form.description,
-
-      occurrenceAt: form.startAt,
-      startAt: form.startAt,
-      endAt: form.endAt,
-
-      isAllDay: form.isAllDay,
+      startAt,
+      endAt,
+      isAllDay,
       color: form.color,
-
-      eventKind: scheduleType === 'REPEAT' ? 'RECURRING' : 'SINGLE',
-      status: 'PENDING',
-      isException: false,
+      recurrence:
+        scheduleType === 'REPEAT'
+          ? {
+              frequency: repeatType,
+              interval: 1,
+              ...(repeatType === 'WEEKLY' && {
+                daysOfWeek: repeatDays,
+              }),
+            }
+          : null,
     };
 
-    onAdd(newItem);
-    resetForm();
+    onAdd(requestBody);
     handleClose();
   };
 
@@ -108,12 +165,14 @@ export default function CalendarAddModal({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-end justify-center bg-black/10 transition-opacity duration-[250ms] ${
+      onClick={handleClose}
+      className={`fixed inset-0 z-[300] flex items-end justify-center bg-black/10 transition-opacity duration-[250ms] ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
       <div
-        className={`relative flex h-[80vh] w-full max-w-[680px] flex-col overflow-hidden rounded-t-3xl border-[0.5px] border-[#D6DDE5] bg-white px-10 pt-16 pb-6 ${
+        onClick={(e) => e.stopPropagation()}
+        className={`relative flex h-[80vh] w-full max-w-[700px] flex-col overflow-hidden rounded-t-3xl border-[0.5px] border-[#D6DDE5] bg-white px-10 pt-16 ${
           isClosing ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >
@@ -137,83 +196,105 @@ export default function CalendarAddModal({
                   title: e.target.value,
                 }))
               }
-              className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50"
+              className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50 active:scale-95"
             />
 
-            <button
-              type="button"
-              className="h-[55px] w-[100px] shrink-0 rounded-2xl bg-[#F6F8FA] text-[16px] font-semibold text-[#2C2C2C]"
-            >
-              색
-            </button>
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsColorOpen((prev) => !prev)}
+                className="flex h-[55px] w-[100px] items-center justify-center gap-2 rounded-2xl bg-[#F6F8FA] text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-90"
+              >
+                <span
+                  className="h-6 w-6 rounded-full"
+                  style={{ backgroundColor: form.color }}
+                />
+                색
+              </button>
+
+              {isColorOpen && (
+                <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
+                  {scheduleColors.map((color) => {
+                    const isSelected = form.color === color;
+
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => {
+                          setForm((prev) => ({
+                            ...prev,
+                            color,
+                          }));
+                          setIsColorOpen(false);
+                        }}
+                        className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA] ${
+                          isSelected ? 'bg-[#F6F8FA]' : ''
+                        }`}
+                      >
+                        <span
+                          className="h-7 w-full rounded-full"
+                          style={{ backgroundColor: color }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="mb-3 flex gap-2">
-            <button
-              type="button"
-              onClick={() => setScheduleType('NORMAL')}
-              className={`rounded-full px-5 py-2 text-base font-semibold transition ${
-                scheduleType === 'NORMAL'
-                  ? 'border-[0.5px] border-[#5E92F0] bg-[#5E92F0] text-white'
-                  : 'border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C]'
-              }`}
-            >
-              일반
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setScheduleType('PERIOD')}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                scheduleType === 'PERIOD'
-                  ? 'border-[0.5px] border-[#5E92F0] bg-[#5E92F0] text-white'
-                  : 'border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C]'
-              }`}
-            >
-              기간
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setScheduleType('REPEAT')}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                scheduleType === 'REPEAT'
-                  ? 'border-[0.5px] border-[#5E92F0] bg-[#5E92F0] text-white'
-                  : 'border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C]'
-              }`}
-            >
-              반복
-            </button>
-          </div>
-
-          <label className="mb-3 flex items-center gap-2">
-            <span className="text-[14px] font-medium text-[#2C2C2C]">
-              하루종일
-            </span>
-
-            <button
-              type="button"
-              onClick={() =>
-                setForm((prev) => ({
-                  ...prev,
-                  isAllDay: !prev.isAllDay,
-                }))
-              }
-              className={`relative h-7 w-12 rounded-full transition-colors duration-300 ease-in-out ${
-                form.isAllDay ? 'bg-[#5E92F0]' : 'bg-[#D6DDE5]'
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-0 h-5 w-5 rounded-full bg-white transition-all duration-300 ease-in-out ${
-                  form.isAllDay ? 'translate-x-6' : 'translate-x-1'
+          <div className="mb-5 flex gap-2">
+            {(['NORMAL', 'PERIOD', 'REPEAT'] as ScheduleType[]).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => handleScheduleTypeChange(type)}
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                  scheduleType === type
+                    ? 'border-[0.5px] border-[#5E92F0] bg-[#5E92F0] text-white'
+                    : 'border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C]'
                 }`}
-              />
-            </button>
-          </label>
+              >
+                {type === 'NORMAL'
+                  ? '일반'
+                  : type === 'PERIOD'
+                    ? '기간'
+                    : '반복'}
+              </button>
+            ))}
+          </div>
+
+          {scheduleType !== 'PERIOD' && (
+            <label className="mb-3 flex items-center gap-2">
+              <span className="text-[14px] font-medium text-[#2C2C2C]">
+                하루종일
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    isAllDay: !prev.isAllDay,
+                  }))
+                }
+                className={`relative h-7 w-12 rounded-full transition-colors duration-300 ease-in-out ${
+                  form.isAllDay ? 'bg-[#5E92F0]' : 'bg-[#D6DDE5]'
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-0 h-5 w-5 rounded-full bg-white transition-all duration-300 ease-in-out ${
+                    form.isAllDay ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+          )}
 
           {scheduleType === 'REPEAT' && (
             <>
-              <div className="mb-3 flex h-[55px] items-center justify-between rounded-2xl bg-[#F6F8FA] px-6">
+              <div className="mb-3 flex h-[55px] items-center justify-between rounded-2xl bg-[#F6F8FA] px-6 transition-all duration-150 outline-none active:scale-95">
                 <span className="flex items-center gap-3 text-[16px] font-semibold text-[#2C2C2C]">
                   <Repeat size={18} /> 반복 유형
                 </span>
@@ -221,7 +302,7 @@ export default function CalendarAddModal({
                 <select
                   value={repeatType}
                   onChange={(e) => setRepeatType(e.target.value as RepeatType)}
-                  className="bg-transparent text-[16px] font-semibold text-[#2C2C2C] outline-none"
+                  className="active:scale-95bg-transparent text-[16px] font-semibold text-[#2C2C2C] transition-all duration-150 outline-none"
                 >
                   <option value="WEEKLY">매주</option>
                   <option value="MONTHLY">매월</option>
@@ -245,7 +326,7 @@ export default function CalendarAddModal({
                               : [...prev, index]
                           )
                         }
-                        className={`flex h-12 w-12 items-center justify-center rounded-full text-[16px] font-semibold transition sm:h-15 sm:w-15 ${
+                        className={`flex h-12 w-12 items-center justify-center rounded-full text-[16px] font-semibold transition transition-all duration-150 outline-none active:scale-90 sm:h-15 sm:w-15 ${
                           isSelected
                             ? 'bg-[#5E92F0] text-white'
                             : 'bg-[#F6F8FA] text-[#2C2C2C]'
@@ -261,43 +342,49 @@ export default function CalendarAddModal({
           )}
 
           <CalendarDatePicker
-            value={form.startAt.slice(0, 10)}
+            value={form.startDate}
             placeholder={
-              scheduleType === 'REPEAT'
-                ? '시작 날짜를 선택해주세요'
-                : '날짜를 선택해주세요'
+              scheduleType === 'NORMAL'
+                ? '날짜를 선택해주세요'
+                : '시작 날짜를 선택해주세요'
             }
             onChange={(date) =>
               setForm((prev) => ({
                 ...prev,
-                startAt: `${date}T${prev.startAt.slice(11, 16)}`,
-                endAt: `${date}T${prev.endAt.slice(11, 16)}`,
+                startDate: date,
+                ...(scheduleType === 'NORMAL' && {
+                  endDate: date,
+                }),
               }))
             }
           />
 
-          {scheduleType === 'REPEAT' && (
+          {scheduleType !== 'NORMAL' && (
             <CalendarDatePicker
-              value={form.endAt.slice(0, 10)}
-              placeholder="종료 날짜를 선택해주세요"
+              value={form.endDate}
+              placeholder={
+                scheduleType === 'PERIOD'
+                  ? '마지막 날짜를 선택해주세요'
+                  : '종료 날짜를 선택해주세요'
+              }
               onChange={(date) =>
                 setForm((prev) => ({
                   ...prev,
-                  endAt: `${date}T${prev.endAt.slice(11, 16)}`,
+                  endDate: date,
                 }))
               }
             />
           )}
 
-          {!form.isAllDay && (
+          {!form.isAllDay && scheduleType !== 'PERIOD' && (
             <div className="mb-3 flex gap-3">
               <input
                 type="time"
-                value={form.startAt.slice(11, 16)}
+                value={form.startTime}
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    startAt: `${prev.startAt.slice(0, 10)}T${e.target.value}`,
+                    startTime: e.target.value,
                   }))
                 }
                 className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
@@ -305,11 +392,11 @@ export default function CalendarAddModal({
 
               <input
                 type="time"
-                value={form.endAt.slice(11, 16)}
+                value={form.endTime}
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    endAt: `${prev.endAt.slice(0, 10)}T${e.target.value}`,
+                    endTime: e.target.value,
                   }))
                 }
                 className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
@@ -330,7 +417,7 @@ export default function CalendarAddModal({
           />
 
           <div
-            className={`mt-6 flex shrink-0 items-center ${
+            className={`mt-16 flex shrink-0 items-center ${
               isEdit ? 'justify-between' : 'justify-end'
             }`}
           >
@@ -338,7 +425,7 @@ export default function CalendarAddModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222]"
+                className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222]"
               >
                 삭제
               </button>
@@ -347,7 +434,7 @@ export default function CalendarAddModal({
             <button
               type="button"
               onClick={handleSave}
-              className="h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C]"
+              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C]"
             >
               저장
             </button>
