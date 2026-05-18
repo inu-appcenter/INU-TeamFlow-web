@@ -6,66 +6,78 @@
   }
 }
 
-/* scrollbar */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #d6dde5 transparent;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 2px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #d6dde5;
-  border-radius: 9999px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #c1c9d2;
-}
-
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #d6dde5 transparent;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
+@layer utilities {
+  .thin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #d6dde5 transparent;
   }
 
-  to {
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.15s ease-out;
-}
-
-@keyframes slide-down {
-  from {
-    transform: translateY(0);
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 2px;
+    height: 4px;
   }
 
-  to {
-    transform: translateY(100%);
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #d6dde5;
+    border-radius: 9999px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-down {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.25s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.2s ease-in;
   }
 }
 
-.animate-slide-down {
-  animation: slide-down 0.15s ease-in;
+@layer utilities {
+  @keyframes modal-pop {
+    from {
+      opacity: 0;
+      transform: translateY(0) scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .animate-modal-pop {
+    animation: modal-pop 0.18s ease-out;
+  }
 }

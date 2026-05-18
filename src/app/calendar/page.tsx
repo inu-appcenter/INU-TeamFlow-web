@@ -2,6 +2,7 @@
 
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
+import CalendarEditModal from '@/components/calendar/CalendarEditModal';
 import { schedules as mockSchedules, type Schedule } from '@/mocks/schedules';
 import { getDday } from '@/utils/date/getDday';
 import { Check, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
@@ -58,10 +59,86 @@ const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
   return dateKey >= startDate && dateKey <= endDate;
 };
 
+type SlottedSchedule = Schedule & { slot: number };
+
+function assignWeekSlots(
+  weekDateKeys: string[],
+  schedules: Schedule[]
+): Map<string, SlottedSchedule[]> {
+  const seen = new Set<number>();
+  const weekSchedules: Schedule[] = [];
+
+  for (const dk of weekDateKeys) {
+    for (const s of schedules) {
+      if (!seen.has(s.eventId) && isScheduleOnDate(s, dk)) {
+        seen.add(s.eventId);
+        weekSchedules.push(s);
+      }
+    }
+  }
+
+  const periodSchedules = weekSchedules.filter((s) => {
+    const start = s.startAt.slice(0, 10);
+    const end = s.endAt.slice(0, 10);
+    return start !== end && s.isSingle;
+  });
+  const singleSchedules = weekSchedules.filter((s) => {
+    const start = s.startAt.slice(0, 10);
+    const end = s.endAt.slice(0, 10);
+    return !(start !== end && s.isSingle);
+  });
+
+  // 이 주에 실제로 보이는 날짜 범위로 클램핑해서 겹침 판단
+  const weekStart = weekDateKeys[0];
+  const weekEnd = weekDateKeys[weekDateKeys.length - 1];
+
+  const clampToWeek = (start: string, end: string) => ({
+    cs: start < weekStart ? weekStart : start,
+    ce: end > weekEnd ? weekEnd : end,
+  });
+
+  const slotMap: SlottedSchedule[] = [];
+  const usedSlots: { cs: string; ce: string; slot: number }[] = [];
+
+  for (const s of periodSchedules) {
+    const { cs, ce } = clampToWeek(
+      s.startAt.slice(0, 10),
+      s.endAt.slice(0, 10)
+    );
+
+    let slot = 0;
+    while (usedSlots.some((u) => u.slot === slot && cs <= u.ce && ce >= u.cs)) {
+      slot++;
+    }
+
+    usedSlots.push({ cs, ce, slot });
+    slotMap.push({ ...s, slot });
+  }
+
+  for (const s of singleSchedules) {
+    slotMap.push({ ...s, slot: -1 });
+  }
+
+  const result = new Map<string, SlottedSchedule[]>();
+  for (const dk of weekDateKeys) {
+    const forDate = slotMap
+      .filter((s) => isScheduleOnDate(s, dk))
+      .sort((a, b) => {
+        if (a.slot !== -1 && b.slot === -1) return -1;
+        if (a.slot === -1 && b.slot !== -1) return 1;
+        if (a.slot !== -1 && b.slot !== -1) return a.slot - b.slot;
+        return a.startAt.localeCompare(b.startAt);
+      });
+    result.set(dk, forDate);
+  }
+
+  return result;
+}
+
 export default function CalendarPage() {
   const today = new Date();
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
-
+  const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
@@ -173,6 +250,16 @@ export default function CalendarPage() {
     setSchedules((prev) => [...prev, mockResponse]);
   };
 
+  const handleEditSchedule = (updated: Schedule) => {
+    setSchedules((prev) =>
+      prev.map((schedule) =>
+        schedule.eventId === updated.eventId ? updated : schedule
+      )
+    );
+
+    setEditSchedule(null);
+  };
+
   const darkenColor = (hex: string, amount: number) => {
     const color = hex.replace('#', '');
 
@@ -183,9 +270,20 @@ export default function CalendarPage() {
     return `rgb(${r}, ${g}, ${b})`;
   };
 
+  const handleDeleteSchedule = (eventId: number) => {
+    setSchedules((prev) =>
+      prev.filter((schedule) => schedule.eventId !== eventId)
+    );
+
+    setEditSchedule(null);
+  };
+  const DATE_HEADER_H = 28;
+  const EVENT_H = 20;
+  const EVENT_GAP = 4;
+
   return (
     <main className="h-screen overflow-hidden px-3 py-6 pt-6 pb-28 sm:px-6 sm:pt-12 sm:pb-34">
-      <section className="mx-auto flex h-full max-w-[1180px] flex-col">
+      <section className="z-100 mx-auto flex h-full max-w-[1180px] flex-col">
         <div className="mb-2 flex items-center justify-between px-3">
           <h1 className="text-[28px] font-bold text-[#2C2C2C]">
             {month + 1}월
@@ -194,14 +292,14 @@ export default function CalendarPage() {
           <div className="flex gap-2">
             <button
               onClick={handlePrevMonth}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8ECF0] text-[#2c2c2c]/40"
+              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#E8ECF0] text-[#2c2c2c]/40"
             >
               <ChevronLeft size={18} />
             </button>
 
             <button
               onClick={handleNextMonth}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8ECF0] text-[#2c2c2c]/40"
+              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#E8ECF0] text-[#2c2c2c]/40"
             >
               <ChevronRight size={18} />
             </button>
@@ -209,8 +307,8 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
-          <section className="flex h-full flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white p-2 pt-3">
-            <div className="grid shrink-0 grid-cols-7 text-center text-[15px] text-[#D6DDE5]">
+          <section className="flex h-full flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white py-2 pt-3 pl-2">
+            <div className="grid shrink-0 grid-cols-7 pr-2.5 text-center text-[15px] text-[#D6DDE5]">
               {days.map((day) => (
                 <div key={day} className="mb-2">
                   {day}
@@ -218,15 +316,55 @@ export default function CalendarPage() {
               ))}
             </div>
 
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
+            <div
+              className="thin-scrollbar min-h-0 flex-1 overflow-y-auto"
+              style={{
+                scrollbarGutter: 'stable',
+              }}
+            >
               <div
                 className="grid min-h-full grid-cols-7"
                 style={{
                   gridTemplateRows: `repeat(${weeks.length}, minmax(90px, auto))`,
                 }}
               >
-                {weeks.map((week, weekIndex) =>
-                  week.map((item, i) => {
+                {weeks.map((week, weekIndex) => {
+                  const weekDateKeys = week.map((item) => {
+                    const cellDate =
+                      item.type === 'prev'
+                        ? new Date(year, month - 1, item.date)
+                        : item.type === 'next'
+                          ? new Date(year, month + 1, item.date)
+                          : new Date(year, month, item.date);
+                    return formatDateKey(cellDate);
+                  });
+
+                  const slottedByDate = assignWeekSlots(
+                    weekDateKeys,
+                    schedules
+                  );
+
+                  const maxSlot = Math.max(
+                    0,
+                    ...Array.from(slottedByDate.values()).flatMap((list) =>
+                      list.map((s) => (s.slot === -1 ? 0 : s.slot + 1))
+                    )
+                  );
+
+                  const maxSingle = Math.max(
+                    0,
+                    ...Array.from(slottedByDate.values()).map(
+                      (list) => list.filter((s) => s.slot === -1).length
+                    )
+                  );
+
+                  const cellMinH =
+                    DATE_HEADER_H +
+                    maxSlot * (EVENT_H + EVENT_GAP) +
+                    maxSingle * (EVENT_H + EVENT_GAP) +
+                    8;
+
+                  return week.map((item, i) => {
                     const isCurrentMonth = item.type === 'current';
 
                     const cellDate =
@@ -237,23 +375,7 @@ export default function CalendarPage() {
                           : new Date(year, month, item.date);
 
                     const dateKey = formatDateKey(cellDate);
-
-                    const dateSchedules = schedules
-                      .filter((schedule) => isScheduleOnDate(schedule, dateKey))
-                      .sort((a, b) => {
-                        const aStart = a.startAt.slice(0, 10);
-                        const aEnd = a.endAt.slice(0, 10);
-                        const bStart = b.startAt.slice(0, 10);
-                        const bEnd = b.endAt.slice(0, 10);
-
-                        const aIsPeriod = aStart !== aEnd && a.isSingle;
-                        const bIsPeriod = bStart !== bEnd && b.isSingle;
-
-                        if (aIsPeriod && !bIsPeriod) return -1;
-                        if (!aIsPeriod && bIsPeriod) return 1;
-
-                        return a.startAt.localeCompare(b.startAt);
-                      });
+                    const dateSchedules = slottedByDate.get(dateKey) ?? [];
 
                     const isSunday = cellDate.getDay() === 0;
                     const isSaturday = cellDate.getDay() === 6;
@@ -268,6 +390,8 @@ export default function CalendarPage() {
                       selectedDate.getMonth() === cellDate.getMonth() &&
                       selectedDate.getDate() === cellDate.getDate();
 
+                    let singleIdx = 0;
+
                     return (
                       <button
                         type="button"
@@ -276,9 +400,10 @@ export default function CalendarPage() {
                           setSelectedDate(cellDate);
                           setIsMobileDetailOpen(true);
                         }}
-                        className={`text-[14px]transition-all relative flex min-h-[90px] flex-col items-center pt-1 pb-2 duration-150 outline-none active:scale-90 ${
+                        className={`relative flex flex-col items-center pt-1 pb-2 text-[14px] transition-all duration-150 outline-none active:scale-90 ${
                           isSelected ? 'rounded-2xl bg-[#FAFAFA]' : ''
                         }`}
+                        style={{ minHeight: `${cellMinH}px` }}
                       >
                         <span
                           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
@@ -296,61 +421,80 @@ export default function CalendarPage() {
                           {item.date}
                         </span>
 
-                        <div className="mt-1 flex w-full flex-col gap-1">
-                          {dateSchedules.map((schedule) => {
-                            const isDone = schedule.isFinished;
-                            const startDate = schedule.startAt.slice(0, 10);
-                            const endDate = schedule.endAt.slice(0, 10);
+                        {dateSchedules.map((schedule) => {
+                          const isDone = schedule.isFinished;
+                          const startDate = schedule.startAt.slice(0, 10);
+                          const endDate = schedule.endAt.slice(0, 10);
 
-                            const isPeriod =
-                              startDate !== endDate && schedule.isSingle;
+                          const isPeriod =
+                            startDate !== endDate && schedule.isSingle;
 
-                            const isPeriodStart =
-                              isPeriod && dateKey === startDate;
-                            const isPeriodEnd = isPeriod && dateKey === endDate;
-                            const isPeriodMiddle =
-                              isPeriod &&
-                              dateKey > startDate &&
-                              dateKey < endDate;
+                          const isPeriodStart =
+                            isPeriod && dateKey === startDate;
+                          const isPeriodEnd = isPeriod && dateKey === endDate;
+                          const isPeriodMiddle =
+                            isPeriod &&
+                            dateKey > startDate &&
+                            dateKey < endDate;
 
-                            return (
-                              <div
-                                key={schedule.eventId}
-                                className={`h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold ${
-                                  isDone ? 'border-l-transparent' : 'pl-1'
-                                } ${
-                                  isPeriod
-                                    ? isPeriodStart
-                                      ? 'mr-0 ml-1 rounded-l rounded-r-none'
-                                      : isPeriodEnd
-                                        ? 'mr-1 ml-0 rounded-l-none rounded-r'
-                                        : isPeriodMiddle
-                                          ? 'mx-0 rounded-none'
-                                          : 'mx-1 rounded'
-                                    : 'mx-1 rounded'
-                                }`}
-                                style={{
-                                  backgroundColor: schedule.color,
-                                  borderLeftColor:
-                                    isDone || (isPeriod && !isPeriodStart)
-                                      ? 'transparent'
-                                      : darkenColor(schedule.color, 25),
-                                  color: isDone
-                                    ? darkenColor(schedule.color, 70)
-                                    : darkenColor(schedule.color, 100),
-                                }}
-                              >
-                                {!isPeriodMiddle &&
-                                  !isPeriodEnd &&
-                                  schedule.title}
-                              </div>
-                            );
-                          })}
-                        </div>
+                          let topOffset: number;
+                          if (schedule.slot !== -1) {
+                            topOffset =
+                              DATE_HEADER_H +
+                              schedule.slot * (EVENT_H + EVENT_GAP);
+                          } else {
+                            const periodCountOnThisDate = dateSchedules.filter(
+                              (s) => s.slot !== -1
+                            ).length;
+
+                            topOffset =
+                              DATE_HEADER_H +
+                              periodCountOnThisDate * (EVENT_H + EVENT_GAP) +
+                              singleIdx * (EVENT_H + EVENT_GAP);
+
+                            singleIdx++;
+                          }
+
+                          return (
+                            <div
+                              key={schedule.eventId}
+                              className={`absolute h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold ${
+                                isDone ? 'border-l-transparent' : 'pl-1'
+                              } ${
+                                isPeriod
+                                  ? isPeriodStart
+                                    ? 'mr-0 ml-1 rounded-l rounded-r-none'
+                                    : isPeriodEnd
+                                      ? 'mr-1 ml-0 rounded-l-none rounded-r'
+                                      : isPeriodMiddle
+                                        ? 'mx-0 rounded-none'
+                                        : 'mx-1 rounded'
+                                  : 'mx-1 rounded'
+                              }`}
+                              style={{
+                                top: `${topOffset}px`,
+                                left: 0,
+                                right: 0,
+                                backgroundColor: schedule.color,
+                                borderLeftColor:
+                                  isDone || (isPeriod && !isPeriodStart)
+                                    ? 'transparent'
+                                    : darkenColor(schedule.color, 25),
+                                color: isDone
+                                  ? darkenColor(schedule.color, 70)
+                                  : darkenColor(schedule.color, 100),
+                              }}
+                            >
+                              {!isPeriodMiddle &&
+                                !isPeriodEnd &&
+                                schedule.title}
+                            </div>
+                          );
+                        })}
                       </button>
                     );
-                  })
-                )}
+                  });
+                })}
               </div>
             </div>
           </section>
@@ -374,7 +518,8 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={schedule.eventId}
-                    className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
+                    onClick={() => setEditSchedule(schedule)}
+                    className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
                       isDone ? 'border-l-transparent' : ''
                     }`}
                     style={{
@@ -404,7 +549,10 @@ export default function CalendarPage() {
 
                       <button
                         type="button"
-                        onClick={() => handleToggleSchedule(schedule.eventId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleSchedule(schedule.eventId);
+                        }}
                         className="flex h-5 w-5 items-center justify-center"
                       >
                         {isDone ? (
@@ -441,11 +589,11 @@ export default function CalendarPage() {
           {isMobileDetailOpen && (
             <div
               onClick={() => setIsMobileDetailOpen(false)}
-              className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 px-5 lg:hidden"
+              className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 px-5 transition-opacity duration-200 lg:hidden"
             >
               <aside
                 onClick={(e) => e.stopPropagation()}
-                className="flex h-[70vh] w-full max-w-[365px] flex-col rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
+                className="animate-modal-pop flex h-[70vh] w-full max-w-[365px] flex-col rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
               >
                 <div className="mb-2 flex shrink-0 items-center justify-between">
                   <h2 className="text-[24px] font-bold text-[#2C2C2C]">
@@ -542,6 +690,15 @@ export default function CalendarPage() {
         onClose={() => setIsAddOpen(false)}
         onAdd={handleAddSchedule}
         selectedDate={selectedDate}
+      />
+
+      <CalendarEditModal
+        key={editSchedule?.eventId}
+        open={editSchedule !== null}
+        schedule={editSchedule}
+        onClose={() => setEditSchedule(null)}
+        onEdit={handleEditSchedule}
+        onDelete={handleDeleteSchedule}
       />
 
       <BottomNav />

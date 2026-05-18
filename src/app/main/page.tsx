@@ -76,7 +76,7 @@ export default function Main() {
 
               <button
                 onClick={() => router.push('/notice')}
-                className="cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80"
+                className="z-50 cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80"
               >
                 <ChevronRight />
               </button>
@@ -88,7 +88,7 @@ export default function Main() {
                 <button
                   key={notice.noticeId}
                   onClick={() => router.push(`/notice/${notice.noticeId}`)}
-                  className="border-b-[0.5px] border-[#D6DDE5] py-3 text-left last:border-b-0"
+                  className="z-50 border-b-[0.5px] border-[#D6DDE5] py-3 text-left last:border-b-0"
                 >
                   <h3 className="truncate text-[15px] font-semibold text-[#2C2C2C]">
                     [ {notice.teamName} ] {notice.title}
@@ -107,7 +107,7 @@ export default function Main() {
                 <button
                   key={notice.noticeId}
                   onClick={() => router.push(`/notice/${notice.noticeId}`)}
-                  className="border-b-[0.5px] border-[#D6DDE5] py-4 text-left last:border-b-0"
+                  className="z-50 border-b-[0.5px] border-[#D6DDE5] py-4 text-left last:border-b-0"
                 >
                   <h3 className="truncate text-base font-semibold text-[#2C2C2C]">
                     [ {notice.teamName} ] {notice.title}
@@ -134,7 +134,7 @@ export default function Main() {
 
               <button
                 onClick={() => router.push('/recruitment')}
-                className="cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80"
+                className="z-50 cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80"
               >
                 <ChevronRight />
               </button>
@@ -146,7 +146,7 @@ export default function Main() {
                 <button
                   key={category.value}
                   onClick={() => setSelectedCategory(category.value)}
-                  className={`cursor-pointer rounded-2xl border-[0.5px] px-2.5 py-1 text-sm font-normal transition sm:px-3 sm:py-1.5 sm:text-base ${
+                  className={`z-50 cursor-pointer rounded-2xl border-[0.5px] px-2.5 py-1 text-sm font-normal transition sm:px-3 sm:py-1.5 sm:text-base ${
                     selectedCategory === category.value
                       ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
                       : 'border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C]'
@@ -165,7 +165,7 @@ export default function Main() {
                   onClick={() =>
                     router.push(`/recruitment/${recruitment.recruitmentId}`)
                   }
-                  className="cursor-pointer border-b-[0.5px] border-[#D6DDE5] py-3 text-left last:border-b-0"
+                  className="z-50 cursor-pointer border-b-[0.5px] border-[#D6DDE5] py-3 text-left last:border-b-0"
                 >
                   <h3 className="truncate text-[15px] font-semibold text-[#2C2C2C]">
                     [ {categoryMap[recruitment.category]} ] {recruitment.title}
@@ -193,7 +193,7 @@ export default function Main() {
                   onClick={() =>
                     router.push(`/recruitment/${recruitment.recruitmentId}`)
                   }
-                  className="cursor-pointer border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left last:border-b-0"
+                  className="z-50 cursor-pointer border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left last:border-b-0"
                 >
                   <h3 className="truncate text-base font-semibold text-[#2C2C2C]">
                     [ {categoryMap[recruitment.category]} ] {recruitment.title}
@@ -221,7 +221,7 @@ export default function Main() {
             <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] pb-2">
               <h2 className="text-xl font-bold text-[#2C2C2C]">정보 게시판</h2>
 
-              <button className="cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80">
+              <button className="z-50 cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80">
                 <ChevronRight />
               </button>
             </div>
