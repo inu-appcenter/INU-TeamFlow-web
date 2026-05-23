@@ -520,7 +520,7 @@ export default function CalendarPage() {
                     key={schedule.eventId}
                     onClick={() => setEditSchedule(schedule)}
                     className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
-                      isDone ? 'border-l-transparent' : ''
+                      isDone ? 'border-l-transparent pl-3' : ''
                     }`}
                     style={{
                       backgroundColor: schedule.color,
