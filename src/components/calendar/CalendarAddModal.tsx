@@ -8,20 +8,25 @@ import CalendarDatePicker from './CalendarDatePicker';
 
 type RepeatType = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
-interface Recurrence {
-  frequency: RepeatType;
-  interval: number;
-  daysOfWeek?: number[];
-}
-
 export interface CreateEventRequest {
   title: string;
   description: string;
+
   startAt: string;
   endAt: string;
+
   isAllDay: boolean;
   color: string;
-  recurrence: Recurrence | null;
+
+  recurrence: {
+    freq: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+    intervalValue: number;
+    byDay?: ('MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN')[];
+    byMonthDay?: number;
+    seriesStartAt?: string | null;
+    untilAt?: string | null;
+    occurrenceCount?: number | null;
+  } | null;
 }
 
 interface CalendarAddModalProps {
@@ -36,13 +41,7 @@ type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
-const formatDateKey = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-
-  return `${y}-${m}-${d}`;
-};
+const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
 
 const createDateTime = (date: string, time: string) => {
   return `${date}T${time}`;
@@ -58,11 +57,20 @@ export default function CalendarAddModal({
   const [isClosing, setIsClosing] = useState(false);
   const [scheduleType, setScheduleType] = useState<ScheduleType>('NORMAL');
   const [isColorOpen, setIsColorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [repeatType, setRepeatType] = useState<RepeatType>('WEEKLY');
   const [repeatDays, setRepeatDays] = useState<number[]>([
     selectedDate.getDay(),
   ]);
+
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 1800);
+  };
 
   interface ScheduleForm {
     title: string;
@@ -91,6 +99,7 @@ export default function CalendarAddModal({
     setRepeatType('WEEKLY');
     setRepeatDays([selectedDate.getDay()]);
     setIsColorOpen(false);
+    setErrorMessage('');
 
     setForm({
       title: '',
@@ -115,6 +124,7 @@ export default function CalendarAddModal({
   };
 
   const handleScheduleTypeChange = (type: ScheduleType) => {
+    setErrorMessage('');
     setScheduleType(type);
 
     setForm((prev) => ({
@@ -125,6 +135,30 @@ export default function CalendarAddModal({
   };
 
   const handleSave = () => {
+    if (!form.title.trim()) {
+      showErrorMessage('일정 제목을 입력해주세요');
+      return;
+    }
+
+    if (!form.startDate) {
+      showErrorMessage('날짜를 선택해주세요');
+      return;
+    }
+
+    if (scheduleType !== 'NORMAL' && !form.endDate) {
+      showErrorMessage('날짜를 선택해주세요');
+      return;
+    }
+
+    if (scheduleType === 'REPEAT' && repeatType === 'WEEKLY') {
+      if (repeatDays.length === 0) {
+        showErrorMessage('반복 요일을 선택해주세요');
+        return;
+      }
+    }
+
+    setErrorMessage('');
+
     const isAllDay = scheduleType === 'PERIOD' ? true : form.isAllDay;
 
     const startAt = isAllDay
@@ -148,11 +182,17 @@ export default function CalendarAddModal({
       recurrence:
         scheduleType === 'REPEAT'
           ? {
-              frequency: repeatType,
-              interval: 1,
+              freq: repeatType,
+              intervalValue: 1,
               ...(repeatType === 'WEEKLY' && {
-                daysOfWeek: repeatDays,
+                byDay: repeatDays.map((day) => dayMap[day]),
               }),
+              ...(repeatType === 'MONTHLY' && {
+                byMonthDay: Number(form.startDate.slice(8, 10)),
+              }),
+              seriesStartAt: startAt,
+              untilAt: endAt,
+              occurrenceCount: null,
             }
           : null,
     };
@@ -176,6 +216,12 @@ export default function CalendarAddModal({
           isClosing ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >
+        {errorMessage && (
+          <div className="animate-modal-pop absolute top-125 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white transition">
+            {errorMessage}
+          </div>
+        )}
+
         <button
           type="button"
           onClick={handleClose}
@@ -190,12 +236,13 @@ export default function CalendarAddModal({
               type="text"
               placeholder="일정을 입력해주세요"
               value={form.title}
-              onChange={(e) =>
+              onChange={(e) => {
                 setForm((prev) => ({
                   ...prev,
                   title: e.target.value,
-                }))
-              }
+                }));
+                setErrorMessage('');
+              }}
               className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50 active:scale-95"
             />
 
@@ -227,6 +274,7 @@ export default function CalendarAddModal({
                             color,
                           }));
                           setIsColorOpen(false);
+                          setErrorMessage('');
                         }}
                         className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA] ${
                           isSelected ? 'bg-[#F6F8FA]' : ''
@@ -273,12 +321,13 @@ export default function CalendarAddModal({
 
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
                   setForm((prev) => ({
                     ...prev,
                     isAllDay: !prev.isAllDay,
-                  }))
-                }
+                  }));
+                  setErrorMessage('');
+                }}
                 className={`relative h-7 w-12 rounded-full transition-colors duration-300 ease-in-out ${
                   form.isAllDay ? 'bg-[#5E92F0]' : 'bg-[#D6DDE5]'
                 }`}
@@ -301,7 +350,10 @@ export default function CalendarAddModal({
 
                 <select
                   value={repeatType}
-                  onChange={(e) => setRepeatType(e.target.value as RepeatType)}
+                  onChange={(e) => {
+                    setRepeatType(e.target.value as RepeatType);
+                    setErrorMessage('');
+                  }}
                   className="active:scale-95bg-transparent text-[16px] font-semibold text-[#2C2C2C] transition-all duration-150 outline-none"
                 >
                   <option value="WEEKLY">매주</option>
@@ -319,14 +371,15 @@ export default function CalendarAddModal({
                       <button
                         key={day}
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
                           setRepeatDays((prev) =>
                             prev.includes(index)
                               ? prev.filter((d) => d !== index)
                               : [...prev, index]
-                          )
-                        }
-                        className={`flex h-12 w-12 items-center justify-center rounded-full text-[16px] font-semibold transition transition-all duration-150 outline-none active:scale-90 sm:h-15 sm:w-15 ${
+                          );
+                          setErrorMessage('');
+                        }}
+                        className={`flex h-12 w-12 items-center justify-center rounded-full text-[16px] font-semibold transition-all duration-150 outline-none active:scale-90 sm:h-15 sm:w-15 ${
                           isSelected
                             ? 'bg-[#5E92F0] text-white'
                             : 'bg-[#F6F8FA] text-[#2C2C2C]'
@@ -348,15 +401,31 @@ export default function CalendarAddModal({
                 ? '날짜를 선택해주세요'
                 : '시작 날짜를 선택해주세요'
             }
-            onChange={(date) =>
-              setForm((prev) => ({
-                ...prev,
-                startDate: date,
-                ...(scheduleType === 'NORMAL' && {
-                  endDate: date,
-                }),
-              }))
-            }
+            rangeStart={scheduleType === 'PERIOD' ? form.startDate : undefined}
+            rangeEnd={scheduleType === 'PERIOD' ? form.endDate : undefined}
+            onChange={(date) => {
+              setForm((prev) => {
+                const nextStartDate = new Date(date);
+                const nextDay = nextStartDate.getDay();
+
+                if (scheduleType === 'REPEAT') {
+                  setRepeatDays([nextDay]);
+                }
+
+                return {
+                  ...prev,
+                  startDate: date,
+                  ...(scheduleType === 'NORMAL' && {
+                    endDate: date,
+                  }),
+                  ...(scheduleType === 'REPEAT' &&
+                    !prev.endDate && {
+                      endDate: date,
+                    }),
+                };
+              });
+              setErrorMessage('');
+            }}
           />
 
           {scheduleType !== 'NORMAL' && (
@@ -367,12 +436,18 @@ export default function CalendarAddModal({
                   ? '마지막 날짜를 선택해주세요'
                   : '종료 날짜를 선택해주세요'
               }
-              onChange={(date) =>
+              rangeStart={
+                scheduleType === 'PERIOD' ? form.startDate : undefined
+              }
+              rangeEnd={scheduleType === 'PERIOD' ? form.endDate : undefined}
+              minDate={form.startDate}
+              onChange={(date) => {
                 setForm((prev) => ({
                   ...prev,
                   endDate: date,
-                }))
-              }
+                }));
+                setErrorMessage('');
+              }}
             />
           )}
 
@@ -381,24 +456,26 @@ export default function CalendarAddModal({
               <input
                 type="time"
                 value={form.startTime}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm((prev) => ({
                     ...prev,
                     startTime: e.target.value,
-                  }))
-                }
+                  }));
+                  setErrorMessage('');
+                }}
                 className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
               />
 
               <input
                 type="time"
                 value={form.endTime}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm((prev) => ({
                     ...prev,
                     endTime: e.target.value,
-                  }))
-                }
+                  }));
+                  setErrorMessage('');
+                }}
                 className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
               />
             </div>
@@ -407,12 +484,13 @@ export default function CalendarAddModal({
           <textarea
             placeholder="설명을 입력해주세요"
             value={form.description}
-            onChange={(e) =>
+            onChange={(e) => {
               setForm((prev) => ({
                 ...prev,
                 description: e.target.value,
-              }))
-            }
+              }));
+              setErrorMessage('');
+            }}
             className="h-[110px] w-full resize-none rounded-2xl bg-[#F6F8FA] px-6 py-4 text-[16px] font-semibold text-[#2C2C2C] outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50"
           />
 

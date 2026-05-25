@@ -9,6 +9,11 @@ interface CalendarDatePickerProps {
   value: string;
   onChange: (date: string) => void;
   placeholder?: string;
+
+  rangeStart?: string;
+  rangeEnd?: string;
+
+  minDate?: string;
 }
 
 const formatDateKey = (date: Date) => {
@@ -18,10 +23,14 @@ const formatDateKey = (date: Date) => {
 
   return `${y}-${m}-${d}`;
 };
+
 export default function CalendarDatePicker({
   value,
   onChange,
   placeholder,
+  rangeStart,
+  rangeEnd,
+  minDate,
 }: CalendarDatePickerProps) {
   const initialDate = value ? new Date(value) : new Date();
 
@@ -52,7 +61,7 @@ export default function CalendarDatePicker({
       </button>
 
       {isOpen && (
-        <div className="absolute top-[60px] left-0 z-[120] w-full rounded-2xl border-[0.5] border-[#D6DDE5] bg-[#F8F9FB] p-4">
+        <div className="absolute top-[60px] left-0 z-[120] w-full rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F8F9FB] p-4">
           <div className="mb-2 flex items-center justify-between px-2">
             <h3 className="text-[20px] font-bold text-[#2C2C2C]">
               {month + 1}월
@@ -86,35 +95,54 @@ export default function CalendarDatePicker({
 
             <div className="grid grid-cols-7 gap-y-8 text-center">
               {dates.map((date, index) => {
-                if (!date) {
-                  return <div key={`empty-${index}`} />;
-                }
+                if (!date) return <div key={`empty-${index}`} />;
 
                 const cellDate = new Date(year, month, date);
+                const dateKey = formatDateKey(cellDate);
+
+                const today = new Date();
+
+                const isToday =
+                  today.getFullYear() === cellDate.getFullYear() &&
+                  today.getMonth() === cellDate.getMonth() &&
+                  today.getDate() === cellDate.getDate();
 
                 const isSunday = cellDate.getDay() === 0;
                 const isSaturday = cellDate.getDay() === 6;
 
-                const dateKey = formatDateKey(cellDate);
-
                 const isSelected = value === dateKey;
 
+                const isInRange =
+                  rangeStart &&
+                  rangeEnd &&
+                  dateKey >= rangeStart &&
+                  dateKey <= rangeEnd;
+                const isDisabled = minDate && dateKey < minDate;
                 return (
                   <button
                     key={date}
                     type="button"
                     onClick={() => {
+                      if (isDisabled) return;
+
                       onChange(dateKey);
-                      setIsOpen(false);
                     }}
-                    className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[18px] ${
-                      isSelected
-                        ? 'bg-[#5E92F0] text-[#ffffff]'
-                        : isSunday
-                          ? 'text-red-500'
-                          : isSaturday
-                            ? 'text-blue-500'
-                            : 'text-[#2C2C2C]'
+                    className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[18px] transition-all duration-150 active:scale-85 ${
+                      isDisabled
+                        ? 'cursor-not-allowed text-[#D6DDE5]'
+                        : isSelected
+                          ? 'bg-[#5E92F0] text-white'
+                          : isInRange
+                            ? 'bg-[#E8F1FF] text-[#5E92F0]'
+                            : isToday && !value
+                              ? 'border border-[#5E92F0] text-[#5E92F0]'
+                              : isToday
+                                ? 'bg-[#EEF1F5] text-[#2C2C2C]'
+                                : isSunday
+                                  ? 'text-red-500'
+                                  : isSaturday
+                                    ? 'text-blue-500'
+                                    : 'text-[#2C2C2C]'
                     }`}
                   >
                     {date}

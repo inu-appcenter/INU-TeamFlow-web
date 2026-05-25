@@ -34,30 +34,56 @@ const formatTime = (dateString: string) => {
   return dateString.slice(11, 16);
 };
 
+const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
+
 const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
   const startDate = schedule.startAt.slice(0, 10);
   const endDate = schedule.endAt.slice(0, 10);
 
   if (!schedule.isSingle && schedule.recurrence) {
-    if (dateKey < startDate || dateKey > endDate) return false;
+    const recurrence = schedule.recurrence;
+
+    const seriesStartDate = recurrence.seriesStartAt?.slice(0, 10) ?? startDate;
+    const untilDate = recurrence.untilAt?.slice(0, 10) ?? endDate;
+
+    if (dateKey < seriesStartDate || dateKey > untilDate) return false;
 
     const targetDate = new Date(dateKey);
-    const targetDay = targetDate.getDay();
+    const seriesStart = new Date(seriesStartDate);
 
-    if (schedule.recurrence.frequency === 'WEEKLY') {
-      return schedule.recurrence.daysOfWeek?.includes(targetDay) ?? false;
+    if (recurrence.freq === 'WEEKLY') {
+      const targetDay = dayMap[targetDate.getDay()];
+
+      if (!recurrence.byDay?.includes(targetDay)) return false;
+
+      const diffWeeks = Math.floor(
+        (targetDate.getTime() - seriesStart.getTime()) /
+          (1000 * 60 * 60 * 24 * 7)
+      );
+
+      return diffWeeks % recurrence.intervalValue === 0;
     }
 
-    if (schedule.recurrence.frequency === 'MONTHLY') {
-      return targetDate.getDate() === new Date(startDate).getDate();
-    }
+    if (recurrence.freq === 'MONTHLY') {
+      const byMonthDay = recurrence.byMonthDay ?? seriesStart.getDate();
 
-    if (schedule.recurrence.frequency === 'YEARLY') {
-      const start = new Date(startDate);
+      const diffMonths =
+        (targetDate.getFullYear() - seriesStart.getFullYear()) * 12 +
+        (targetDate.getMonth() - seriesStart.getMonth());
 
       return (
-        targetDate.getMonth() === start.getMonth() &&
-        targetDate.getDate() === start.getDate()
+        targetDate.getDate() === byMonthDay &&
+        diffMonths % recurrence.intervalValue === 0
+      );
+    }
+
+    if (recurrence.freq === 'YEARLY') {
+      const diffYears = targetDate.getFullYear() - seriesStart.getFullYear();
+
+      return (
+        targetDate.getMonth() === seriesStart.getMonth() &&
+        targetDate.getDate() === seriesStart.getDate() &&
+        diffYears % recurrence.intervalValue === 0
       );
     }
   }
@@ -71,30 +97,11 @@ function assignWeekSlots(
   weekDateKeys: string[],
   schedules: Schedule[]
 ): Map<string, SlottedSchedule[]> {
-  const seen = new Set<number>();
-  const weekSchedules: Schedule[] = [];
-
-  for (const dk of weekDateKeys) {
-    for (const s of schedules) {
-      if (!seen.has(s.eventId) && isScheduleOnDate(s, dk)) {
-        seen.add(s.eventId);
-        weekSchedules.push(s);
-      }
-    }
-  }
-
-  const periodSchedules = weekSchedules.filter((s) => {
+  const periodSchedules = schedules.filter((s) => {
     const start = s.startAt.slice(0, 10);
     const end = s.endAt.slice(0, 10);
 
     return start !== end && s.isSingle;
-  });
-
-  const singleSchedules = weekSchedules.filter((s) => {
-    const start = s.startAt.slice(0, 10);
-    const end = s.endAt.slice(0, 10);
-
-    return !(start !== end && s.isSingle);
   });
 
   const weekStart = weekDateKeys[0];
@@ -105,14 +112,16 @@ function assignWeekSlots(
     ce: end > weekEnd ? weekEnd : end,
   });
 
-  const slotMap: SlottedSchedule[] = [];
+  const periodWithSlot: SlottedSchedule[] = [];
   const usedSlots: { cs: string; ce: string; slot: number }[] = [];
 
   for (const s of periodSchedules) {
-    const { cs, ce } = clampToWeek(
-      s.startAt.slice(0, 10),
-      s.endAt.slice(0, 10)
-    );
+    const start = s.startAt.slice(0, 10);
+    const end = s.endAt.slice(0, 10);
+
+    if (!weekDateKeys.some((dk) => isScheduleOnDate(s, dk))) continue;
+
+    const { cs, ce } = clampToWeek(start, end);
 
     let slot = 0;
 
@@ -121,32 +130,37 @@ function assignWeekSlots(
     }
 
     usedSlots.push({ cs, ce, slot });
-    slotMap.push({ ...s, slot });
-  }
-
-  for (const s of singleSchedules) {
-    slotMap.push({ ...s, slot: -1 });
+    periodWithSlot.push({ ...s, slot });
   }
 
   const result = new Map<string, SlottedSchedule[]>();
 
   for (const dk of weekDateKeys) {
-    const forDate = slotMap
-      .filter((s) => isScheduleOnDate(s, dk))
-      .sort((a, b) => {
-        if (a.slot !== -1 && b.slot === -1) return -1;
-        if (a.slot === -1 && b.slot !== -1) return 1;
-        if (a.slot !== -1 && b.slot !== -1) return a.slot - b.slot;
+    const schedulesOnDate = schedules
+      .filter((s) => {
+        const start = s.startAt.slice(0, 10);
+        const end = s.endAt.slice(0, 10);
+        const isPeriod = start !== end && s.isSingle;
 
-        return a.startAt.localeCompare(b.startAt);
-      });
+        return !isPeriod && isScheduleOnDate(s, dk);
+      })
+      .map((s) => ({ ...s, slot: -1 }));
+
+    const periodsOnDate = periodWithSlot.filter((s) => isScheduleOnDate(s, dk));
+
+    const forDate = [...periodsOnDate, ...schedulesOnDate].sort((a, b) => {
+      if (a.slot !== -1 && b.slot === -1) return -1;
+      if (a.slot === -1 && b.slot !== -1) return 1;
+      if (a.slot !== -1 && b.slot !== -1) return a.slot - b.slot;
+
+      return a.startAt.localeCompare(b.startAt);
+    });
 
     result.set(dk, forDate);
   }
 
   return result;
 }
-
 export default function Calendar({
   initialSchedules = mockSchedules,
   compact = false,
@@ -240,6 +254,11 @@ export default function Calendar({
   };
 
   const handleAddSchedule = (request: CreateEventRequest) => {
+    const isRepeat = request.recurrence !== null;
+
+    const startDate = request.startAt.slice(0, 10);
+    const endTime = request.endAt.slice(11, 16);
+
     const mockResponse: Schedule = {
       eventId: Date.now(),
       teamId: 1,
@@ -250,12 +269,12 @@ export default function Calendar({
 
       occurrenceAt: request.startAt,
       startAt: request.startAt,
-      endAt: request.endAt,
+      endAt: isRepeat ? `${startDate}T${endTime}` : request.endAt,
 
       isAllDay: request.isAllDay,
       color: request.color,
 
-      isSingle: request.recurrence === null,
+      isSingle: !isRepeat,
       isFinished: false,
       isException: false,
 
