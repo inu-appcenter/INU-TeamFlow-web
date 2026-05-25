@@ -85,30 +85,56 @@ const darkenColor = (hex: string, amount: number) => {
   return `rgb(${r}, ${g}, ${b})`;
 };
 
+const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
+
 const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
   const startDate = schedule.startAt.slice(0, 10);
   const endDate = schedule.endAt.slice(0, 10);
 
   if (!schedule.isSingle && schedule.recurrence) {
-    if (dateKey < startDate || dateKey > endDate) return false;
+    const recurrence = schedule.recurrence;
+
+    const seriesStartDate = recurrence.seriesStartAt?.slice(0, 10) ?? startDate;
+    const untilDate = recurrence.untilAt?.slice(0, 10) ?? endDate;
+
+    if (dateKey < seriesStartDate || dateKey > untilDate) return false;
 
     const targetDate = new Date(dateKey);
-    const targetDay = targetDate.getDay();
+    const seriesStart = new Date(seriesStartDate);
 
-    if (schedule.recurrence.frequency === 'WEEKLY') {
-      return schedule.recurrence.daysOfWeek?.includes(targetDay) ?? false;
+    if (recurrence.freq === 'WEEKLY') {
+      const targetDay = dayMap[targetDate.getDay()];
+
+      if (!recurrence.byDay?.includes(targetDay)) return false;
+
+      const diffWeeks = Math.floor(
+        (targetDate.getTime() - seriesStart.getTime()) /
+          (1000 * 60 * 60 * 24 * 7)
+      );
+
+      return diffWeeks % recurrence.intervalValue === 0;
     }
 
-    if (schedule.recurrence.frequency === 'MONTHLY') {
-      return targetDate.getDate() === new Date(startDate).getDate();
-    }
+    if (recurrence.freq === 'MONTHLY') {
+      const byMonthDay = recurrence.byMonthDay ?? seriesStart.getDate();
 
-    if (schedule.recurrence.frequency === 'YEARLY') {
-      const start = new Date(startDate);
+      const diffMonths =
+        (targetDate.getFullYear() - seriesStart.getFullYear()) * 12 +
+        (targetDate.getMonth() - seriesStart.getMonth());
 
       return (
-        targetDate.getMonth() === start.getMonth() &&
-        targetDate.getDate() === start.getDate()
+        targetDate.getDate() === byMonthDay &&
+        diffMonths % recurrence.intervalValue === 0
+      );
+    }
+
+    if (recurrence.freq === 'YEARLY') {
+      const diffYears = targetDate.getFullYear() - seriesStart.getFullYear();
+
+      return (
+        targetDate.getMonth() === seriesStart.getMonth() &&
+        targetDate.getDate() === seriesStart.getDate() &&
+        diffYears % recurrence.intervalValue === 0
       );
     }
   }
@@ -322,6 +348,11 @@ export default function TeamDetail() {
   };
 
   const handleAddSchedule = (request: CreateEventRequest) => {
+    const isRepeat = request.recurrence !== null;
+
+    const startDate = request.startAt.slice(0, 10);
+    const endTime = request.endAt.slice(11, 16);
+
     const mockResponse: Schedule = {
       eventId: Date.now(),
       teamId,
@@ -332,12 +363,12 @@ export default function TeamDetail() {
 
       occurrenceAt: request.startAt,
       startAt: request.startAt,
-      endAt: request.endAt,
+      endAt: isRepeat ? `${startDate}T${endTime}` : request.endAt,
 
       isAllDay: request.isAllDay,
       color: request.color,
 
-      isSingle: request.recurrence === null,
+      isSingle: !isRepeat,
       isFinished: false,
       isException: false,
 

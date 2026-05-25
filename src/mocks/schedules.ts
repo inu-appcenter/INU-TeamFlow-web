@@ -18,9 +18,31 @@ export interface Schedule {
   isException: boolean;
 
   recurrence?: {
-    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-    interval: number;
-    daysOfWeek?: number[];
+    freq: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+    intervalValue: number;
+    byDay?: ('MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN')[];
+    byMonthDay?: number;
+    seriesStartAt?: string | null;
+    untilAt?: string | null;
+    occurrenceCount?: number | null;
+  } | null;
+}
+
+export interface CreateEventRequest {
+  title: string;
+  description: string;
+  startAt: string;
+  endAt: string;
+  isAllDay: boolean;
+  color: string;
+  recurrence: {
+    freq: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+    intervalValue: number;
+    byDay?: ('MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN')[];
+    byMonthDay?: number;
+    seriesStartAt?: string | null;
+    untilAt?: string | null;
+    occurrenceCount?: number | null;
   } | null;
 }
 
@@ -89,8 +111,12 @@ export const schedules: Schedule[] = [
     isException: false,
 
     recurrence: {
-      frequency: 'WEEKLY',
-      interval: 1,
+      freq: 'WEEKLY',
+      intervalValue: 1,
+      byDay: ['SUN'],
+      seriesStartAt: '2026-05-10T19:00:00',
+      untilAt: '2026-08-31T23:59:59',
+      occurrenceCount: null,
     },
   },
 
@@ -202,8 +228,12 @@ export const schedules: Schedule[] = [
     isException: false,
 
     recurrence: {
-      frequency: 'MONTHLY',
-      interval: 1,
+      freq: 'MONTHLY',
+      intervalValue: 1,
+      byMonthDay: 22,
+      seriesStartAt: '2026-05-22T18:30:00',
+      untilAt: null,
+      occurrenceCount: 12,
     },
   },
 ];
