@@ -243,8 +243,8 @@ export default function TeamDetail() {
   const [schedules, setSchedules] = useState<Schedule[]>(
     mockSchedules.filter((schedule) => schedule.teamId === teamId)
   );
+  const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
-
   if (!team) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
@@ -548,7 +548,7 @@ export default function TeamDetail() {
                 <div className="flex items-center gap-4 pt-4">
                   {isAdmin && (
                     <button
-                      onClick={() => setIsAddOpen(true)}
+                      onClick={() => setIsAddSelectOpen(true)}
                       className="flex items-center gap-1 text-xs text-[#989898] active:scale-95"
                     >
                       <Plus size={13} />
@@ -865,6 +865,67 @@ export default function TeamDetail() {
           </div>
         </Card>
       </section>
+
+      {isAddSelectOpen && (
+        <div
+          onClick={() => setIsAddSelectOpen(false)}
+          className="fixed inset-0 z-[250] flex items-center justify-center bg-black/20 px-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="animate-modal-pop w-[400px] rounded-3xl bg-white px-6 py-6 sm:w-[460px]"
+          >
+            <h2 className="mb-4 text-xl font-bold text-[#2C2C2C]">
+              어떻게 일정을 추가할까요?
+            </h2>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddSelectOpen(false);
+                  setIsAddOpen(true);
+                }}
+                className="flex h-[100px] flex-col items-center justify-center rounded-2xl bg-[#F8F9FB] transition-all duration-150 active:scale-95"
+              >
+                <Plus
+                  size={20}
+                  strokeWidth={2.5}
+                  className="mb-2 rounded-full bg-[#EEF1F5] p-1 text-[#5E92F0]"
+                />
+                <p className="text-sm font-bold text-[#2C2C2C]">
+                  기본 일정 추가
+                </p>
+                <p className="mt-1 text-[11px] text-[#989898]">
+                  일정을 바로 생성할 수 있어요
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddSelectOpen(false);
+                  // TODO: 투표 생성 모달 열기
+                  // setIsVoteCreateOpen(true);
+                }}
+                className="flex h-[100px] flex-col items-center justify-center rounded-2xl bg-[#F8F9FB] transition-all duration-150 active:scale-95"
+              >
+                <Check
+                  size={20}
+                  strokeWidth={2.5}
+                  className="mb-2 rounded-full bg-[#EEF1F5] p-1 text-[#5E92F0]"
+                />
+                <p className="text-sm font-bold text-[#2C2C2C]">
+                  일정 투표 생성
+                </p>
+                <p className="mt-1 text-[11px] text-[#989898]">
+                  일정을 투표 후 생성할 수 있어요
+                </p>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isMobileDetailOpen && (
         <div

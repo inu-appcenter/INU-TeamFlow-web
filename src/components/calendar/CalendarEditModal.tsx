@@ -7,8 +7,9 @@ import { useState } from 'react';
 
 import CalendarDatePicker from './CalendarDatePicker';
 
-type RepeatType = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+type RepeatType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
+type ByDay = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
 
 interface CalendarEditModalProps {
   open: boolean;
@@ -19,6 +20,26 @@ interface CalendarEditModalProps {
 }
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
+
+const dayNumberToByDay: Record<number, ByDay> = {
+  0: 'SUN',
+  1: 'MON',
+  2: 'TUE',
+  3: 'WED',
+  4: 'THU',
+  5: 'FRI',
+  6: 'SAT',
+};
+
+const byDayToDayNumber: Record<ByDay, number> = {
+  SUN: 0,
+  MON: 1,
+  TUE: 2,
+  WED: 3,
+  THU: 4,
+  FRI: 5,
+  SAT: 6,
+};
 
 const getInitialScheduleType = (schedule: Schedule | null): ScheduleType => {
   if (!schedule) return 'NORMAL';
@@ -36,7 +57,10 @@ const getInitialForm = (schedule: Schedule | null) => ({
   title: schedule?.title ?? '',
   description: schedule?.description ?? '',
   startDate: schedule?.startAt.slice(0, 10) ?? '',
-  endDate: schedule?.endAt.slice(0, 10) ?? '',
+  endDate:
+    schedule?.recurrence?.untilAt?.slice(0, 10) ??
+    schedule?.endAt.slice(0, 10) ??
+    '',
   startTime: schedule?.startAt.slice(11, 16) ?? '09:00',
   endTime: schedule?.endAt.slice(11, 16) ?? '10:00',
   color: (schedule?.color ?? scheduleColors[0]) as ScheduleColor,
@@ -44,8 +68,8 @@ const getInitialForm = (schedule: Schedule | null) => ({
 });
 
 const getInitialRepeatDays = (schedule: Schedule | null) => {
-  if (schedule?.recurrence?.daysOfWeek) {
-    return schedule.recurrence.daysOfWeek;
+  if (schedule?.recurrence?.byDay) {
+    return schedule.recurrence.byDay.map((day) => byDayToDayNumber[day]);
   }
 
   if (schedule?.startAt) {
@@ -67,14 +91,17 @@ export default function CalendarEditModal({
   onDelete,
 }: CalendarEditModalProps) {
   const [isClosing, setIsClosing] = useState(false);
+  const [isColorOpen, setIsColorOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
   const [scheduleType, setScheduleType] = useState<ScheduleType>(
     getInitialScheduleType(schedule)
   );
-  const [isColorOpen, setIsColorOpen] = useState(false);
 
   const [repeatType, setRepeatType] = useState<RepeatType>(
-    (schedule?.recurrence?.frequency as RepeatType) ?? 'WEEKLY'
+    schedule?.recurrence?.freq ?? 'WEEKLY'
   );
+
   const [repeatDays, setRepeatDays] = useState<number[]>(
     getInitialRepeatDays(schedule)
   );
@@ -87,6 +114,7 @@ export default function CalendarEditModal({
     setTimeout(() => {
       setIsClosing(false);
       setIsColorOpen(false);
+      setIsDeleteConfirmOpen(false);
       onClose();
     }, 250);
   };
@@ -99,6 +127,10 @@ export default function CalendarEditModal({
       endDate: type === 'NORMAL' ? prev.startDate : prev.endDate,
       isAllDay: type === 'PERIOD' ? true : false,
     }));
+
+    if (type === 'REPEAT' && repeatDays.length === 0) {
+      setRepeatDays([new Date(form.startDate).getDay()]);
+    }
   };
 
   const handleSave = () => {
@@ -110,12 +142,12 @@ export default function CalendarEditModal({
       ? createDateTime(form.startDate, '00:00')
       : createDateTime(form.startDate, form.startTime);
 
-    const endAt = isAllDay
-      ? createDateTime(form.endDate, '23:59')
-      : createDateTime(
-          scheduleType === 'NORMAL' ? form.startDate : form.endDate,
-          form.endTime
-        );
+    const endAt =
+      isAllDay && scheduleType === 'PERIOD'
+        ? createDateTime(form.endDate, '23:59')
+        : isAllDay
+          ? createDateTime(form.startDate, '23:59')
+          : createDateTime(form.startDate, form.endTime);
 
     onEdit({
       ...schedule,
@@ -129,10 +161,18 @@ export default function CalendarEditModal({
       recurrence:
         scheduleType === 'REPEAT'
           ? {
-              frequency: repeatType,
-              interval: 1,
+              freq: repeatType,
+              intervalValue: 1,
+              seriesStartAt: startAt,
+              untilAt: form.endDate
+                ? createDateTime(form.endDate, '23:59')
+                : null,
+              occurrenceCount: null,
               ...(repeatType === 'WEEKLY' && {
-                daysOfWeek: repeatDays,
+                byDay: repeatDays.map((day) => dayNumberToByDay[day]),
+              }),
+              ...(repeatType === 'MONTHLY' && {
+                byMonthDay: Number(form.startDate.slice(8, 10)),
               }),
             }
           : null,
@@ -145,6 +185,7 @@ export default function CalendarEditModal({
     if (!schedule) return;
 
     onDelete(schedule.eventId);
+    setIsDeleteConfirmOpen(false);
     handleClose();
   };
 
@@ -152,6 +193,7 @@ export default function CalendarEditModal({
 
   return (
     <div
+      key={schedule.eventId}
       onClick={handleClose}
       className={`fixed inset-0 z-[300] flex items-end justify-center bg-black/10 transition-opacity duration-[250ms] ${
         isClosing ? 'opacity-0' : 'opacity-100'
@@ -291,6 +333,7 @@ export default function CalendarEditModal({
                   onChange={(e) => setRepeatType(e.target.value as RepeatType)}
                   className="bg-transparent text-[16px] font-semibold text-[#2C2C2C] transition-all duration-150 outline-none active:scale-95"
                 >
+                  <option value="DAILY">매일</option>
                   <option value="WEEKLY">매주</option>
                   <option value="MONTHLY">매월</option>
                   <option value="YEARLY">매년</option>
@@ -352,7 +395,7 @@ export default function CalendarEditModal({
               placeholder={
                 scheduleType === 'PERIOD'
                   ? '마지막 날짜를 선택해주세요'
-                  : '종료 날짜를 선택해주세요'
+                  : '반복 종료 날짜를 선택해주세요'
               }
               onChange={(date) =>
                 setForm((prev) => ({
@@ -406,7 +449,7 @@ export default function CalendarEditModal({
           <div className="mt-16 flex shrink-0 items-center justify-between">
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setIsDeleteConfirmOpen(true)}
               className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222]"
             >
               삭제
@@ -421,6 +464,41 @@ export default function CalendarEditModal({
             </button>
           </div>
         </div>
+
+        {isDeleteConfirmOpen && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 px-6"
+          >
+            <div className="w-full max-w-[320px] animate-[popup_0.18s_ease-out] rounded-3xl bg-white p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-[#2C2C2C]">
+                일정을 삭제할까요?
+              </h3>
+
+              <p className="mt-2 text-sm font-medium text-[#989898]">
+                삭제한 일정은 다시 복구할 수 없어요.
+              </p>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteConfirmOpen(false)}
+                  className="h-10 rounded-2xl bg-[#EEF1F5] px-5 text-sm font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+                >
+                  취소
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="h-10 rounded-2xl bg-[#E22222] px-5 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#CC1C1C] active:scale-95"
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

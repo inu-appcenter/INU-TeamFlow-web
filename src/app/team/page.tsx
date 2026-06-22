@@ -30,6 +30,8 @@ const categories = [
   { label: '공모전', value: 'CONTEST' },
   { label: '스터디', value: 'STUDY' },
   { label: '동아리', value: 'CLUB' },
+  { label: '프로젝트', value: 'PROJECT' },
+  { label: '기타', value: 'ETC' },
 ];
 
 export default function Team() {
@@ -67,7 +69,7 @@ export default function Team() {
                 <button
                   key={category.value}
                   onClick={() => setSelectedCategory(category.value)}
-                  className={`z-50 cursor-pointer px-6 pb-4 text-lg font-bold transition sm:text-xl ${
+                  className={`z-50 cursor-pointer px-4 pb-4 text-lg font-bold whitespace-nowrap transition sm:text-xl md:px-6 md:pb-4 ${
                     isActive
                       ? 'border-b-2 border-[#5E92F0] text-[#5E92F0]'
                       : 'text-[#CBD2DA] hover:text-[#8E98A3]'
