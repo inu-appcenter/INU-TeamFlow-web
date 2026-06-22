@@ -323,14 +323,14 @@ export default function CalendarPage() {
           <div className="flex gap-2">
             <button
               onClick={handlePrevMonth}
-              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#E8ECF0] text-[#2c2c2c]/40"
+              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#FAFAFA] text-[#2c2c2c]/40"
             >
               <ChevronLeft size={18} />
             </button>
 
             <button
               onClick={handleNextMonth}
-              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#E8ECF0] text-[#2c2c2c]/40"
+              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#FAFAFA] text-[#2c2c2c]/40"
             >
               <ChevronRight size={18} />
             </button>
@@ -338,7 +338,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
-          <section className="flex h-full flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white py-2 pt-3 pl-2">
+          <section className="flex h-full flex-1 flex-col overflow-hidden rounded-2xl border-[0.8px] border-[#D6DDE5] bg-white py-2 pt-3 pl-2">
             <div className="grid shrink-0 grid-cols-7 pr-2.5 text-center text-[15px] text-[#D6DDE5]">
               {days.map((day) => (
                 <div key={day} className="mb-2">
@@ -446,7 +446,7 @@ export default function CalendarPage() {
                                   ? 'text-red-500'
                                   : isSaturday
                                     ? 'text-blue-500'
-                                    : 'text-[#5C5C5C]'
+                                    : 'text-[#2c2c2c]'
                           }`}
                         >
                           {item.date}
@@ -530,7 +530,7 @@ export default function CalendarPage() {
             </div>
           </section>
 
-          <aside className="hidden h-full w-[365px] flex-col rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6 lg:flex">
+          <aside className="hidden h-full w-[365px] flex-col rounded-2xl border-[0.8] border-[#D6DDE5] bg-white px-6 py-6 lg:flex">
             <div className="mb-4 flex shrink-0 items-center justify-between">
               <h2 className="text-[24px] font-bold text-[#2C2C2C]">
                 {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 (

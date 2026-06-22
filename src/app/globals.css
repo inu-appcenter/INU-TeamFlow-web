@@ -81,3 +81,15 @@
     animation: modal-pop 0.18s ease-out;
   }
 }
+
+@keyframes popup {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

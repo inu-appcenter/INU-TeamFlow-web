@@ -67,7 +67,7 @@ export default function TeamVotePage() {
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6">
+          <div className="flex-1 overflow-y-auto px-6 sm:px-8">
             <section className="flex flex-col">
               {teamVotes.map((vote) => {
                 const completed = vote.completedVoterNameList.length;
@@ -84,7 +84,7 @@ export default function TeamVotePage() {
                     onClick={() =>
                       router.push(`/team/${teamId}/vote/${vote.voteId}`)
                     }
-                    className="border-b-[0.5px] border-[#D6DDE5] py-5 text-left transition-all duration-200 ease-in-out active:scale-[0.99]"
+                    className="border-b-[0.5px] border-[#D6DDE5] py-6 text-left transition-all duration-200 ease-in-out active:scale-[0.99]"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
