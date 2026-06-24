@@ -1,5 +1,4 @@
 'use client';
-
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
@@ -8,7 +7,6 @@ import InputField from '@/components/register/InputField';
 import { MESSAGES, SIGN_IN_TEXT } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { registerList } from '@/mocks/register';
-
 export default function SignIn() {
   const router = useRouter();
   const [username, setUsername] = useState('');
@@ -25,10 +23,10 @@ export default function SignIn() {
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4">
       <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5">
-        <Card className="flex flex-col overflow-hidden p-0">
+        <Card className="animate-modal-pop flex flex-col overflow-hidden p-0 transition-all duration-200">
           <button
-            onClick={() => router.back()}
-            className="mt-4 ml-2 w-7 cursor-pointer text-[#2C2C2C]"
+            onClick={() => router.push('/main')}
+            className="mt-4 ml-2 w-7 cursor-pointer text-[#2C2C2C] transition-all duration-150 active:scale-90"
           >
             <ChevronLeft
               size={24}
@@ -75,7 +73,7 @@ export default function SignIn() {
           </span>
           <button
             onClick={login}
-            className="relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2 text-[16px] text-white transition hover:bg-[#5C86EB]"
+            className="relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2 text-[16px] text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95"
           >
             {SIGN_IN_TEXT.TITLE}
           </button>
