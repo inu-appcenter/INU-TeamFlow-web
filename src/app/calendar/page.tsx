@@ -323,14 +323,14 @@ export default function CalendarPage() {
           <div className="flex gap-2">
             <button
               onClick={handlePrevMonth}
-              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#FAFAFA] text-[#2c2c2c]/40"
+              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2c2c2c]/40"
             >
               <ChevronLeft size={18} />
             </button>
 
             <button
               onClick={handleNextMonth}
-              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-[#FAFAFA] text-[#2c2c2c]/40"
+              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2c2c2c]/40"
             >
               <ChevronRight size={18} />
             </button>

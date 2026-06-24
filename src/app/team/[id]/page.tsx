@@ -3,6 +3,9 @@
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
 import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
 import CalendarEditModal from '@/components/calendar/CalendarEditModal';
+import VoteAddModal, {
+  type EventVoteCreateRequest,
+} from '@/components/vote/VoteAddModar';
 import Card from '@/components/main/Card';
 import { notices } from '@/mocks/notices';
 import { schedules as mockSchedules, type Schedule } from '@/mocks/schedules';
@@ -18,7 +21,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -45,6 +48,51 @@ const members = [
   '닉네임',
   '어쩌구저쩌구나어라널',
   'ㄴㅇㅓㅣ넝라ㅣ너이ㅓ일',
+];
+
+const teamMembers = [
+  {
+    teamMemberId: 1,
+    userId: 1,
+    name: '홍길동',
+    teamRole: 'OWNER',
+  },
+  {
+    teamMemberId: 2,
+    userId: 2,
+    name: '김철수',
+    teamRole: 'MEMBER',
+  },
+  {
+    teamMemberId: 3,
+    userId: 3,
+    name: '이영희',
+    teamRole: 'MEMBER',
+  },
+  {
+    teamMemberId: 4,
+    userId: 4,
+    name: '이영희',
+    teamRole: 'MEMBER',
+  },
+  {
+    teamMemberId: 5,
+    userId: 5,
+    name: '가나다',
+    teamRole: 'MEMBER',
+  },
+  {
+    teamMemberId: 6,
+    userId: 6,
+    name: '헤이',
+    teamRole: 'MEMBER',
+  },
+  {
+    teamMemberId: 7,
+    userId: 7,
+    name: '헬로',
+    teamRole: 'MEMBER',
+  },
 ];
 
 const users = [
@@ -245,6 +293,22 @@ export default function TeamDetail() {
   );
   const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isVoteAddOpen, setIsVoteAddOpen] = useState(false);
+
+  const [isMd, setIsMd] = useState(false);
+
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsMd(window.innerWidth >= 768);
+    };
+
+    checkScreen();
+
+    window.addEventListener('resize', checkScreen);
+
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+
   if (!team) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
@@ -308,11 +372,15 @@ export default function TeamDetail() {
   const filteredUsers = users.filter((user) => user.name.includes(keyword));
   const isAdmin = team.role === 'OWNER' || team.role === 'ADMIN';
 
+  const displayCount = isMd ? 4 : 3;
+
   const teamNotices = notices
     .filter((notice) => notice.teamId === teamId)
-    .slice(0, 3);
+    .slice(0, displayCount);
 
-  const teamVotes = votes.filter((vote) => vote.teamId === teamId).slice(0, 3);
+  const teamVotes = votes
+    .filter((vote) => vote.teamId === teamId)
+    .slice(0, displayCount);
 
   const handlePrevMonth = () => {
     const prev = new Date(year, month - 1, 1);
@@ -396,13 +464,21 @@ export default function TeamDetail() {
     setEditSchedule(null);
   };
 
+  const handleCreateVote = (request: EventVoteCreateRequest) => {
+    console.log('투표 생성 요청', request);
+
+    // TODO: API 연결
+
+    setIsVoteAddOpen(false);
+  };
+
   const DATE_HEADER_H = 28;
   const EVENT_H = 20;
   const EVENT_GAP = 4;
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-3xl flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
             className="flex h-[72px] items-center justify-between px-6"
@@ -425,7 +501,7 @@ export default function TeamDetail() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-            <section className="grid grid-cols-[140px_1fr] gap-6 sm:grid-cols-[150px_1fr_200px]">
+            <section className="grid grid-cols-[140px_1fr] gap-6 sm:grid-cols-[150px_1fr_200px] md:grid-cols-[150px_1fr_300px]">
               <div className="h-[140px] w-[140px] rounded-2xl bg-[#F6F8FA] sm:h-[150px] sm:w-[150px]">
                 {team.imageUrl && (
                   <img
@@ -441,7 +517,7 @@ export default function TeamDetail() {
                   {team.name}
                 </h1>
 
-                <p className="mt-2 text-sm text-[#989898]">
+                <p className="mt-2 text-sm text-[#989898] sm:text-base">
                   {team.description}
                 </p>
 
@@ -455,11 +531,11 @@ export default function TeamDetail() {
               </div>
 
               <div className="relative hidden flex-col gap-3 sm:block">
-                <div className="h-[150px] w-[200px] rounded-2xl border border-[#D6DDE5] bg-white pt-3">
+                <div className="h-[150px] w-[200px] rounded-2xl border-[0.8px] border-[#D6DDE5] bg-white pt-3 md:w-[300px]">
                   <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5]">
                     <div className="flex items-center gap-1.5 px-4 pb-2">
                       <Users size={15} />
-                      <h2 className="text-xs font-bold text-[#2C2C2C]">
+                      <h2 className="text-xs font-bold text-[#2C2C2C] md:text-[13px]">
                         멤버 목록
                       </h2>
                     </div>
@@ -467,9 +543,12 @@ export default function TeamDetail() {
                     {isAdmin && (
                       <button
                         onClick={() => setIsInviteOpen((prev) => !prev)}
-                        className="cursor-pointer px-3 pb-2 text-[9px] text-[#989898]"
+                        className="cursor-pointer px-3 pb-2 text-[9px] text-[#989898] md:text-[12px]"
                       >
-                        + 초대하기
+                        <span className="flex items-center gap-1">
+                          <Plus size={10} />
+                          초대하기
+                        </span>
                       </button>
                     )}
                   </div>
@@ -481,7 +560,7 @@ export default function TeamDetail() {
                     {members.map((member, index) => (
                       <span
                         key={`${member}-${index}`}
-                        className="rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[11px] text-[#6E7780]"
+                        className="rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[11px] text-[#6E7780] md:text-[12px]"
                       >
                         {member}
                       </span>
@@ -496,7 +575,7 @@ export default function TeamDetail() {
                       className="fixed inset-0 z-40"
                     />
 
-                    <div className="absolute top-[160px] left-0 z-50 max-h-[250px] w-[200px] rounded-2xl border border-[#D6DDE5] bg-white py-3">
+                    <div className="absolute top-[160px] left-0 z-50 max-h-[250px] w-[200px] rounded-2xl border-[0.8px] border-[#D6DDE5] bg-white py-3 md:w-[300px]">
                       <div className="mx-3 mb-3 flex items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-2 py-1.5">
                         <Search size={13} className="text-[#989898]" />
 
@@ -541,11 +620,11 @@ export default function TeamDetail() {
 
             <section className="mt-4 flex max-h-[535px] flex-col rounded-2xl bg-[#F8F9FB] py-2 md:mt-6">
               <div className="mx-4 flex items-center justify-between border-b-[0.5] border-[#D6DDE5] pb-2">
-                <h2 className="px-2 pt-4 text-xl font-bold text-[#2C2C2C]">
+                <h2 className="px-2 pt-3 text-2xl font-bold text-[#2C2C2C]">
                   {month + 1}월
                 </h2>
 
-                <div className="flex items-center gap-4 pt-4">
+                <div className="flex items-center gap-4 pt-2">
                   {isAdmin && (
                     <button
                       onClick={() => setIsAddSelectOpen(true)}
@@ -558,14 +637,14 @@ export default function TeamDetail() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handlePrevMonth}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEF1F5] text-[#B0B7BF] active:scale-90"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEF1F4] text-[#2c2c2c]/40 transition-all duration-150 active:scale-90"
                     >
                       <ChevronLeft size={17} />
                     </button>
 
                     <button
                       onClick={handleNextMonth}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEF1F5] text-[#B0B7BF] active:scale-90"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEF1F4] text-[#2c2c2c]/40 transition-all duration-150 active:scale-90"
                     >
                       <ChevronRight size={17} />
                     </button>
@@ -664,13 +743,13 @@ export default function TeamDetail() {
                             setSelectedDate(cellDate);
                             setIsMobileDetailOpen(true);
                           }}
-                          className={`relative flex flex-col items-center pb-2 text-[13px] transition-all duration-150 outline-none active:scale-95 ${
+                          className={`relative flex flex-col items-center pt-1 pb-2 text-[13px] transition-all duration-150 outline-none active:scale-95 ${
                             isSelected ? 'rounded-xl bg-white' : ''
                           }`}
                           style={{ minHeight: `${cellMinH}px` }}
                         >
                           <span
-                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[14px] ${
                               !isCurrentMonth
                                 ? 'text-[#D6DDE5]'
                                 : isToday
@@ -765,7 +844,7 @@ export default function TeamDetail() {
               </div>
             </section>
             <section className="gap-6 md:flex md:grid md:grid-cols-10">
-              <div className="col-span-4 mt-4 h-[300px] rounded-2xl bg-[#F8F9FB] px-6 md:mt-6 md:h-[400px]">
+              <div className="col-span-5 mt-4 h-[300px] rounded-2xl bg-[#F8F9FB] px-6 md:mt-6 md:h-[400px]">
                 <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] pt-6 pb-2 text-xl font-bold text-[#2c2c2c]">
                   <h1 className="text-xl font-bold">투표</h1>
 
@@ -788,7 +867,7 @@ export default function TeamDetail() {
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <h2 className="truncate text-[16px] font-semibold text-[#2C2C2C]">
+                          <h2 className="truncate text-[16px] font-semibold text-[#2C2C2C] md:text-[17px]">
                             {vote.title}
                           </h2>
 
@@ -803,13 +882,13 @@ export default function TeamDetail() {
                           </span>
                         </div>
 
-                        <p className="mt-1 line-clamp-1 text-xs text-[#989898]">
+                        <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
                           {vote.description}
                         </p>
                       </div>
 
-                      <p className="ml-4 shrink-0 text-[10px] text-[#989898] md:hidden">
-                        {vote.date}
+                      <p className="ml-4 shrink-0 text-xs text-[#989898] md:hidden">
+                        {vote.createdDate}
                       </p>
                     </button>
                   ))}
@@ -821,7 +900,7 @@ export default function TeamDetail() {
                   )}
                 </div>
               </div>
-              <div className="col-span-6 mt-4 h-[300px] rounded-2xl bg-[#F8F9FB] px-6 md:mt-6 md:h-[400px]">
+              <div className="col-span-5 mt-4 h-[300px] rounded-2xl bg-[#F8F9FB] px-6 md:mt-6 md:h-[400px]">
                 <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] pt-6 pb-2 text-xl font-bold text-[#2c2c2c]">
                   <h1 className="text-xl font-bold">공지사항</h1>
 
@@ -843,11 +922,11 @@ export default function TeamDetail() {
                       className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left transition"
                     >
                       <div className="min-w-0">
-                        <h2 className="truncate text-[16px] font-semibold text-[#2C2C2C]">
+                        <h2 className="truncate text-[16px] font-semibold text-[#2C2C2C] md:text-[17px]">
                           {notice.title}
                         </h2>
 
-                        <p className="mt-1 line-clamp-1 text-xs text-[#989898]">
+                        <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
                           {notice.content}
                         </p>
                       </div>
@@ -873,30 +952,30 @@ export default function TeamDetail() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-modal-pop w-[400px] rounded-3xl bg-white px-6 py-6 sm:w-[460px]"
+            className="animate-modal-pop w-[440px] rounded-3xl bg-white px-6 py-6 sm:w-[500px]"
           >
             <h2 className="mb-4 text-xl font-bold text-[#2C2C2C]">
               어떻게 일정을 추가할까요?
             </h2>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => {
                   setIsAddSelectOpen(false);
                   setIsAddOpen(true);
                 }}
-                className="flex h-[100px] flex-col items-center justify-center rounded-2xl bg-[#F8F9FB] transition-all duration-150 active:scale-95"
+                className="flex h-[100px] flex-col items-center justify-center rounded-2xl bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:h-[120px]"
               >
                 <Plus
-                  size={20}
+                  size={24}
                   strokeWidth={2.5}
                   className="mb-2 rounded-full bg-[#EEF1F5] p-1 text-[#5E92F0]"
                 />
-                <p className="text-sm font-bold text-[#2C2C2C]">
+                <p className="text-base font-bold text-[#2C2C2C] sm:text-[18px]">
                   기본 일정 추가
                 </p>
-                <p className="mt-1 text-[11px] text-[#989898]">
+                <p className="mt-1 text-[11px] text-[#989898] sm:text-[13px]">
                   일정을 바로 생성할 수 있어요
                 </p>
               </button>
@@ -905,20 +984,19 @@ export default function TeamDetail() {
                 type="button"
                 onClick={() => {
                   setIsAddSelectOpen(false);
-                  // TODO: 투표 생성 모달 열기
-                  // setIsVoteCreateOpen(true);
+                  setIsVoteAddOpen(true);
                 }}
-                className="flex h-[100px] flex-col items-center justify-center rounded-2xl bg-[#F8F9FB] transition-all duration-150 active:scale-95"
+                className="flex h-[100px] flex-col items-center justify-center rounded-2xl bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:h-[120px]"
               >
                 <Check
-                  size={20}
+                  size={24}
                   strokeWidth={2.5}
                   className="mb-2 rounded-full bg-[#EEF1F5] p-1 text-[#5E92F0]"
                 />
-                <p className="text-sm font-bold text-[#2C2C2C]">
+                <p className="text-base font-bold text-[#2C2C2C] sm:text-[18px]">
                   일정 투표 생성
                 </p>
-                <p className="mt-1 text-[11px] text-[#989898]">
+                <p className="mt-1 text-[11px] text-[#989898] sm:text-[13px]">
                   일정을 투표 후 생성할 수 있어요
                 </p>
               </button>
@@ -1039,6 +1117,15 @@ export default function TeamDetail() {
           onClose={() => setEditSchedule(null)}
           onEdit={handleEditSchedule}
           onDelete={handleDeleteSchedule}
+        />
+      )}
+
+      {isAdmin && (
+        <VoteAddModal
+          open={isVoteAddOpen}
+          onClose={() => setIsVoteAddOpen(false)}
+          onCreate={handleCreateVote}
+          members={teamMembers}
         />
       )}
     </main>

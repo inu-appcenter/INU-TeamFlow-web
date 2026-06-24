@@ -2,7 +2,7 @@
 
 import { scheduleColors, type ScheduleColor } from '@/constants/scheduleColor';
 import { Repeat, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import CalendarDatePicker from './CalendarDatePicker';
 
@@ -54,6 +54,18 @@ export default function CalendarAddModal({
   selectedDate,
   isEdit = false,
 }: CalendarAddModalProps) {
+  useEffect(() => {
+    if (!open) return;
+
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, [open]);
+
+  const colorPickerRef = useRef<HTMLDivElement>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [scheduleType, setScheduleType] = useState<ScheduleType>('NORMAL');
   const [isColorOpen, setIsColorOpen] = useState(false);
@@ -71,6 +83,22 @@ export default function CalendarAddModal({
       setErrorMessage('');
     }, 1800);
   };
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(e.target as Node)
+      ) {
+        setIsColorOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   interface ScheduleForm {
     title: string;
@@ -230,7 +258,7 @@ export default function CalendarAddModal({
           <X size={24} />
         </button>
 
-        <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto pb-2">
+        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pb-2">
           <div className="mb-3 flex gap-3">
             <input
               type="text"
@@ -246,11 +274,11 @@ export default function CalendarAddModal({
               className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50 active:scale-95"
             />
 
-            <div className="relative shrink-0">
+            <div ref={colorPickerRef} className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => setIsColorOpen((prev) => !prev)}
-                className="flex h-[55px] w-[100px] items-center justify-center gap-2 rounded-2xl bg-[#F6F8FA] text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-90"
+                className="flex h-[55px] w-[100px] items-center justify-center gap-2 rounded-2xl bg-[#F6F8FA] text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
               >
                 <span
                   className="h-6 w-6 rounded-full"
@@ -354,7 +382,7 @@ export default function CalendarAddModal({
                     setRepeatType(e.target.value as RepeatType);
                     setErrorMessage('');
                   }}
-                  className="active:scale-95bg-transparent text-[16px] font-semibold text-[#2C2C2C] transition-all duration-150 outline-none"
+                  className="bg-transparent text-[16px] font-semibold text-[#2C2C2C] transition-all duration-150 outline-none active:scale-95"
                 >
                   <option value="WEEKLY">매주</option>
                   <option value="MONTHLY">매월</option>
@@ -379,7 +407,7 @@ export default function CalendarAddModal({
                           );
                           setErrorMessage('');
                         }}
-                        className={`flex h-12 w-12 items-center justify-center rounded-full text-[16px] font-semibold transition-all duration-150 outline-none active:scale-90 sm:h-15 sm:w-15 ${
+                        className={`flex h-12 w-12 items-center justify-center rounded-full text-[16px] font-semibold transition-all duration-150 outline-none active:scale-95 sm:h-15 sm:w-15 ${
                           isSelected
                             ? 'bg-[#5E92F0] text-white'
                             : 'bg-[#F6F8FA] text-[#2C2C2C]'
@@ -493,30 +521,29 @@ export default function CalendarAddModal({
             }}
             className="h-[110px] w-full resize-none rounded-2xl bg-[#F6F8FA] px-6 py-4 text-[16px] font-semibold text-[#2C2C2C] outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50"
           />
-
-          <div
-            className={`mt-16 flex shrink-0 items-center ${
-              isEdit ? 'justify-between' : 'justify-end'
-            }`}
-          >
-            {isEdit && (
-              <button
-                type="button"
-                onClick={handleClose}
-                className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222]"
-              >
-                삭제
-              </button>
-            )}
-
+        </div>
+        <div
+          className={`mt-6 flex shrink-0 items-center ${
+            isEdit ? 'justify-between' : 'justify-end'
+          }`}
+        >
+          {isEdit && (
             <button
               type="button"
-              onClick={handleSave}
-              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C]"
+              onClick={handleClose}
+              className="mb-16 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
             >
-              저장
+              삭제
             </button>
-          </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleSave}
+            className="mb-16 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+          >
+            저장
+          </button>
         </div>
       </div>
     </div>

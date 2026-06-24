@@ -64,7 +64,7 @@ export default function RecruitmentDetail() {
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-3xl flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div className="flex h-16 items-center justify-between bg-[#D6DDE5] px-6 sm:h-18">
             <button

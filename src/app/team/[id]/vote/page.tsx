@@ -41,7 +41,7 @@ export default function TeamVotePage() {
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-3xl flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
             className="flex h-[72px] items-center justify-between px-6"
@@ -87,8 +87,8 @@ export default function TeamVotePage() {
                     className="border-b-[0.5px] border-[#D6DDE5] py-6 text-left transition-all duration-200 ease-in-out active:scale-[0.99]"
                   >
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h2 className="truncate text-[17px] font-semibold text-[#2C2C2C]">
+                      <div className="flex items-center gap-3">
+                        <h2 className="truncate text-[19px] font-semibold text-[#2C2C2C]">
                           {vote.title}
                         </h2>
 
@@ -107,7 +107,7 @@ export default function TeamVotePage() {
                           {vote.description}
                         </p>
                         <p className="mt-1 shrink-0 text-xs text-[#989898]">
-                          {vote.date}
+                          {vote.createdDate}
                         </p>
                       </div>
                     </div>
