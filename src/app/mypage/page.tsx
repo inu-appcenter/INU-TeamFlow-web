@@ -1,43 +1,68 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
-import ProfileMenu from '@/components/mypage/ProfileMenu';
 import { colleges } from '@/constants/departments';
-import { useState } from 'react';
-import { Check, Vote, SquarePen, UserRoundPlus, Pen } from 'lucide-react';
+import { profile } from '@/mocks/profile';
+
+import {
+  Check,
+  Vote,
+  SquarePen,
+  UserRoundPlus,
+  Pen,
+  Camera,
+  LogOut,
+  ChevronLeft,
+} from 'lucide-react';
+
+interface Department {
+  value: string;
+  name: string;
+  note?: string;
+}
 
 interface College {
   name: string;
   id: string;
-  departments: string[];
+  departments: Department[];
 }
 
 const menuItems = [
-  { icon: Vote, title: '내가 작성한 글', path: '/mypage/mypostpage' },
-  { icon: SquarePen, title: '진행중인 투표', path: '/votes' },
-  { icon: UserRoundPlus, title: '초대 이력', path: '/history' },
+  { icon: Vote, title: '내가 작성한 글', path: '/mypage/mypost' },
+  { icon: SquarePen, title: '진행중인 투표', path: '/mypage/votes' },
+  { icon: UserRoundPlus, title: '초대 이력', path: '/mypage/invitations' },
 ];
 
 export default function MyPage() {
-  const [selectedCollege, setSelectedCollege] = useState('it');
+  const router = useRouter();
+
+  const [profileData, setProfileData] = useState(profile);
   const [modify, setModify] = useState(false);
-  const [profileImage, setProfileImage] = useState(
-    'https://images.unsplash.com/photo-1777047023536-8e47688b77f9?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-  );
-  useState(profileImage);
-  const [userName, setUserName] = useState('hong123');
+
   const [password, setPassword] = useState('');
   const [checkPassword, setCheckPassword] = useState('');
-  const [name, setName] = useState('홍길동');
-  const [department, setDepartment] = useState('컴퓨터공학부');
-  const [authentication, setAuthentication] = useState(false);
-  const [editProfileImage, setEditProfileImage] = useState(profileImage);
-  const [editName, setEditName] = useState(name);
-  const [editUserName, setEditUserName] = useState(userName);
-  const [editCollege, setEditCollege] = useState(selectedCollege);
-  const [editDepartment, setEditDepartment] = useState(department);
-  const CheckPassword = () => {
+
+  const [editProfileImage, setEditProfileImage] = useState(
+    profile.profileImage
+  );
+  const [editName, setEditName] = useState(profile.name);
+  const [editUserName, setEditUserName] = useState(profile.userName);
+  const [editCollege, setEditCollege] = useState(profile.college);
+  const [editDepartment, setEditDepartment] = useState(profile.department);
+
+  const currentCollege = colleges.find(
+    (college) => college.id === profileData.college
+  );
+
+  const editCurrentCollege = colleges.find(
+    (college) => college.id === editCollege
+  );
+
+  const checkPasswordValid = () => {
     if (!password && !checkPassword) return true;
 
     if (password !== checkPassword) {
@@ -47,235 +72,307 @@ export default function MyPage() {
 
     return true;
   };
-  const currentCollege = colleges.find(
-    (college) => college.id === selectedCollege
-  );
 
-  const editCurrentCollege = colleges.find(
-    (college) => college.id === editCollege
-  );
+  const startModify = () => {
+    setEditProfileImage(profileData.profileImage);
+    setEditName(profileData.name);
+    setEditUserName(profileData.userName);
+    setEditCollege(profileData.college);
+    setEditDepartment(profileData.department);
+    setModify(true);
+  };
+
+  const saveModify = () => {
+    if (!checkPasswordValid()) return;
+
+    setProfileData((prev) => ({
+      ...prev,
+      profileImage: editProfileImage,
+      name: editName,
+      userName: editUserName,
+      college: editCollege,
+      department: editDepartment,
+    }));
+
+    setPassword('');
+    setCheckPassword('');
+    setModify(false);
+
+    console.log('본인 정보 수정 요청');
+  };
 
   return (
-    <main className="relative min-h-screen w-[90%] place-self-center pt-8 sm:flex sm:items-start sm:justify-center sm:gap-[10%]">
+    <main className="min-h-screen px-3 py-6 pb-28 sm:px-6 sm:pt-10">
       <NotificationButton />
 
-      {modify ? (
-        //하드코딩 수정하기
-        <span className="sm:mb-30 sm:pt-30">
-          <div className="relative h-32 w-32 sm:h-50 sm:w-50">
-            <img
-              className="h-32 w-32 rounded-[50%] object-cover sm:h-50 sm:w-50"
-              src="https://images.unsplash.com/photo-1777047023536-8e47688b77f9?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            />
-
-            {authentication ? (
-              <span className="absolute right-0 bottom-0 flex h-7 w-7 translate-x-0 translate-y-1 items-center justify-center rounded-full bg-[#A7ECA7] text-[#2C2C2C] shadow-md sm:-translate-x-2 sm:-translate-y-2">
-                <Check size={20} />
-              </span>
-            ) : (
-              <button
-                onClick={() => console.log('학교 인증 요청')}
-                className="absolute right-0 bottom-0 flex h-7 w-32 translate-x-[80%] translate-y-1 cursor-pointer items-center justify-center rounded-full bg-[#F67F8F] text-[#FFFFFF] shadow-md sm:translate-x-[60%] sm:-translate-y-2"
-              >
-                학교 인증하기
-              </button>
-            )}
-          </div>
+      <header className="mx-auto mt-10 mb-5 flex max-w-[1180px] items-center justify-between px-1">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              router.push('/main');
+            }}
+            className="cursor-pointer text-[#2C2C2C] transition-all duration-150 active:scale-90"
+          >
+            <ChevronLeft size={28} strokeWidth={2.5} />
+          </button>
 
           <div>
-            <span className="mt-3 flex justify-between whitespace-nowrap">
-              <input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="이름"
-                className="flex w-[50%] items-center gap-1 place-self-center rounded-xl border border-[#D6DDE5] bg-white p-1 pl-4 text-[#2C2C2C] sm:mb-1 sm:w-50"
+            <h1 className="text-[26px] font-bold text-[#2C2C2C]">마이페이지</h1>
+            <p className="mt-1 text-[14px] text-[#989898]">
+              내 프로필과 활동 정보를 확인해요
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => console.log('로그아웃')}
+          className="flex cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-90"
+        >
+          <LogOut size={14} />
+          로그아웃
+        </button>
+      </header>
+
+      <section className="mx-auto grid max-w-[1180px] grid-cols-1 gap-5 lg:grid-cols-[450px_1fr]">
+        <section className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-7 transition-all duration-200 lg:min-h-[540px]">
+          <div className="flex h-full flex-col items-center justify-center">
+            <div className="relative h-36 w-36 transition-all duration-200 sm:h-44 sm:w-44">
+              <img
+                src={modify ? editProfileImage : profileData.profileImage}
+                alt="프로필 이미지"
+                className="h-full w-full rounded-full object-cover transition-all duration-200"
               />
 
-              <span className="flex gap-2 whitespace-nowrap">
+              {modify ? (
                 <button
-                  onClick={() => {
-                    if (!CheckPassword()) return;
-                    setName(editName);
-                    setUserName(editUserName);
-                    setSelectedCollege(editCollege);
-                    setDepartment(editDepartment);
-
-                    setModify(false);
-                    console.log('본인 정보 수정 요청');
-                  }}
-                  className="my-1 flex cursor-pointer items-center gap-1 rounded-xl bg-[#A7ECA7] px-2.5 py-2 text-[12px] font-medium text-[#2c2c2c] sm:hidden"
+                  onClick={() => console.log('프로필 이미지 수정')}
+                  className="absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#5E92F0] text-white shadow-md transition-all duration-150 active:scale-90"
                 >
-                  완료
+                  <Camera size={17} />
                 </button>
+              ) : profileData.authentication ? (
+                <span className="absolute right-1 bottom-1 flex h-9 w-9 items-center justify-center rounded-full bg-[#A7ECA7] text-[#2C2C2C] shadow-md">
+                  <Check size={21} />
+                </span>
+              ) : (
+                <button className="absolute -right-12 bottom-1 rounded-full bg-[#F67F8F] px-3 py-1.5 text-[12px] font-medium text-white shadow-md transition-all duration-150 active:scale-90">
+                  학교 인증
+                </button>
+              )}
+            </div>
+
+            {!modify ? (
+              <div className="animate-modal-pop flex w-full flex-col items-center">
+                <h2 className="mt-5 text-[24px] font-bold text-[#2C2C2C]">
+                  {profileData.name}
+                </h2>
+
+                <p className="mt-1 text-[18px] text-[#989898]">
+                  @{profileData.userName}
+                </p>
+
+                <div className="mt-3 flex flex-wrap justify-center gap-2 text-[16px] text-[#989898]">
+                  <span>{currentCollege?.name}</span>
+                  <span>·</span>
+                  <span>
+                    {
+                      currentCollege?.departments.find(
+                        (department) =>
+                          department.value === profileData.department
+                      )?.name
+                    }
+                  </span>
+                </div>
+
+                {profileData.authentication && (
+                  <p className="mt-1 text-[16px] text-[#989898]">
+                    {profileData.studentId}
+                  </p>
+                )}
+
+                <div className="mt-8 w-full rounded-2xl bg-[#FBFBFB] p-5 transition-all duration-150">
+                  <p className="text-[16px] font-medium text-[#2C2C2C]">
+                    프로필 정보
+                  </p>
+                  <p className="mt-1 text-[14px] text-[#989898]">
+                    이름, 아이디, 소속 정보를 수정할 수 있어요.
+                  </p>
+                </div>
 
                 <button
-                  onClick={() => setModify(false)}
-                  className="my-1 flex cursor-pointer items-center gap-1 rounded-xl bg-[#D6DDE5] px-2.5 py-2 text-[12px] font-medium text-[#2c2c2c] sm:hidden"
+                  onClick={startModify}
+                  className="mt-4 flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#D9DEE7] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95"
                 >
-                  취소
+                  <Pen size={12} />
+                  수정하기
                 </button>
-              </span>
-            </span>
+              </div>
+            ) : (
+              <div className="animate-modal-pop mt-6 w-full">
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="이름"
+                  className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0]"
+                />
 
-            <input
-              value={editUserName}
-              onChange={(e) => setEditUserName(e.target.value)}
-              className="flex w-full items-center gap-1 rounded-xl border border-[#D6DDE5] bg-white p-1 pl-4 text-[#2C2C2C] sm:w-50"
-              placeholder="아이디"
-            />
+                <input
+                  value={editUserName}
+                  onChange={(e) => setEditUserName(e.target.value)}
+                  placeholder="아이디"
+                  className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0]"
+                />
 
-            <div className="mt-1 flex gap-2 whitespace-nowrap">
-              <div className="relative mb-1 flex w-full flex-nowrap sm:flex-col sm:flex-wrap">
-                <select
-                  value={editCollege}
-                  onChange={(e) => {
-                    setEditCollege(e.target.value);
-                    setEditDepartment('');
-                  }}
-                  className="mr-1 flex w-full items-center gap-1 rounded-xl border border-[#D6DDE5] bg-white px-4 py-2 text-[#2C2C2C] sm:mr-0 sm:w-50"
-                >
-                  <option value="">단과대 선택</option>
-                  {colleges.map((college: College) => (
-                    <option key={college.id} value={college.id}>
-                      {college.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="mb-2 grid grid-cols-2 gap-2">
+                  <select
+                    value={editCollege}
+                    onChange={(e) => {
+                      setEditCollege(e.target.value);
+                      setEditDepartment('');
+                    }}
+                    className="min-w-0 rounded-xl border border-[#D6DDE5] bg-white px-3 py-2.5 text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0]"
+                  >
+                    <option value="">단과대 선택</option>
+                    {colleges.map((college: College) => (
+                      <option key={college.id} value={college.id}>
+                        {college.name}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={editDepartment}
-                  onChange={(e) => setEditDepartment(e.target.value)}
-                  className="ml-1 flex w-full items-center gap-1 rounded-xl border border-[#D6DDE5] bg-white px-4 py-2 text-[#2C2C2C] sm:mt-1 sm:ml-0 sm:w-50"
-                >
-                  <option value="">학과 선택</option>
-                  {editCurrentCollege?.departments.map((department) => (
-                    <option key={department} value={department}>
-                      {department}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={editDepartment}
+                    onChange={(e) => setEditDepartment(e.target.value)}
+                    className="min-w-0 rounded-xl border border-[#D6DDE5] bg-white px-3 py-2.5 text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0]"
+                  >
+                    <option value="">학과 선택</option>
+                    {editCurrentCollege?.departments.map((department) => (
+                      <option key={department.value} value={department.value}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type="password"
+                  placeholder="새 비밀번호"
+                  className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0]"
+                />
+
+                <input
+                  value={checkPassword}
+                  onChange={(e) => setCheckPassword(e.target.value)}
+                  type="password"
+                  placeholder="새 비밀번호 확인"
+                  className="mb-3 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0]"
+                />
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={saveModify}
+                    className="flex-1 cursor-pointer rounded-xl bg-[#A7ECA7] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95"
+                  >
+                    완료
+                  </button>
+
+                  <button
+                    onClick={() => setModify(false)}
+                    className="flex-1 cursor-pointer rounded-xl bg-[#D6DDE5] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-5">
+          <section className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-5 transition-all duration-200">
+            <h3 className="mb-5 text-[20px] font-bold text-[#2C2C2C]">
+              내 활동
+            </h3>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => router.push(item.path)}
+                    className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#FBFBFB] px-4 py-5 text-left text-[#2C2C2C] transition-all duration-150 active:scale-95"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
+                      <Icon size={18} />
+                    </span>
+
+                    <span className="text-[18px] font-normal">
+                      {item.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-5 transition-all duration-200">
+            <h3 className="text-[20px] font-bold text-[#2C2C2C]">계정 상태</h3>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-[#FBFBFB] p-5 transition-all duration-150 active:scale-95">
+                <p className="text-[16px] font-medium text-[#2C2C2C]">
+                  학교 인증
+                </p>
+                <p className="mt-1 text-[14px] text-[#989898]">
+                  {profileData.authentication
+                    ? '인증이 완료된 계정입니다.'
+                    : '아직 학교 인증이 필요합니다.'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-[#FBFBFB] p-5 transition-all duration-150 active:scale-95">
+                <p className="text-[16px] font-medium text-[#2C2C2C]">
+                  소속 정보
+                </p>
+                <p className="mt-1 text-[14px] text-[#989898]">
+                  {currentCollege?.name} ·{' '}
+                  {
+                    currentCollege?.departments.find(
+                      (department) =>
+                        department.value === profileData.department
+                    )?.name
+                  }
+                </p>
               </div>
             </div>
 
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="my-1 flex w-full items-center gap-1 rounded-xl border border-[#D6DDE5] bg-white p-1 pl-4 text-[#2C2C2C] sm:w-50"
-              placeholder="새 비밀번호"
-            />
-
-            <input
-              value={checkPassword}
-              onChange={(e) => setCheckPassword(e.target.value)}
-              className="my-1 flex w-full items-center gap-1 rounded-xl border border-[#D6DDE5] bg-white p-1 pl-4 text-[#2C2C2C] sm:w-50"
-              placeholder="새 비밀번호 확인"
-            />
-          </div>
-          <div className="hidden gap-2 whitespace-nowrap sm:flex">
-            <button
-              onClick={() => {
-                if (!CheckPassword()) return;
-
-                setName(editName);
-                setUserName(editUserName);
-                setSelectedCollege(editCollege);
-                setDepartment(editDepartment);
-
-                setModify(false);
-                console.log('본인 정보 수정 요청');
-              }}
-              className="my-1 flex cursor-pointer items-center gap-1 rounded-xl bg-[#A7ECA7] px-2.5 py-2 text-[12px] font-medium text-[#2c2c2c]"
-            >
-              완료
-            </button>
-
-            <button
-              onClick={() => setModify(false)}
-              className="my-1 flex cursor-pointer items-center gap-1 rounded-xl bg-[#D6DDE5] px-2.5 py-2 text-[12px] font-medium text-[#2c2c2c]"
-            >
-              취소
-            </button>
-          </div>
-        </span>
-      ) : (
-        //하드코딩 수정하기
-        <span className="sm:mb-50 sm:pt-50">
-          <div className="relative h-32 w-32 sm:h-50 sm:w-50">
-            <img
-              className="h-32 w-32 rounded-[50%] object-cover sm:h-50 sm:w-50"
-              src="https://images.unsplash.com/photo-1777047023536-8e47688b77f9?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            />
-
-            {authentication ? (
-              <span className="absolute right-0 bottom-0 flex h-7 w-7 translate-y-1 items-center justify-center rounded-full bg-[#A7ECA7] text-[#2C2C2C] shadow-md sm:-translate-x-2 sm:-translate-y-2">
-                <Check size={20} />
-              </span>
-            ) : (
+            {!profileData.authentication && (
               <button
-                onClick={() => console.log('학교 인증 기능')}
-                className="absolute right-0 bottom-0 flex h-7 w-32 translate-x-[80%] translate-y-1 cursor-pointer items-center justify-center rounded-full bg-[#F67F8F] text-[#FFFFFF] shadow-md sm:translate-x-[60%] sm:-translate-y-2"
+                onClick={() => router.push('/mypage/authentication')}
+                className="mt-4 w-full cursor-pointer rounded-xl bg-[#F67F8F] py-3 text-[12px] font-medium text-white transition-all duration-150 active:scale-95"
               >
-                학교 인증하기
+                학교 인증하러 가기
               </button>
             )}
-          </div>
-
-          <div>
-            <span className="mt-3 flex justify-between whitespace-nowrap">
-              <h1 className="text-[24px]">{name}</h1>
-
-              <button
-                onClick={() => {
-                  setEditName(name);
-                  setEditUserName(userName);
-                  setEditCollege(selectedCollege);
-                  setEditDepartment(department);
-                  setModify(true);
-                }}
-                className="flex cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-2.5 py-1.5 text-[12px] font-medium sm:hidden"
-              >
-                <Pen className="mx-1" size={12} /> 수정하기
-              </button>
-            </span>
-
-            <h2 className="text-[20px] text-[#989898] sm:w-50">@{userName}</h2>
-
-            <span className="my-1 flex gap-2 whitespace-nowrap sm:w-50 sm:wrap-break-word">
-              <h2 className="text-[16px] text-[#989898]">
-                {currentCollege?.name}
-              </h2>
-              <h2 className="text-[16px] text-[#989898]">{department}</h2>
-              {authentication ? (
-                <h2 className="text-[16px] text-[#989898]">202501399</h2>
-              ) : undefined}
-            </span>
+            {/* DEV ONLY */}
             <button
               onClick={() => {
-                setEditName(name);
-                setEditUserName(userName);
-                setEditCollege(selectedCollege);
-                setEditDepartment(department);
-                setModify(true);
+                setProfileData((prev) => ({
+                  ...prev,
+                  authentication: true,
+                }));
               }}
-              className="hidden cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-2.5 py-1.5 text-[12px] font-medium sm:flex"
+              className="fixed right-5 bottom-24 z-50 rounded-2xl bg-[#5E92F0] px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-150 active:scale-95"
             >
-              <Pen className="mx-1" size={12} /> 수정하기
+              임시 인증
             </button>
-          </div>
-        </span>
-      )}
-      <ProfileMenu items={menuItems} />
-
-      <button
-        onClick={() => console.log('로그아웃')}
-        className="ml-auto flex cursor-pointer text-[#989898] sm:absolute sm:top-11 sm:right-20"
-      >
-        로그아웃
-      </button>
-      {/* 
-      <button onClick={() => setAuthentication((prev) => !prev)}>
-        임시 인증 기능
-      </button> */}
+          </section>
+        </section>
+      </section>
 
       <BottomNav />
     </main>
