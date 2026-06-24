@@ -38,7 +38,7 @@ export default function TeamNotice() {
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 py-6 sm:px-6">
-      <header className="mx-auto mt-12 mb-4 flex max-w-3xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <header className="mx-auto mt-12 mb-4 flex max-w-[800px] flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}

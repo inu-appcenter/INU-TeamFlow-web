@@ -1,17 +1,13 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
-interface CalendarDatePickerProps {
-  value: string;
-  onChange: (date: string) => void;
-  placeholder?: string;
-
-  rangeStart?: string;
-  rangeEnd?: string;
+interface VoteDatePickerProps {
+  selectedDates: string[];
+  onChange: (dates: string[]) => void;
 
   minDate?: string;
 }
@@ -24,29 +20,16 @@ const formatDateKey = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
-export default function CalendarDatePicker({
-  value,
+export default function VoteDatePicker({
+  selectedDates,
   onChange,
-  placeholder,
-  rangeStart,
-  rangeEnd,
   minDate,
-}: CalendarDatePickerProps) {
-  const initialDate = value ? new Date(value) : new Date();
+}: VoteDatePickerProps) {
+  const initialDate =
+    selectedDates.length > 0 ? new Date(selectedDates[0]) : new Date();
 
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(initialDate);
-
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-
-  const dates = [
-    ...Array(firstDay).fill(null),
-    ...Array.from({ length: lastDate }, (_, i) => i + 1),
-  ];
   const pickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,23 +46,36 @@ export default function CalendarDatePicker({
     };
   }, []);
 
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  const dates = [
+    ...Array(firstDay).fill(null),
+    ...Array.from({ length: lastDate }, (_, i) => i + 1),
+  ];
+
   return (
     <div ref={pickerRef} className="relative mb-3">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`h-[55px] w-full rounded-2xl bg-[#F6F8FA] px-6 text-left text-[16px] font-semibold transition-all duration-200 outline-none active:scale-95 ${
-          value ? 'text-[#2C2C2C]' : 'text-[#2C2C2C]/50'
+        className={`min-h-[55px] w-full rounded-2xl bg-[#F6F8FA] px-6 py-4 text-left text-[16px] font-semibold transition-all duration-200 outline-none active:scale-95 ${
+          selectedDates.length > 0 ? 'text-[#2C2C2C]' : 'text-[#2C2C2C]/50'
         }`}
       >
-        {value || placeholder}
+        {selectedDates.length > 0
+          ? `${selectedDates.length}개의 날짜 선택됨`
+          : '투표 날짜를 선택해주세요'}
       </button>
 
       {isOpen && (
         <div className="absolute top-[60px] left-0 z-[120] w-full rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F8F9FB] p-3">
           <div className="mb-2 flex items-center justify-between px-2">
             <h3 className="text-[18px] font-bold text-[#2C2C2C]">
-              {month + 1}월
+              {year}년 {month + 1}월
             </h3>
 
             <div className="flex gap-2">
@@ -125,14 +121,10 @@ export default function CalendarDatePicker({
                 const isSunday = cellDate.getDay() === 0;
                 const isSaturday = cellDate.getDay() === 6;
 
-                const isSelected = value === dateKey;
+                const isSelected = selectedDates.includes(dateKey);
 
-                const isInRange =
-                  rangeStart &&
-                  rangeEnd &&
-                  dateKey >= rangeStart &&
-                  dateKey <= rangeEnd;
-                const isDisabled = minDate && dateKey < minDate;
+                const isDisabled = minDate !== undefined && dateKey < minDate;
+
                 return (
                   <button
                     key={date}
@@ -140,22 +132,24 @@ export default function CalendarDatePicker({
                     onClick={() => {
                       if (isDisabled) return;
 
-                      onChange(dateKey);
+                      if (isSelected) {
+                        onChange(selectedDates.filter((d) => d !== dateKey));
+                      } else {
+                        onChange([...selectedDates, dateKey]);
+                      }
                     }}
                     className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[18px] transition-all duration-150 active:scale-85 ${
                       isDisabled
                         ? 'cursor-not-allowed text-[#D6DDE5]'
                         : isSelected
                           ? 'bg-[#5E92F0] text-white'
-                          : isInRange
-                            ? 'bg-[#E8F1FF] text-[#5E92F0]'
-                            : isToday
-                              ? 'bg-[#EEF1F5] text-[#2C2C2C]'
-                              : isSunday
-                                ? 'text-red-500'
-                                : isSaturday
-                                  ? 'text-blue-500'
-                                  : 'text-[#2C2C2C]'
+                          : isToday
+                            ? 'bg-[#EEF1F5] text-[#2C2C2C]'
+                            : isSunday
+                              ? 'text-red-500'
+                              : isSaturday
+                                ? 'text-blue-500'
+                                : 'text-[#2C2C2C]'
                     }`}
                   >
                     {date}
@@ -163,6 +157,31 @@ export default function CalendarDatePicker({
                 );
               })}
             </div>
+
+            {selectedDates.length > 0 && (
+              <div className="mt-2 border-t-[0.2px] border-[#D6DDE5] px-2 pt-2">
+                <p className="mb-2 text-xs text-[#989898]">선택된 날짜</p>
+
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {selectedDates
+                    .slice()
+                    .sort()
+                    .map((date) => (
+                      <button
+                        key={date}
+                        type="button"
+                        onClick={() =>
+                          onChange(selectedDates.filter((d) => d !== date))
+                        }
+                        className="flex items-center gap-1 rounded-full bg-[#E8F1FF] py-1 pr-2 pl-3 text-xs font-medium text-[#5E92F0] transition active:scale-95"
+                      >
+                        <span>{date}</span>
+                        <X size={12} strokeWidth={2.5} />
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
