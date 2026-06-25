@@ -2,10 +2,19 @@
 
 import { useState } from 'react';
 
+type TimeSlot = {
+  slotId: number;
+  date: string;
+  startAt: string;
+  endAt: string;
+  participantCount: number;
+};
+
 type Props = {
   voteId: number;
   voteDates: string[];
   voteHours: number[];
+  voteSlots: TimeSlot[];
   isAllDay: boolean;
   isOpened: boolean;
   onSubmit?: (selected: number[]) => void;
@@ -15,6 +24,7 @@ export default function VoteForm({
   voteId,
   voteDates,
   voteHours,
+  voteSlots,
   isAllDay,
   isOpened,
   onSubmit,
@@ -29,17 +39,25 @@ export default function VoteForm({
     );
   };
 
+  const getSlot = (date: string, hour: number, minute: string) => {
+    if (isAllDay) {
+      return voteSlots.find((s) => s.date === date);
+    }
+    return voteSlots.find(
+      (s) =>
+        s.date === date &&
+        Number(s.startAt.slice(0, 2)) === hour &&
+        s.startAt.slice(3, 5) === minute
+    );
+  };
+
   const canSubmit = selectedSlots.length > 0 && isOpened;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-
     onSubmit?.(selectedSlots);
-
     console.log('voteId:', voteId);
-    console.log({
-      slotIdList: selectedSlots,
-    });
+    console.log({ slotIdList: selectedSlots });
   };
 
   return (
@@ -53,7 +71,6 @@ export default function VoteForm({
           }}
         >
           <div />
-
           {voteDates.map((date) => (
             <div key={date}>
               {Number(date.slice(5, 7))}월 {Number(date.slice(8, 10))}일
@@ -73,8 +90,8 @@ export default function VoteForm({
             {voteHours.map((hour) => (
               <div
                 key={hour}
-                className={`flex items-center justify-end pr-1 text-xs text-[#B0B0B0] ${
-                  isAllDay ? 'h-16' : 'h-5'
+                className={`flex items-start justify-end pt-[1px] pr-1 text-xs text-[#B0B0B0] ${
+                  isAllDay ? 'h-16' : 'h-[44px]'
                 }`}
               >
                 {isAllDay ? '종일' : hour}
@@ -86,25 +103,32 @@ export default function VoteForm({
           {voteDates.map((date, dateIndex) => (
             <div key={date} className="flex flex-col gap-1">
               {voteHours.map((hour, hourIndex) => {
-                // TODO: 백엔드에서 실제 slotId 내려주면 교체
-                const slotId = dateIndex * voteHours.length + hourIndex + 1;
+                const minutes = isAllDay ? ['00'] : ['00', '30'];
 
-                const isSelected = selectedSlots.includes(slotId);
+                return minutes.map((minute, minuteIndex) => {
+                  const slotId =
+                    (dateIndex * voteHours.length + hourIndex) *
+                      minutes.length +
+                    minuteIndex +
+                    1;
 
-                return (
-                  <button
-                    key={slotId}
-                    onClick={() => toggleSlot(slotId)}
-                    disabled={!isOpened}
-                    className={`cursor-pointer rounded-md transition-all duration-150 ease-in-out ${
-                      isAllDay ? 'h-16' : 'h-5'
-                    } ${isSelected ? 'bg-[#5E92F0]' : 'bg-[#F1F4F8]'} ${
-                      isOpened
-                        ? 'active:scale-95 active:opacity-80'
-                        : 'cursor-not-allowed opacity-40'
-                    }`}
-                  />
-                );
+                  const isSelected = selectedSlots.includes(slotId);
+
+                  return (
+                    <button
+                      key={slotId}
+                      onClick={() => toggleSlot(slotId)}
+                      disabled={!isOpened}
+                      className={`cursor-pointer rounded-md transition-all duration-150 ease-in-out ${
+                        isAllDay ? 'h-16' : 'h-5'
+                      } ${isSelected ? 'bg-[#5E92F0]' : 'bg-[#F1F4F8]'} ${
+                        isOpened
+                          ? 'active:scale-95 active:opacity-80'
+                          : 'cursor-not-allowed opacity-40'
+                      }`}
+                    />
+                  );
+                });
               })}
             </div>
           ))}

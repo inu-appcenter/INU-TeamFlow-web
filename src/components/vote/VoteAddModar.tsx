@@ -536,7 +536,9 @@ export default function VoteAddModal({
                     <p className="mb-0.5 text-[12px] text-[#B0B0B0] uppercase">
                       제목
                     </p>
-                    <p className="text-[18px] text-[#2C2C2C]">{form.title}</p>
+                    <p className="text-[18px] font-medium text-[#2C2C2C]">
+                      {form.title}
+                    </p>
                   </div>
                 </div>
                 {form.description && (
