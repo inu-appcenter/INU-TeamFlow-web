@@ -263,14 +263,14 @@ export default function VoteResult({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
           >
             <h3 className="text-center text-xl font-bold text-[#2C2C2C]">
               일정을 확정하시겠습니까?
             </h3>
 
             <p className="mt-2 text-center text-sm leading-6 text-[#989898]">
-              생성 후에도 일정 수정은 가능해요
+              생성 후에도 일정 수정이 가능해요
             </p>
 
             <div className="mt-4 flex gap-3">

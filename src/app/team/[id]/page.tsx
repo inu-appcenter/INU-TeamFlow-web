@@ -502,13 +502,23 @@ export default function TeamDetail() {
 
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <section className="grid grid-cols-[140px_1fr] gap-6 sm:grid-cols-[150px_1fr_200px] md:grid-cols-[150px_1fr_300px]">
-              <div className="h-[140px] w-[140px] rounded-2xl bg-[#F6F8FA] sm:h-[150px] sm:w-[150px]">
+              <div className="relative h-[140px] w-[140px] rounded-2xl bg-[#F6F8FA] sm:h-[150px] sm:w-[150px]">
                 {team.imageUrl && (
                   <img
                     src={team.imageUrl}
                     alt={team.name}
                     className="h-full w-full rounded-2xl object-cover"
                   />
+                )}
+
+                {/* 수정 버튼 */}
+                {isAdmin && (
+                  <button
+                    onClick={() => router.push(`/team/${teamId}/edit`)}
+                    className="absolute top-3 right-3 rounded-full bg-[#989898]/60 px-3 py-1 text-[11px] text-white backdrop-blur hover:bg-[#989898]/70 active:scale-95"
+                  >
+                    수정
+                  </button>
                 )}
               </div>
 
@@ -517,16 +527,49 @@ export default function TeamDetail() {
                   {team.name}
                 </h1>
 
-                <p className="mt-2 text-sm text-[#989898] sm:text-base">
-                  {team.description}
-                </p>
-
+                <div className="mt-2 h-[38px]">
+                  <p
+                    className="text-sm text-[#989898]"
+                    style={{
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {team.description}
+                  </p>
+                </div>
                 <p className="mt-3 text-sm text-[#989898]">
-                  링크 : {team.link || '-'}
+                  링크 :
+                  {team.link ? (
+                    <a
+                      href={team.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 inline-block max-w-[210px] truncate align-bottom text-[#5E92F0] underline"
+                    >
+                      {team.link}
+                    </a>
+                  ) : (
+                    ' -'
+                  )}
                 </p>
 
                 <p className="mt-1 text-sm text-[#989898]">
-                  SNS : {team.sns || '-'}
+                  SNS :
+                  {team.sns ? (
+                    <a
+                      href={team.sns}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 inline-block max-w-[210px] truncate align-bottom text-[#5E92F0] underline"
+                    >
+                      {team.sns}
+                    </a>
+                  ) : (
+                    ' -'
+                  )}
                 </p>
               </div>
 
@@ -894,7 +937,7 @@ export default function TeamDetail() {
                   ))}
 
                   {teamVotes.length === 0 && (
-                    <div className="flex h-[220px] items-center justify-center text-sm text-[#989898]">
+                    <div className="flex h-[100px] items-center justify-center text-sm text-[#989898]">
                       등록된 투표가 없습니다.
                     </div>
                   )}
@@ -934,7 +977,7 @@ export default function TeamDetail() {
                   ))}
 
                   {teamNotices.length === 0 && (
-                    <div className="flex h-[220px] items-center justify-center text-sm text-[#989898]">
+                    <div className="flex h-[100px] items-center justify-center text-sm text-[#989898]">
                       등록된 공지사항이 없습니다.
                     </div>
                   )}

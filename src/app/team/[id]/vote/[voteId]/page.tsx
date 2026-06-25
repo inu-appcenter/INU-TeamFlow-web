@@ -51,6 +51,7 @@ export default function VoteDetailPage() {
       </main>
     );
   }
+  const isAdmin = team.role === 'OWNER' || team.role === 'ADMIN';
 
   const voteSlots = eventVoteTimeSlots.filter((slot) => slot.voteId === voteId);
   const voteDates = vote.dates;
@@ -137,6 +138,7 @@ export default function VoteDetailPage() {
                   voteId={voteId}
                   voteDates={voteDates}
                   voteHours={voteHours}
+                  voteSlots={voteSlots}
                   isAllDay={vote.isAllDay}
                   isOpened={vote.isOpened}
                   onSubmit={() => setIsVoting(false)}
@@ -274,8 +276,8 @@ export default function VoteDetailPage() {
                               {voteHours.map((hour) => (
                                 <div
                                   key={hour}
-                                  className={`flex items-center justify-end pr-1 text-xs text-[#B0B0B0] ${
-                                    vote.isAllDay ? 'h-16' : 'h-5'
+                                  className={`flex items-start justify-end pt-[1px] pr-1 text-xs text-[#B0B0B0] ${
+                                    vote.isAllDay ? 'h-16' : 'h-[44px]'
                                   }`}
                                 >
                                   {vote.isAllDay ? '종일' : hour}
@@ -287,21 +289,35 @@ export default function VoteDetailPage() {
                             {voteDates.map((date) => (
                               <div key={date} className="flex flex-col gap-1">
                                 {voteHours.map((hour) => {
-                                  const slot = getSlot(date, hour);
+                                  const slots = vote.isAllDay
+                                    ? ['00']
+                                    : ['00', '30'];
 
-                                  return (
-                                    <button
-                                      key={`${date}-${hour}`}
-                                      disabled={!slot || !vote.isOpened}
-                                      className={`rounded-md transition-all duration-200 ${
-                                        vote.isAllDay ? 'h-16' : 'h-5'
-                                      } ${
-                                        slot
-                                          ? getSlotColor(slot.participantCount)
-                                          : 'bg-[#F1F4F8]'
-                                      }`}
-                                    />
-                                  );
+                                  return slots.map((minute) => {
+                                    const slot = voteSlots.find(
+                                      (s) =>
+                                        s.date === date &&
+                                        Number(s.startAt.slice(0, 2)) ===
+                                          hour &&
+                                        s.startAt.slice(3, 5) === minute
+                                    );
+
+                                    return (
+                                      <button
+                                        key={`${date}-${hour}-${minute}`}
+                                        disabled={!slot || !vote.isOpened}
+                                        className={`rounded-md transition-all duration-200 ${
+                                          vote.isAllDay ? 'h-16' : 'h-5'
+                                        } ${
+                                          slot
+                                            ? getSlotColor(
+                                                slot.participantCount
+                                              )
+                                            : 'bg-[#F1F4F8]'
+                                        }`}
+                                      />
+                                    );
+                                  });
                                 })}
                               </div>
                             ))}
@@ -324,7 +340,7 @@ export default function VoteDetailPage() {
                       </button>
                     </div>
 
-                    <div className="mb-16 flex flex-col items-center gap-3">
+                    <div className="mb-20 flex flex-col items-center gap-3">
                       <button
                         onClick={() => vote.isOpened && setIsVoting(true)}
                         disabled={!vote.isOpened}
@@ -338,7 +354,7 @@ export default function VoteDetailPage() {
                       </button>
 
                       {/* 관리자만 */}
-                      {true && (
+                      {isAdmin && (
                         <button
                           onClick={() => setIsSelectingResult(true)}
                           className="cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#EEF1F5] px-4 py-2 font-semibold text-[#5E92F0]"

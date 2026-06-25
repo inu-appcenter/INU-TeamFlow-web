@@ -55,7 +55,10 @@ export default function Team() {
         <div className="mb-3 flex items-end justify-between pl-4">
           <h1 className="text-2xl font-bold text-[#2C2C2C]">나의 팀 목록</h1>
 
-          <button className="z-50 flex cursor-pointer items-center gap-2 rounded-xl bg-[#5E92F0] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#4C82E5]">
+          <button
+            onClick={() => router.push('/team/create')}
+            className="z-50 flex cursor-pointer items-center gap-2 rounded-xl bg-[#5E92F0] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#4C82E5]"
+          >
             <Plus size={18} />팀 생성하기
           </button>
         </div>
