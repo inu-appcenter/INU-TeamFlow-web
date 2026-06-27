@@ -1,7 +1,11 @@
 'use client';
 
-import { scheduleColors, type ScheduleColor } from '@/constants/scheduleColor';
-import type { Schedule } from '@/mocks/schedules';
+import {
+  SCHEDULE_COLORS,
+  EVENT_COLOR_MAP,
+  type ScheduleColor,
+} from '@/constants/scheduleColor';
+import type { Schedule } from '@/types/event';
 import { Repeat, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -40,6 +44,7 @@ const byDayToDayNumber: Record<ByDay, number> = {
   FRI: 5,
   SAT: 6,
 };
+const defaultColor: ScheduleColor = 'SUN';
 
 const getInitialScheduleType = (schedule: Schedule | null): ScheduleType => {
   if (!schedule) return 'NORMAL';
@@ -63,13 +68,15 @@ const getInitialForm = (schedule: Schedule | null) => ({
     '',
   startTime: schedule?.startAt.slice(11, 16) ?? '09:00',
   endTime: schedule?.endAt.slice(11, 16) ?? '10:00',
-  color: (schedule?.color ?? scheduleColors[0]) as ScheduleColor,
+  color: schedule?.color ?? defaultColor,
   isAllDay: schedule?.isAllDay ?? false,
 });
 
 const getInitialRepeatDays = (schedule: Schedule | null) => {
   if (schedule?.recurrence?.byDay) {
-    return schedule.recurrence.byDay.map((day) => byDayToDayNumber[day]);
+    return schedule.recurrence.byDay.map(
+      (day) => byDayToDayNumber[day as ByDay]
+    );
   }
 
   if (schedule?.startAt) {
@@ -163,17 +170,19 @@ export default function CalendarEditModal({
           ? {
               freq: repeatType,
               intervalValue: 1,
+              byDay:
+                repeatType === 'WEEKLY'
+                  ? repeatDays.map((day) => dayNumberToByDay[day] as string)
+                  : null,
+              byMonthDay:
+                repeatType === 'MONTHLY'
+                  ? Number(form.startDate.slice(8, 10))
+                  : null,
               seriesStartAt: startAt,
               untilAt: form.endDate
                 ? createDateTime(form.endDate, '23:59')
                 : null,
               occurrenceCount: null,
-              ...(repeatType === 'WEEKLY' && {
-                byDay: repeatDays.map((day) => dayNumberToByDay[day]),
-              }),
-              ...(repeatType === 'MONTHLY' && {
-                byMonthDay: Number(form.startDate.slice(8, 10)),
-              }),
             }
           : null,
     });
@@ -236,14 +245,14 @@ export default function CalendarEditModal({
               >
                 <span
                   className="h-6 w-6 rounded-full"
-                  style={{ backgroundColor: form.color }}
+                  style={{ backgroundColor: EVENT_COLOR_MAP[form.color] }}
                 />
                 색
               </button>
 
               {isColorOpen && (
                 <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
-                  {scheduleColors.map((color) => {
+                  {SCHEDULE_COLORS.map((color) => {
                     const isSelected = form.color === color;
 
                     return (
@@ -263,7 +272,7 @@ export default function CalendarEditModal({
                       >
                         <span
                           className="h-7 w-full rounded-full"
-                          style={{ backgroundColor: color }}
+                          style={{ backgroundColor: EVENT_COLOR_MAP[color] }}
                         />
                       </button>
                     );
