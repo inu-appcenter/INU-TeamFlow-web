@@ -2,11 +2,12 @@
 
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
 import CalendarEditModal from '@/components/calendar/CalendarEditModal';
-import { schedules as mockSchedules, type Schedule } from '@/mocks/schedules';
+import type { Schedule } from '@/types/event';
 import { getDday } from '@/utils/date/getDday';
 import { Check, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
 import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
+import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -162,7 +163,7 @@ function assignWeekSlots(
   return result;
 }
 export default function Calendar({
-  initialSchedules = mockSchedules,
+  initialSchedules = [],
   compact = false,
   showSidePanel = true,
   showAddButton = true,
@@ -511,14 +512,23 @@ export default function Calendar({
                               top: `${topOffset}px`,
                               left: 0,
                               right: 0,
-                              backgroundColor: schedule.color,
+                              backgroundColor: EVENT_COLOR_MAP[schedule.color],
                               borderLeftColor:
                                 isDone || (isPeriod && !isPeriodStart)
                                   ? 'transparent'
-                                  : darkenColor(schedule.color, 25),
+                                  : darkenColor(
+                                      EVENT_COLOR_MAP[schedule.color],
+                                      25
+                                    ),
                               color: isDone
-                                ? darkenColor(schedule.color, 70)
-                                : darkenColor(schedule.color, 100),
+                                ? darkenColor(
+                                    EVENT_COLOR_MAP[schedule.color],
+                                    70
+                                  )
+                                : darkenColor(
+                                    EVENT_COLOR_MAP[schedule.color],
+                                    100
+                                  ),
                             }}
                           >
                             {!isPeriodMiddle && !isPeriodEnd && schedule.title}
@@ -558,10 +568,10 @@ export default function Calendar({
                       isDone ? 'border-l-transparent' : ''
                     }`}
                     style={{
-                      backgroundColor: schedule.color,
+                      backgroundColor: EVENT_COLOR_MAP[schedule.color],
                       borderLeftColor: isDone
                         ? 'transparent'
-                        : darkenColor(schedule.color, 25),
+                        : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
                     }}
                   >
                     <div>
@@ -594,14 +604,20 @@ export default function Calendar({
                           <Check
                             size={16}
                             style={{
-                              color: darkenColor(schedule.color, 80),
+                              color: darkenColor(
+                                EVENT_COLOR_MAP[schedule.color],
+                                80
+                              ),
                             }}
                           />
                         ) : (
                           <span
                             className="h-4 w-4 rounded-full border"
                             style={{
-                              borderColor: darkenColor(schedule.color, 80),
+                              borderColor: darkenColor(
+                                EVENT_COLOR_MAP[schedule.color],
+                                80
+                              ),
                             }}
                           />
                         )}
@@ -655,10 +671,10 @@ export default function Calendar({
                         isDone ? 'border-l-transparent' : ''
                       }`}
                       style={{
-                        backgroundColor: schedule.color,
+                        backgroundColor: EVENT_COLOR_MAP[schedule.color],
                         borderLeftColor: isDone
                           ? 'transparent'
-                          : darkenColor(schedule.color, 25),
+                          : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
                       }}
                     >
                       <div>
@@ -688,14 +704,20 @@ export default function Calendar({
                             <Check
                               size={16}
                               style={{
-                                color: darkenColor(schedule.color, 80),
+                                color: darkenColor(
+                                  EVENT_COLOR_MAP[schedule.color],
+                                  80
+                                ),
                               }}
                             />
                           ) : (
                             <span
                               className="h-4 w-4 rounded-full border"
                               style={{
-                                borderColor: darkenColor(schedule.color, 80),
+                                borderColor: darkenColor(
+                                  EVENT_COLOR_MAP[schedule.color],
+                                  80
+                                ),
                               }}
                             />
                           )}

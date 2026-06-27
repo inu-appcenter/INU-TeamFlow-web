@@ -141,6 +141,7 @@ export default function CalendarDatePicker({
                       if (isDisabled) return;
 
                       onChange(dateKey);
+                      setIsOpen(false);
                     }}
                     className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[18px] transition-all duration-150 active:scale-85 ${
                       isDisabled

@@ -253,7 +253,7 @@ export default function TeamForm({
               />
 
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (!form.name.trim()) {
                     showErrorMessage('팀 이름을 입력해주세요');
                     return;
@@ -264,7 +264,11 @@ export default function TeamForm({
                     return;
                   }
 
-                  setIsConfirmOpen(true);
+                  if (mode === 'create') {
+                    setIsConfirmOpen(true);
+                  } else {
+                    await onSubmit(form);
+                  }
                 }}
                 className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 py-2 font-semibold text-white"
               >
@@ -339,7 +343,7 @@ export default function TeamForm({
         </Card>
       </section>
 
-      {isConfirmOpen && (
+      {mode === 'create' && isConfirmOpen && (
         <div
           onClick={() => setIsConfirmOpen(false)}
           className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
@@ -349,9 +353,7 @@ export default function TeamForm({
             className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
           >
             <h2 className="text-center text-xl font-bold">
-              {mode === 'create'
-                ? '새 팀을 생성할까요?'
-                : '팀 정보를 수정할까요?'}
+              새 팀을 생성할까요?
             </h2>
 
             <div className="mt-4 flex gap-3">
@@ -369,7 +371,7 @@ export default function TeamForm({
                 }}
                 className="flex-1 rounded-xl bg-[#5E92F0] py-3 font-semibold text-white"
               >
-                {mode === 'create' ? '생성' : '수정'}
+                생성
               </button>
             </div>
           </div>

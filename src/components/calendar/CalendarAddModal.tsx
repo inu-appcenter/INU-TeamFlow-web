@@ -1,32 +1,35 @@
 'use client';
 
-import { scheduleColors, type ScheduleColor } from '@/constants/scheduleColor';
+import {
+  SCHEDULE_COLORS,
+  EVENT_COLOR_MAP,
+  type ScheduleColor,
+} from '@/constants/scheduleColor';
 import { Repeat, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-
+import { EventColor, Recurrence } from '@/types/event';
 import CalendarDatePicker from './CalendarDatePicker';
 
 type RepeatType = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
+type ScheduleColorKey =
+  | 'SUN'
+  | 'BLOSSOM'
+  | 'OCEAN'
+  | 'LEAF'
+  | 'ROSE'
+  | 'PEACH'
+  | 'LAVENDER'
+  | 'MINT';
+
 export interface CreateEventRequest {
   title: string;
   description: string;
-
   startAt: string;
   endAt: string;
-
   isAllDay: boolean;
-  color: string;
-
-  recurrence: {
-    freq: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-    intervalValue: number;
-    byDay?: ('MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN')[];
-    byMonthDay?: number;
-    seriesStartAt?: string | null;
-    untilAt?: string | null;
-    occurrenceCount?: number | null;
-  } | null;
+  color: ScheduleColorKey;
+  recurrence: Recurrence | null;
 }
 
 interface CalendarAddModalProps {
@@ -107,18 +110,25 @@ export default function CalendarAddModal({
     endDate: string;
     startTime: string;
     endTime: string;
-    color: ScheduleColor;
+    color: EventColor;
     isAllDay: boolean;
   }
+
+  const formatDate = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
 
   const [form, setForm] = useState<ScheduleForm>({
     title: '',
     description: '',
-    startDate: '',
-    endDate: '',
+    startDate: formatDate(selectedDate),
+    endDate: formatDate(selectedDate),
     startTime: '09:00',
     endTime: '10:00',
-    color: scheduleColors[0],
+    color: SCHEDULE_COLORS[0] as ScheduleColor,
     isAllDay: false,
   });
 
@@ -132,11 +142,11 @@ export default function CalendarAddModal({
     setForm({
       title: '',
       description: '',
-      startDate: '',
-      endDate: '',
+      startDate: formatDate(selectedDate),
+      endDate: formatDate(selectedDate),
       startTime: '09:00',
       endTime: '10:00',
-      color: scheduleColors[0],
+      color: SCHEDULE_COLORS[0] as ScheduleColor,
       isAllDay: false,
     });
   };
@@ -212,12 +222,14 @@ export default function CalendarAddModal({
           ? {
               freq: repeatType,
               intervalValue: 1,
-              ...(repeatType === 'WEEKLY' && {
-                byDay: repeatDays.map((day) => dayMap[day]),
-              }),
-              ...(repeatType === 'MONTHLY' && {
-                byMonthDay: Number(form.startDate.slice(8, 10)),
-              }),
+              byDay:
+                repeatType === 'WEEKLY'
+                  ? repeatDays.map((day) => dayMap[day])
+                  : null,
+              byMonthDay:
+                repeatType === 'MONTHLY'
+                  ? Number(form.startDate.slice(8, 10))
+                  : null,
               seriesStartAt: startAt,
               untilAt: endAt,
               occurrenceCount: null,
@@ -282,14 +294,14 @@ export default function CalendarAddModal({
               >
                 <span
                   className="h-6 w-6 rounded-full"
-                  style={{ backgroundColor: form.color }}
+                  style={{ backgroundColor: EVENT_COLOR_MAP[form.color] }}
                 />
                 색
               </button>
 
               {isColorOpen && (
                 <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
-                  {scheduleColors.map((color) => {
+                  {SCHEDULE_COLORS.map((color) => {
                     const isSelected = form.color === color;
 
                     return (
@@ -310,7 +322,7 @@ export default function CalendarAddModal({
                       >
                         <span
                           className="h-7 w-full rounded-full"
-                          style={{ backgroundColor: color }}
+                          style={{ backgroundColor: EVENT_COLOR_MAP[color] }}
                         />
                       </button>
                     );

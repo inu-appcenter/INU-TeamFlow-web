@@ -3,11 +3,18 @@
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
 import CalendarEditModal from '@/components/calendar/CalendarEditModal';
-import { schedules as mockSchedules, type Schedule } from '@/mocks/schedules';
+import { useMyEvents } from '@/hooks/useEventQuery';
+import type { Schedule } from '@/types/event';
+import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
 import { Check, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
 import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
+import {
+  useCreateMyEvent,
+  useUpdateMyEvent,
+  useDeleteMyEvent,
+} from '@/hooks/useEventQuery';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -163,21 +170,25 @@ function assignWeekSlots(
 
 export default function CalendarPage() {
   const today = new Date();
-  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
-  const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [schedules, setSchedules] = useState<Schedule[]>(mockSchedules);
-  const [isAddOpen, setIsAddOpen] = useState(false);
-
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+  const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
+
+  const [selectedDate, setSelectedDate] = useState(today);
+  const { data: schedules = [], isLoading } = useMyEvents(year, month + 1);
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
   const prevLastDate = new Date(year, month, 0).getDate();
+
+  const { mutateAsync: createEvent } = useCreateMyEvent();
+  const { mutateAsync: updateEvent } = useUpdateMyEvent();
+  const { mutateAsync: deleteEvent } = useDeleteMyEvent();
 
   const prevMonthDates: CalendarDate[] = Array.from(
     { length: firstDay },
@@ -237,58 +248,81 @@ export default function CalendarPage() {
     setSelectedDate(next);
   };
 
-  const handleToggleSchedule = (eventId: number) => {
-    setSchedules((prev) =>
-      prev.map((schedule) =>
-        schedule.eventId === eventId
-          ? {
-              ...schedule,
-              isFinished: !schedule.isFinished,
-            }
-          : schedule
-      )
-    );
+  const handleAddSchedule = async (request: CreateEventRequest) => {
+    try {
+      await createEvent({
+        title: request.title,
+        description: request.description,
+        startAt: request.startAt,
+        endAt: request.endAt,
+        isAllDay: request.isAllDay,
+        color: request.color,
+        ...(request.recurrence && { recurrence: request.recurrence }),
+      });
+    } catch (error) {
+      console.error('일정 생성 실패', error);
+    }
   };
 
-  const handleAddSchedule = (request: CreateEventRequest) => {
-    const isRepeat = request.recurrence !== null;
-
-    const startDate = request.startAt.slice(0, 10);
-    const endTime = request.endAt.slice(11, 16);
-
-    const mockResponse: Schedule = {
-      eventId: Date.now(),
-      teamId: 1,
-      teamName: '새 팀',
-
-      title: request.title,
-      description: request.description,
-
-      occurrenceAt: request.startAt,
-      startAt: request.startAt,
-      endAt: isRepeat ? `${startDate}T${endTime}` : request.endAt,
-
-      isAllDay: request.isAllDay,
-      color: request.color,
-
-      isSingle: !isRepeat,
-      isFinished: false,
-      isException: false,
-
-      recurrence: request.recurrence,
-    };
-
-    setSchedules((prev) => [...prev, mockResponse]);
-  };
-
-  const handleEditSchedule = (updated: Schedule) => {
-    setSchedules((prev) =>
-      prev.map((schedule) =>
-        schedule.eventId === updated.eventId ? updated : schedule
-      )
-    );
-
+  const handleEditSchedule = async (updated: Schedule) => {
+    try {
+      await updateEvent({
+        eventId: updated.eventId,
+        body: {
+          title: updated.title,
+          description: updated.description,
+          startAt: updated.startAt,
+          endAt: updated.endAt,
+          isAllDay: updated.isAllDay,
+          color: updated.color,
+          isFinished: updated.isFinished,
+          occurrenceAt: updated.occurrenceAt ?? updated.startAt,
+          recurrenceEditScope: 'THIS_INSTANCE',
+          ...(updated.recurrence && { recurrence: updated.recurrence }),
+        },
+      });
+    } catch (error) {
+      console.error('일정 수정 실패', error);
+    }
     setEditSchedule(null);
+  };
+
+  const handleDeleteSchedule = async (eventId: number) => {
+    try {
+      await deleteEvent({
+        eventId,
+        scope: 'THIS_INSTANCE',
+        occurence: editSchedule?.occurrenceAt ?? '',
+      });
+    } catch (error) {
+      console.error('일정 삭제 실패', error);
+    }
+    setEditSchedule(null);
+  };
+
+  const handleToggleSchedule = async (eventId: number) => {
+    const target = schedules.find((s) => s.eventId === eventId);
+    if (!target) return;
+
+    try {
+      await updateEvent({
+        eventId,
+        body: {
+          title: target.title,
+          description: target.description,
+          startAt: target.startAt,
+          endAt: target.endAt,
+          isAllDay: target.isAllDay,
+          color: target.color,
+          isFinished: !target.isFinished,
+          occurrenceAt: target.occurrenceAt,
+          recurrenceEditScope: 'THIS_INSTANCE',
+          ...(target.recurrence && { recurrence: target.recurrence }),
+        },
+      });
+    } catch (error) {
+      console.error('일정 완료 토글 실패', error);
+    }
   };
 
   const darkenColor = (hex: string, amount: number) => {
@@ -301,13 +335,6 @@ export default function CalendarPage() {
     return `rgb(${r}, ${g}, ${b})`;
   };
 
-  const handleDeleteSchedule = (eventId: number) => {
-    setSchedules((prev) =>
-      prev.filter((schedule) => schedule.eventId !== eventId)
-    );
-
-    setEditSchedule(null);
-  };
   const DATE_HEADER_H = 28;
   const EVENT_H = 20;
   const EVENT_GAP = 4;
@@ -474,13 +501,13 @@ export default function CalendarPage() {
                               DATE_HEADER_H +
                               schedule.slot * (EVENT_H + EVENT_GAP);
                           } else {
-                            const periodCountOnThisDate = dateSchedules.filter(
-                              (s) => s.slot !== -1
-                            ).length;
+                            const maxSlotOnThisDate = dateSchedules
+                              .filter((s) => s.slot !== -1)
+                              .reduce((max, s) => Math.max(max, s.slot + 1), 0);
 
                             topOffset =
                               DATE_HEADER_H +
-                              periodCountOnThisDate * (EVENT_H + EVENT_GAP) +
+                              maxSlotOnThisDate * (EVENT_H + EVENT_GAP) +
                               singleIdx * (EVENT_H + EVENT_GAP);
 
                             singleIdx++;
@@ -506,14 +533,24 @@ export default function CalendarPage() {
                                 top: `${topOffset}px`,
                                 left: 0,
                                 right: 0,
-                                backgroundColor: schedule.color,
+                                backgroundColor:
+                                  EVENT_COLOR_MAP[schedule.color],
                                 borderLeftColor:
                                   isDone || (isPeriod && !isPeriodStart)
                                     ? 'transparent'
-                                    : darkenColor(schedule.color, 25),
+                                    : darkenColor(
+                                        EVENT_COLOR_MAP[schedule.color],
+                                        25
+                                      ),
                                 color: isDone
-                                  ? darkenColor(schedule.color, 70)
-                                  : darkenColor(schedule.color, 100),
+                                  ? darkenColor(
+                                      EVENT_COLOR_MAP[schedule.color],
+                                      70
+                                    )
+                                  : darkenColor(
+                                      EVENT_COLOR_MAP[schedule.color],
+                                      100
+                                    ),
                               }}
                             >
                               {!isPeriodMiddle &&
@@ -554,10 +591,10 @@ export default function CalendarPage() {
                       isDone ? 'border-l-transparent pl-3' : ''
                     }`}
                     style={{
-                      backgroundColor: schedule.color,
+                      backgroundColor: EVENT_COLOR_MAP[schedule.color],
                       borderLeftColor: isDone
                         ? 'transparent'
-                        : darkenColor(schedule.color, 25),
+                        : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
                     }}
                   >
                     <div>
@@ -590,14 +627,20 @@ export default function CalendarPage() {
                           <Check
                             size={16}
                             style={{
-                              color: darkenColor(schedule.color, 80),
+                              color: darkenColor(
+                                EVENT_COLOR_MAP[schedule.color],
+                                80
+                              ),
                             }}
                           />
                         ) : (
                           <span
                             className="h-4 w-4 rounded-full border"
                             style={{
-                              borderColor: darkenColor(schedule.color, 80),
+                              borderColor: darkenColor(
+                                EVENT_COLOR_MAP[schedule.color],
+                                80
+                              ),
                             }}
                           />
                         )}
@@ -643,14 +686,15 @@ export default function CalendarPage() {
                     return (
                       <div
                         key={schedule.eventId}
+                        onClick={() => setEditSchedule(schedule)}
                         className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
                           isDone ? 'border-l-transparent' : ''
                         }`}
                         style={{
-                          backgroundColor: schedule.color,
+                          backgroundColor: EVENT_COLOR_MAP[schedule.color],
                           borderLeftColor: isDone
                             ? 'transparent'
-                            : darkenColor(schedule.color, 25),
+                            : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
                         }}
                       >
                         <div>
@@ -682,14 +726,20 @@ export default function CalendarPage() {
                               <Check
                                 size={16}
                                 style={{
-                                  color: darkenColor(schedule.color, 80),
+                                  color: darkenColor(
+                                    EVENT_COLOR_MAP[schedule.color],
+                                    80
+                                  ),
                                 }}
                               />
                             ) : (
                               <span
                                 className="h-4 w-4 rounded-full border"
                                 style={{
-                                  borderColor: darkenColor(schedule.color, 80),
+                                  borderColor: darkenColor(
+                                    EVENT_COLOR_MAP[schedule.color],
+                                    80
+                                  ),
                                 }}
                               />
                             )}
