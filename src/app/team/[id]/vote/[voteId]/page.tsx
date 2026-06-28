@@ -1,8 +1,15 @@
 'use client';
 
 import Card from '@/components/main/Card';
-import { teamDetails } from '@/mocks/teams';
-import { eventVoteTimeSlots, votes } from '@/mocks/votes';
+
+import { useTeamDetail } from '@/hooks/useTeamQuery';
+import {
+  useVoteDetail,
+  useVoteSlots,
+  useSelectVoteSlots,
+  useConfirmVoteResult,
+} from '@/hooks/useVoteQuery';
+
 import VoteForm from '@/components/vote/VoteForm';
 import VoteResult from '@/components/vote/VoteResult';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -39,8 +46,13 @@ export default function VoteDetailPage() {
   const [isVoting, setIsVoting] = useState(false);
   const [isSelectingResult, setIsSelectingResult] = useState(false);
 
-  const team = teamDetails.find((item) => item.teamId === teamId);
-  const vote = votes.find((item) => item.voteId === voteId);
+  const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
+  const { data: vote, isLoading: isVoteLoading } = useVoteDetail(voteId);
+  const { data: voteSlots = [] } = useVoteSlots(voteId);
+  const { mutateAsync: selectSlots } = useSelectVoteSlots(voteId);
+  const { mutateAsync: confirmResult } = useConfirmVoteResult(voteId);
+
+  if (isTeamLoading || isVoteLoading) return null;
 
   if (!team || !vote) {
     return (
@@ -51,10 +63,9 @@ export default function VoteDetailPage() {
       </main>
     );
   }
-  const isAdmin = team.role === 'OWNER' || team.role === 'ADMIN';
+  const isAdmin = team.role === 'LEADER' || team.role === 'MANAGER';
 
-  const voteSlots = eventVoteTimeSlots.filter((slot) => slot.voteId === voteId);
-  const voteDates = vote.dates;
+  const voteDates = vote.dates ?? [];
 
   const startHour = Number(vote.dailyTimeStart?.slice(0, 2));
   const endHour = Number(vote.dailyTimeEnd?.slice(0, 2));
@@ -70,8 +81,8 @@ export default function VoteDetailPage() {
 
   const participantList =
     participantTab === 'completed'
-      ? vote.completedVoterNameList
-      : vote.uncompletedVoterNameList;
+      ? (vote.completedVoterNameList ?? [])
+      : (vote.uncompletedVoterNameList ?? []);
 
   const maxParticipantCount = Math.max(
     1,
@@ -118,13 +129,6 @@ export default function VoteDetailPage() {
           <div className="flex-1 overflow-y-auto">
             {isVoting ? (
               <div className="py-6 pr-12 pl-8 sm:py-8 sm:pr-14 sm:pl-10">
-                <button
-                  onClick={() => setIsVoting(false)}
-                  className="mb-4 -ml-1 flex items-center gap-1 text-sm font-bold text-[#989898]"
-                >
-                  <ChevronLeft size={17} strokeWidth={2.5} />
-                  뒤로가기
-                </button>
                 <div className="pb-3">
                   <h3 className="mt-[12px] text-[24px] font-bold text-[#2C2C2C]">
                     {vote.title}
@@ -141,7 +145,14 @@ export default function VoteDetailPage() {
                   voteSlots={voteSlots}
                   isAllDay={vote.isAllDay}
                   isOpened={vote.isOpened}
-                  onSubmit={() => setIsVoting(false)}
+                  onSubmit={async (selectedSlotIds) => {
+                    try {
+                      await selectSlots({ slotIdList: selectedSlotIds });
+                      setIsVoting(false);
+                    } catch (err) {
+                      console.error('투표 실패', err);
+                    }
+                  }}
                 />
               </div>
             ) : isSelectingResult ? (
@@ -152,15 +163,20 @@ export default function VoteDetailPage() {
                 voteSlots={voteSlots}
                 isAllDay={vote.isAllDay}
                 onBack={() => setIsSelectingResult(false)}
-                onSubmit={(startAt, endAt) => {
-                  console.log({
-                    title: vote.title,
-                    isAllDay: vote.isAllDay,
-                    selected_start_at: startAt,
-                    selected_end_at: endAt,
-                  });
-
-                  // API 호출
+                onSubmit={async (startAt, endAt) => {
+                  try {
+                    await confirmResult({
+                      title: vote.title,
+                      isAllDay: vote.isAllDay,
+                      selectedStartAt:
+                        startAt.length === 16 ? `${startAt}:00` : startAt,
+                      selectedEndAt:
+                        endAt.length === 16 ? `${endAt}:00` : endAt,
+                    });
+                    setIsSelectingResult(false);
+                  } catch (err) {
+                    console.error('일정 확정 실패', err);
+                  }
                 }}
               />
             ) : (
