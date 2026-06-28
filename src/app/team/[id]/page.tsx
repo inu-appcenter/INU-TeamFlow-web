@@ -7,13 +7,21 @@ import VoteAddModal, {
   type EventVoteCreateRequest,
 } from '@/components/vote/VoteAddModar';
 import Card from '@/components/main/Card';
-import { notices } from '@/mocks/notices';
+
+import {
+  useTeamEvents,
+  useCreateTeamEvent,
+  useUpdateTeamEvent,
+  useDeleteTeamEvent,
+} from '@/hooks/useEventQuery';
+
 import { useTeamDetail, useTeamMembers } from '@/hooks/useTeamQuery';
-import { useTeamEvents } from '@/hooks/useEventQuery';
 import type { Schedule } from '@/types/event';
 import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
+
 import { votes } from '@/mocks/votes';
+import { notices } from '@/mocks/notices';
 import {
   Check,
   ChevronLeft,
@@ -236,6 +244,9 @@ export default function TeamDetail() {
   const [keyword, setKeyword] = useState('');
 
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+  const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
+  const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
+  const { mutateAsync: deleteEvent } = useDeleteTeamEvent(teamId);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
 
   const [selectedDate, setSelectedDate] = useState(today);
@@ -353,19 +364,83 @@ export default function TeamDetail() {
     setKeyword('');
   };
 
-  const handleToggleSchedule = (eventId: number) => {
-    // TODO: mutation 연결
+  const handleToggleSchedule = async (eventId: number) => {
+    const target = schedules.find((s) => s.eventId === eventId);
+    if (!target) return;
+
+    try {
+      await updateEvent({
+        eventId,
+        body: {
+          title: target.title,
+          description: target.description,
+          startAt: target.startAt,
+          endAt: target.endAt,
+          isAllDay: target.isAllDay,
+          color: target.color,
+          isFinished: !target.isFinished,
+          occurrenceAt: target.occurrenceAt ?? target.startAt,
+          recurrenceEditScope: 'THIS_INSTANCE',
+          participants: [],
+          ...(target.recurrence && { recurrence: target.recurrence }),
+        },
+      });
+    } catch (err) {
+      console.error('일정 완료 토글 실패', err);
+    }
   };
 
-  const handleAddSchedule = (request: CreateEventRequest) => {
-    // TODO: mutation 연결
+  const handleAddSchedule = async (request: CreateEventRequest) => {
+    try {
+      await createEvent({
+        title: request.title,
+        description: request.description,
+        startAt: request.startAt,
+        endAt: request.endAt,
+        isAllDay: request.isAllDay,
+        color: request.color,
+        participants: [],
+        ...(request.recurrence && { recurrence: request.recurrence }),
+      });
+    } catch (err) {
+      console.error('일정 생성 실패', err);
+    }
   };
 
-  const handleEditSchedule = (updated: Schedule) => {
+  const handleEditSchedule = async (updated: Schedule) => {
+    try {
+      await updateEvent({
+        eventId: updated.eventId,
+        body: {
+          title: updated.title,
+          description: updated.description,
+          startAt: updated.startAt,
+          endAt: updated.endAt,
+          isAllDay: updated.isAllDay,
+          color: updated.color,
+          isFinished: updated.isFinished,
+          occurrenceAt: updated.occurrenceAt ?? updated.startAt,
+          recurrenceEditScope: 'THIS_INSTANCE',
+          participants: [],
+          ...(updated.recurrence && { recurrence: updated.recurrence }),
+        },
+      });
+    } catch (err) {
+      console.error('일정 수정 실패', err);
+    }
     setEditSchedule(null);
   };
 
-  const handleDeleteSchedule = (eventId: number) => {
+  const handleDeleteSchedule = async (eventId: number) => {
+    try {
+      await deleteEvent({
+        eventId,
+        scope: 'THIS_INSTANCE',
+        occurence: editSchedule?.occurrenceAt ?? '',
+      });
+    } catch (err) {
+      console.error('일정 삭제 실패', err);
+    }
     setEditSchedule(null);
   };
 

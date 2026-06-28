@@ -17,9 +17,9 @@ export const getMyTeams = (): Promise<TeamSummaryResponse[]> =>
 export const getTeamDetail = (teamId: number): Promise<TeamDetailResponse> =>
   axiosInstance.get(`/teams/${teamId}`).then((res) => res.data);
 
-/** GET /team/{teamId}/members */
+/** GET /teams/{teamId}/members */
 export const getTeamMembers = (teamId: number): Promise<TeamMemberResponse[]> =>
-  axiosInstance.get(`/team/${teamId}/members`).then((res) => res.data);
+  axiosInstance.get(`/teams/${teamId}/members`).then((res) => res.data);
 
 /** POST /teams */
 export const createTeam = (
