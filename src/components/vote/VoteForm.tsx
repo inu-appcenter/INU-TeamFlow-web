@@ -106,19 +106,17 @@ export default function VoteForm({
                 const minutes = isAllDay ? ['00'] : ['00', '30'];
 
                 return minutes.map((minute, minuteIndex) => {
-                  const slotId =
-                    (dateIndex * voteHours.length + hourIndex) *
-                      minutes.length +
-                    minuteIndex +
-                    1;
+                  const slot = getSlot(date, hour, minute);
 
-                  const isSelected = selectedSlots.includes(slotId);
+                  const isSelected = slot
+                    ? selectedSlots.includes(slot.slotId)
+                    : false;
 
                   return (
                     <button
-                      key={slotId}
-                      onClick={() => toggleSlot(slotId)}
-                      disabled={!isOpened}
+                      key={`${date}-${hour}-${minute}`}
+                      onClick={() => slot && toggleSlot(slot.slotId)}
+                      disabled={!isOpened || !slot}
                       className={`cursor-pointer rounded-md transition-all duration-150 ease-in-out ${
                         isAllDay ? 'h-16' : 'h-5'
                       } ${isSelected ? 'bg-[#5E92F0]' : 'bg-[#F1F4F8]'} ${

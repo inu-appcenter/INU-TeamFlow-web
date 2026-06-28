@@ -1,8 +1,9 @@
 'use client';
 
 import Card from '@/components/main/Card';
-import { teamDetails } from '@/mocks/teams';
-import { votes } from '@/mocks/votes';
+import { useTeamDetail } from '@/hooks/useTeamQuery';
+import { useTeamVotes } from '@/hooks/useVoteQuery';
+
 import { ChevronLeft } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -27,9 +28,12 @@ export default function TeamVotePage() {
   const params = useParams();
 
   const teamId = Number(params.id);
-  const team = teamDetails.find((item) => item.teamId === teamId);
 
-  const teamVotes = votes.filter((vote) => vote.teamId === teamId);
+  const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
+  const { data: teamVotes = [], isLoading: isVotesLoading } =
+    useTeamVotes(teamId);
+
+  if (isTeamLoading || isVotesLoading) return null;
 
   if (!team) {
     return (
@@ -70,11 +74,10 @@ export default function TeamVotePage() {
           <div className="flex-1 overflow-y-auto px-6 sm:px-8">
             <section className="flex flex-col">
               {teamVotes.map((vote) => {
-                const completed = vote.completedVoterNameList.length;
-
+                const completed = vote.completedVoterNameList?.length ?? 0;
                 const total =
-                  vote.completedVoterNameList.length +
-                  vote.uncompletedVoterNameList.length;
+                  (vote.completedVoterNameList?.length ?? 0) +
+                  (vote.uncompletedVoterNameList?.length ?? 0);
 
                 const progress = total === 0 ? 0 : (completed / total) * 100;
 
@@ -136,7 +139,7 @@ export default function TeamVotePage() {
 
               {teamVotes.length === 0 && (
                 <div className="flex h-[300px] items-center justify-center text-sm text-[#989898]">
-                  등록된 투표가 없습니다.
+                  아직 등록된 투표가 없어요
                 </div>
               )}
             </section>

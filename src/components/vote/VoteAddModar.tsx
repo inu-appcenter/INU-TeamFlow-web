@@ -1,6 +1,11 @@
 'use client';
 
-import { SCHEDULE_COLORS, type ScheduleColor } from '@/constants/scheduleColor';
+// import 추가
+import {
+  SCHEDULE_COLORS,
+  EVENT_COLOR_MAP,
+  type ScheduleColor,
+} from '@/constants/scheduleColor';
 import { useEffect, useState, useRef } from 'react';
 import { X, ChevronDown } from 'lucide-react';
 
@@ -166,7 +171,7 @@ export default function VoteAddModal({
   };
 
   const filteredMembers = members.filter((m) =>
-    m.name.toLowerCase().includes(search.toLowerCase())
+    m.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleCreate = () => {
@@ -235,7 +240,7 @@ export default function VoteAddModal({
                   >
                     <span
                       className="h-6 w-6 rounded-full"
-                      style={{ backgroundColor: form.color }}
+                      style={{ backgroundColor: EVENT_COLOR_MAP[form.color] }}
                     />
                     색
                   </button>
@@ -263,7 +268,9 @@ export default function VoteAddModal({
                           >
                             <span
                               className="h-7 w-full rounded-full"
-                              style={{ backgroundColor: color }}
+                              style={{
+                                backgroundColor: EVENT_COLOR_MAP[color],
+                              }}
                             />
                           </button>
                         );

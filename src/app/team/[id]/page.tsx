@@ -6,7 +6,9 @@ import CalendarEditModal from '@/components/calendar/CalendarEditModal';
 import VoteAddModal, {
   type EventVoteCreateRequest,
 } from '@/components/vote/VoteAddModar';
+
 import Card from '@/components/main/Card';
+import { useCreateVote } from '@/hooks/useVoteQuery';
 
 import {
   useTeamEvents,
@@ -14,13 +16,13 @@ import {
   useUpdateTeamEvent,
   useDeleteTeamEvent,
 } from '@/hooks/useEventQuery';
-
 import { useTeamDetail, useTeamMembers } from '@/hooks/useTeamQuery';
+import { useTeamVotes } from '@/hooks/useVoteQuery';
+
 import type { Schedule } from '@/types/event';
 import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
 
-import { votes } from '@/mocks/votes';
 import { notices } from '@/mocks/notices';
 import {
   Check,
@@ -247,6 +249,7 @@ export default function TeamDetail() {
   const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
   const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
   const { mutateAsync: deleteEvent } = useDeleteTeamEvent(teamId);
+  const { mutateAsync: createVote } = useCreateVote(teamId);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
 
   const [selectedDate, setSelectedDate] = useState(today);
@@ -256,6 +259,8 @@ export default function TeamDetail() {
   const [isVoteAddOpen, setIsVoteAddOpen] = useState(false);
 
   const [isMd, setIsMd] = useState(false);
+
+  const { data: allVotes = [] } = useTeamVotes(teamId);
 
   useEffect(() => {
     const checkScreen = () => {
@@ -337,9 +342,7 @@ export default function TeamDetail() {
     .filter((notice) => notice.teamId === teamId)
     .slice(0, displayCount);
 
-  const teamVotes = votes
-    .filter((vote) => vote.teamId === teamId)
-    .slice(0, displayCount);
+  const teamVotes = allVotes.slice(0, displayCount);
 
   const handlePrevMonth = () => {
     const prev = new Date(year, month - 1, 1);
@@ -444,11 +447,12 @@ export default function TeamDetail() {
     setEditSchedule(null);
   };
 
-  const handleCreateVote = (request: EventVoteCreateRequest) => {
-    console.log('투표 생성 요청', request);
-
-    // TODO: API 연결
-
+  const handleCreateVote = async (request: EventVoteCreateRequest) => {
+    try {
+      await createVote(request);
+    } catch (err) {
+      console.error('투표 생성 실패', err);
+    }
     setIsVoteAddOpen(false);
   };
 
@@ -928,7 +932,7 @@ export default function TeamDetail() {
 
                   {teamVotes.length === 0 && (
                     <div className="flex h-[100px] items-center justify-center text-sm text-[#989898]">
-                      등록된 투표가 없습니다.
+                      아직 등록된 투표가 없어요
                     </div>
                   )}
                 </div>

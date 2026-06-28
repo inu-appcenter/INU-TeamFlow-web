@@ -5,7 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 
 interface VoteSlot {
-  voteId: number;
+  slotId: number;
   date: string;
   startAt: string;
   endAt: string;
@@ -34,11 +34,13 @@ export default function VoteResult({
   const [selectedStart, setSelectedStart] = useState<{
     date: string;
     hour: number;
+    minute: string;
   } | null>(null);
 
   const [selectedEnd, setSelectedEnd] = useState<{
     date: string;
     hour: number;
+    minute: string;
   } | null>(null);
 
   const maxParticipantCount = Math.max(
@@ -64,67 +66,55 @@ export default function VoteResult({
     return 'bg-[#F1F4F8]';
   };
 
-  const handleSlotClick = (date: string, hour: number) => {
-    // 첫 클릭
+  const handleSlotClick = (date: string, hour: number, minute: string) => {
     if (!selectedStart) {
-      setSelectedStart({ date, hour });
+      setSelectedStart({ date, hour, minute });
       setSelectedEnd(null);
       return;
     }
 
-    // 시작/종료 모두 선택된 상태 -> 새로 시작
     if (selectedStart && selectedEnd) {
-      setSelectedStart({ date, hour });
+      setSelectedStart({ date, hour, minute });
       setSelectedEnd(null);
       return;
     }
 
-    // 다른 날짜 선택 -> 새로 시작
     if (selectedStart.date !== date) {
-      setSelectedStart({ date, hour });
+      setSelectedStart({ date, hour, minute });
       setSelectedEnd(null);
       return;
     }
 
-    // 시작보다 이전 시간 선택 -> 시작 갱신
-    if (hour < selectedStart.hour) {
-      setSelectedStart({ date, hour });
+    if (
+      hour < selectedStart.hour ||
+      (hour === selectedStart.hour && minute < selectedStart.minute)
+    ) {
+      setSelectedStart({ date, hour, minute });
       return;
     }
 
-    // 종료 선택
-    setSelectedEnd({ date, hour });
+    setSelectedEnd({ date, hour, minute });
   };
 
-  const isInSelectedRange = (date: string, hour: number) => {
+  const isInSelectedRange = (date: string, hour: number, minute: string) => {
     if (!selectedStart) return false;
 
-    // 시작만 선택된 상태
+    const toMinutes = (h: number, m: string) => h * 60 + Number(m);
+    const current = toMinutes(hour, minute);
+    const start = toMinutes(selectedStart.hour, selectedStart.minute);
+
     if (!selectedEnd) {
-      return selectedStart.date === date && selectedStart.hour === hour;
+      return selectedStart.date === date && current === start;
     }
 
-    // 시작 ~ 종료 구간
-    return (
-      selectedStart.date === date &&
-      hour >= selectedStart.hour &&
-      hour <= selectedEnd.hour
-    );
+    const end = toMinutes(selectedEnd.hour, selectedEnd.minute);
+    return selectedStart.date === date && current >= start && current <= end;
   };
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   return (
     <div className="py-6 pr-12 pl-8 sm:py-8 sm:pr-14 sm:pl-10">
-      {/* 뒤로가기 */}
-      <button
-        onClick={onBack}
-        className="mb-4 -ml-1 flex items-center gap-1 text-sm font-bold text-[#989898]"
-      >
-        <ChevronLeft size={17} strokeWidth={2.5} />
-        뒤로가기
-      </button>
-
       {/* 제목 */}
       <div className="pb-6">
         <h2 className="text-[24px] font-bold text-[#2C2C2C]">일정 확정</h2>
@@ -167,8 +157,8 @@ export default function VoteResult({
               {voteHours.map((hour) => (
                 <div
                   key={hour}
-                  className={`flex items-center justify-end pr-1 text-xs text-[#B0B0B0] ${
-                    isAllDay ? 'h-16' : 'h-5'
+                  className={`flex items-start justify-end pt-[1px] pr-1 text-xs text-[#B0B0B0] ${
+                    isAllDay ? 'h-16' : 'h-[44px]'
                   }`}
                 >
                   {isAllDay ? '종일' : hour}
@@ -180,25 +170,33 @@ export default function VoteResult({
             {voteDates.map((date) => (
               <div key={date} className="flex flex-col gap-1">
                 {voteHours.map((hour) => {
-                  const slot = getSlot(date, hour);
+                  const minutes = isAllDay ? ['00'] : ['00', '30'];
 
-                  const isSelected = isInSelectedRange(date, hour);
+                  return minutes.map((minute) => {
+                    const slot = voteSlots.find(
+                      (s) =>
+                        s.date === date &&
+                        Number(s.startAt.slice(0, 2)) === hour &&
+                        s.startAt.slice(3, 5) === minute
+                    );
+                    const isSelected = isInSelectedRange(date, hour, minute);
 
-                  return (
-                    <button
-                      key={`${date}-${hour}`}
-                      onClick={() => handleSlotClick(date, hour)}
-                      className={`cursor-pointer rounded-md transition-all duration-200 active:scale-95 active:opacity-80 ${
-                        isAllDay ? 'h-16' : 'h-5'
-                      } ${
-                        isSelected
-                          ? 'bg-[#5E92F0]'
-                          : slot
-                            ? getSlotColor(slot.participantCount)
-                            : 'bg-[#F1F4F8]'
-                      }`}
-                    />
-                  );
+                    return (
+                      <button
+                        key={`${date}-${hour}-${minute}`}
+                        onClick={() => handleSlotClick(date, hour, minute)}
+                        className={`cursor-pointer rounded-md transition-all duration-200 active:scale-95 active:opacity-80 ${
+                          isAllDay ? 'h-16' : 'h-5'
+                        } ${
+                          isSelected
+                            ? 'bg-[#5E92F0]'
+                            : slot
+                              ? getSlotColor(slot.participantCount)
+                              : 'bg-[#F1F4F8]'
+                        }`}
+                      />
+                    );
+                  });
                 })}
               </div>
             ))}
@@ -229,8 +227,14 @@ export default function VoteResult({
                 {isAllDay
                   ? '종일'
                   : selectedEnd
-                    ? `${String(selectedStart.hour).padStart(2, '0')}:00 ~ ${String(selectedEnd.hour + 1).padStart(2, '0')}:00`
-                    : `${String(selectedStart.hour).padStart(2, '0')}:00 (종료 시간 선택 필요)`}
+                    ? `${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute} ~ ${(() => {
+                        const endMinute = Number(selectedEnd.minute) + 30;
+                        const endHour =
+                          selectedEnd.hour + Math.floor(endMinute / 60);
+                        const endMin = endMinute % 60;
+                        return `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+                      })()}`
+                    : `${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute} (종료 시간 선택 필요)`}
               </p>
             </div>
 
@@ -284,8 +288,14 @@ export default function VoteResult({
               <button
                 onClick={() => {
                   onSubmit(
-                    `${selectedStart.date}T${String(selectedStart.hour).padStart(2, '0')}:00`,
-                    `${selectedEnd.date}T${String(selectedEnd.hour + 1).padStart(2, '0')}:00`
+                    `${selectedStart.date}T${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute}`,
+                    `${selectedEnd.date}T${(() => {
+                      const endMinute = Number(selectedEnd.minute) + 30;
+                      const endHour =
+                        selectedEnd.hour + Math.floor(endMinute / 60);
+                      const endMin = endMinute % 60;
+                      return `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+                    })()}`
                   );
 
                   setIsConfirmModalOpen(false);
