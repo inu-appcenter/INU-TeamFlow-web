@@ -1,6 +1,6 @@
 'use client';
 
-import { scheduleColors, type ScheduleColor } from '@/constants/scheduleColor';
+import { SCHEDULE_COLORS, type ScheduleColor } from '@/constants/scheduleColor';
 import { useEffect, useState, useRef } from 'react';
 import { X, ChevronDown } from 'lucide-react';
 
@@ -94,7 +94,7 @@ export default function VoteAddModal({
     dates: [],
     dailyTimeStart: '09:00',
     dailyTimeEnd: '18:00',
-    color: scheduleColors[0],
+    color: SCHEDULE_COLORS[0],
   });
 
   if (!open) return null;
@@ -111,7 +111,7 @@ export default function VoteAddModal({
       dates: [],
       dailyTimeStart: '09:00',
       dailyTimeEnd: '18:00',
-      color: scheduleColors[0],
+      color: SCHEDULE_COLORS[0],
     });
   };
 
@@ -242,7 +242,7 @@ export default function VoteAddModal({
 
                   {isColorOpen && (
                     <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
-                      {scheduleColors.map((color) => {
+                      {SCHEDULE_COLORS.map((color) => {
                         const isSelected = form.color === color;
 
                         return (

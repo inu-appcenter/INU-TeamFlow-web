@@ -2,8 +2,10 @@
 
 import Card from '@/components/main/Card';
 import { ChevronLeft, Upload, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
+import { getPresignedUrl } from '@/api/team';
+
+import { useRouter } from 'next/navigation';
 
 export type TeamFormData = {
   name: string;
@@ -18,6 +20,7 @@ type TeamFormProps = {
   mode: 'create' | 'edit';
   initialData?: TeamFormData;
   onSubmit: (data: TeamFormData) => Promise<void>;
+  onDelete?: () => void;
 };
 
 type InputFieldProps = {
@@ -126,6 +129,7 @@ export default function TeamForm({
   mode,
   initialData,
   onSubmit,
+  onDelete,
 }: TeamFormProps) {
   const router = useRouter();
 
@@ -152,19 +156,33 @@ export default function TeamForm({
     }, 1800);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-
     if (!file) return;
 
+    // 미리보기
     const url = URL.createObjectURL(file);
-
     setPreviewUrl(url);
 
-    setForm((prev) => ({
-      ...prev,
-      imageKey: file.name,
-    }));
+    try {
+      // 1. presigned URL 발급
+      const { uploadUrl, imageKey } = await getPresignedUrl({
+        fileName: file.name,
+        contentType: file.type,
+      });
+
+      // 2. S3에 직접 업로드
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+
+      // 3. imageKey 저장
+      setForm((prev) => ({ ...prev, imageUrl: imageKey }));
+    } catch (err) {
+      console.error('이미지 업로드 실패', err);
+    }
   };
 
   const onChange = (key: keyof TeamFormData, value: string) => {
@@ -252,28 +270,38 @@ export default function TeamForm({
                 onChange={handleImageChange}
               />
 
-              <button
-                onClick={async () => {
-                  if (!form.name.trim()) {
-                    showErrorMessage('팀 이름을 입력해주세요');
-                    return;
-                  }
+              <div className="flex gap-2">
+                {mode === 'edit' && onDelete && (
+                  <button
+                    onClick={onDelete}
+                    className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-6 py-2 font-semibold text-[#E22222]"
+                  >
+                    삭제
+                  </button>
+                )}
+                <button
+                  onClick={async () => {
+                    if (!form.name.trim()) {
+                      showErrorMessage('팀 이름을 입력해주세요');
+                      return;
+                    }
 
-                  if (!form.description.trim()) {
-                    showErrorMessage('팀 소개를 입력해주세요');
-                    return;
-                  }
+                    if (!form.description.trim()) {
+                      showErrorMessage('팀 소개를 입력해주세요');
+                      return;
+                    }
 
-                  if (mode === 'create') {
-                    setIsConfirmOpen(true);
-                  } else {
-                    await onSubmit(form);
-                  }
-                }}
-                className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 py-2 font-semibold text-white"
-              >
-                {mode === 'create' ? '생성' : '수정'}
-              </button>
+                    if (mode === 'create') {
+                      setIsConfirmOpen(true);
+                    } else {
+                      await onSubmit(form);
+                    }
+                  }}
+                  className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 py-2 font-semibold text-white"
+                >
+                  {mode === 'create' ? '생성' : '수정'}
+                </button>
+              </div>
             </section>
 
             <p className="mb-4 text-[10px] text-[#b0b0b0]">
