@@ -7,11 +7,21 @@ import VoteAddModal, {
   type EventVoteCreateRequest,
 } from '@/components/vote/VoteAddModar';
 import Card from '@/components/main/Card';
-import { notices } from '@/mocks/notices';
-import { schedules as mockSchedules, type Schedule } from '@/mocks/schedules';
-import { teamDetails } from '@/mocks/teams';
+
+import {
+  useTeamEvents,
+  useCreateTeamEvent,
+  useUpdateTeamEvent,
+  useDeleteTeamEvent,
+} from '@/hooks/useEventQuery';
+
+import { useTeamDetail, useTeamMembers } from '@/hooks/useTeamQuery';
+import type { Schedule } from '@/types/event';
+import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
+
 import { votes } from '@/mocks/votes';
+import { notices } from '@/mocks/notices';
 import {
   Check,
   ChevronLeft,
@@ -38,62 +48,6 @@ const categoryColorMap: Record<string, string> = {
   CLUB: '#FFF1CC',
   ETC: '#E9E9E9',
 };
-
-const members = [
-  '닉네임1',
-  '닉네임134',
-  '닉네임134',
-  '닉네임134',
-  '닉네임12455',
-  '닉네임',
-  '어쩌구저쩌구나어라널',
-  'ㄴㅇㅓㅣ넝라ㅣ너이ㅓ일',
-];
-
-const teamMembers = [
-  {
-    teamMemberId: 1,
-    userId: 1,
-    name: '홍길동',
-    teamRole: 'OWNER',
-  },
-  {
-    teamMemberId: 2,
-    userId: 2,
-    name: '김철수',
-    teamRole: 'MEMBER',
-  },
-  {
-    teamMemberId: 3,
-    userId: 3,
-    name: '이영희',
-    teamRole: 'MEMBER',
-  },
-  {
-    teamMemberId: 4,
-    userId: 4,
-    name: '이영희',
-    teamRole: 'MEMBER',
-  },
-  {
-    teamMemberId: 5,
-    userId: 5,
-    name: '가나다',
-    teamRole: 'MEMBER',
-  },
-  {
-    teamMemberId: 6,
-    userId: 6,
-    name: '헤이',
-    teamRole: 'MEMBER',
-  },
-  {
-    teamMemberId: 7,
-    userId: 7,
-    name: '헬로',
-    teamRole: 'MEMBER',
-  },
-];
 
 const users = [
   { studentNumber: '202312345', name: '홍길동' },
@@ -273,24 +227,30 @@ function assignWeekSlots(
 export default function TeamDetail() {
   const router = useRouter();
   const params = useParams();
+  const today = new Date();
+
+  const [currentDate, setCurrentDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
 
   const teamId = Number(params.id);
-  const team = teamDetails.find((item) => item.teamId === teamId);
-
-  const today = new Date();
+  const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
+  const { data: teamMembers = [] } = useTeamMembers(teamId);
 
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
 
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+  const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
+  const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
+  const { mutateAsync: deleteEvent } = useDeleteTeamEvent(teamId);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
-  const [currentDate, setCurrentDate] = useState(
-    new Date(today.getFullYear(), today.getMonth(), 1)
-  );
+
   const [selectedDate, setSelectedDate] = useState(today);
-  const [schedules, setSchedules] = useState<Schedule[]>(
-    mockSchedules.filter((schedule) => schedule.teamId === teamId)
-  );
+  const { data: schedules = [] } = useTeamEvents(teamId, year, month + 1);
   const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isVoteAddOpen, setIsVoteAddOpen] = useState(false);
@@ -309,6 +269,8 @@ export default function TeamDetail() {
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
 
+  if (isTeamLoading) return null;
+
   if (!team) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
@@ -316,9 +278,6 @@ export default function TeamDetail() {
       </main>
     );
   }
-
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
 
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
@@ -370,7 +329,7 @@ export default function TeamDetail() {
 
   const dayLabel = days[selectedDate.getDay()];
   const filteredUsers = users.filter((user) => user.name.includes(keyword));
-  const isAdmin = team.role === 'OWNER' || team.role === 'ADMIN';
+  const isAdmin = team.role === 'LEADER' || team.role === 'MANAGER';
 
   const displayCount = isMd ? 4 : 3;
 
@@ -405,62 +364,83 @@ export default function TeamDetail() {
     setKeyword('');
   };
 
-  const handleToggleSchedule = (eventId: number) => {
-    setSchedules((prev) =>
-      prev.map((schedule) =>
-        schedule.eventId === eventId
-          ? { ...schedule, isFinished: !schedule.isFinished }
-          : schedule
-      )
-    );
+  const handleToggleSchedule = async (eventId: number) => {
+    const target = schedules.find((s) => s.eventId === eventId);
+    if (!target) return;
+
+    try {
+      await updateEvent({
+        eventId,
+        body: {
+          title: target.title,
+          description: target.description,
+          startAt: target.startAt,
+          endAt: target.endAt,
+          isAllDay: target.isAllDay,
+          color: target.color,
+          isFinished: !target.isFinished,
+          occurrenceAt: target.occurrenceAt ?? target.startAt,
+          recurrenceEditScope: 'THIS_INSTANCE',
+          participants: [],
+          ...(target.recurrence && { recurrence: target.recurrence }),
+        },
+      });
+    } catch (err) {
+      console.error('일정 완료 토글 실패', err);
+    }
   };
 
-  const handleAddSchedule = (request: CreateEventRequest) => {
-    const isRepeat = request.recurrence !== null;
-
-    const startDate = request.startAt.slice(0, 10);
-    const endTime = request.endAt.slice(11, 16);
-
-    const mockResponse: Schedule = {
-      eventId: Date.now(),
-      teamId,
-      teamName: team.name,
-
-      title: request.title,
-      description: request.description,
-
-      occurrenceAt: request.startAt,
-      startAt: request.startAt,
-      endAt: isRepeat ? `${startDate}T${endTime}` : request.endAt,
-
-      isAllDay: request.isAllDay,
-      color: request.color,
-
-      isSingle: !isRepeat,
-      isFinished: false,
-      isException: false,
-
-      recurrence: request.recurrence,
-    };
-
-    setSchedules((prev) => [...prev, mockResponse]);
+  const handleAddSchedule = async (request: CreateEventRequest) => {
+    try {
+      await createEvent({
+        title: request.title,
+        description: request.description,
+        startAt: request.startAt,
+        endAt: request.endAt,
+        isAllDay: request.isAllDay,
+        color: request.color,
+        participants: [],
+        ...(request.recurrence && { recurrence: request.recurrence }),
+      });
+    } catch (err) {
+      console.error('일정 생성 실패', err);
+    }
   };
 
-  const handleEditSchedule = (updated: Schedule) => {
-    setSchedules((prev) =>
-      prev.map((schedule) =>
-        schedule.eventId === updated.eventId ? updated : schedule
-      )
-    );
-
+  const handleEditSchedule = async (updated: Schedule) => {
+    try {
+      await updateEvent({
+        eventId: updated.eventId,
+        body: {
+          title: updated.title,
+          description: updated.description,
+          startAt: updated.startAt,
+          endAt: updated.endAt,
+          isAllDay: updated.isAllDay,
+          color: updated.color,
+          isFinished: updated.isFinished,
+          occurrenceAt: updated.occurrenceAt ?? updated.startAt,
+          recurrenceEditScope: 'THIS_INSTANCE',
+          participants: [],
+          ...(updated.recurrence && { recurrence: updated.recurrence }),
+        },
+      });
+    } catch (err) {
+      console.error('일정 수정 실패', err);
+    }
     setEditSchedule(null);
   };
 
-  const handleDeleteSchedule = (eventId: number) => {
-    setSchedules((prev) =>
-      prev.filter((schedule) => schedule.eventId !== eventId)
-    );
-
+  const handleDeleteSchedule = async (eventId: number) => {
+    try {
+      await deleteEvent({
+        eventId,
+        scope: 'THIS_INSTANCE',
+        occurence: editSchedule?.occurrenceAt ?? '',
+      });
+    } catch (err) {
+      console.error('일정 삭제 실패', err);
+    }
     setEditSchedule(null);
   };
 
@@ -485,7 +465,7 @@ export default function TeamDetail() {
             style={{ backgroundColor: categoryColorMap[team.category] }}
           >
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/team')}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft
@@ -502,7 +482,7 @@ export default function TeamDetail() {
 
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <section className="grid grid-cols-[140px_1fr] gap-6 sm:grid-cols-[150px_1fr_200px] md:grid-cols-[150px_1fr_300px]">
-              <div className="relative h-[140px] w-[140px] rounded-2xl bg-[#F6F8FA] sm:h-[150px] sm:w-[150px]">
+              <div className="relative h-[140px] w-[140px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] sm:h-[150px] sm:w-[150px]">
                 {team.imageUrl && (
                   <img
                     src={team.imageUrl}
@@ -515,7 +495,7 @@ export default function TeamDetail() {
                 {isAdmin && (
                   <button
                     onClick={() => router.push(`/team/${teamId}/edit`)}
-                    className="absolute top-3 right-3 rounded-full bg-[#989898]/60 px-3 py-1 text-[11px] text-white backdrop-blur hover:bg-[#989898]/70 active:scale-95"
+                    className="absolute top-2 right-2 rounded-full bg-[#989898]/60 px-3 py-1 text-[11px] text-white backdrop-blur hover:bg-[#989898]/70 active:scale-95"
                   >
                     수정
                   </button>
@@ -600,12 +580,12 @@ export default function TeamDetail() {
                     className="thin-scrollbar flex max-h-[105px] flex-wrap gap-1.5 overflow-y-auto px-2 pt-2"
                     style={{ scrollbarGutter: 'stable' }}
                   >
-                    {members.map((member, index) => (
+                    {teamMembers.map((member) => (
                       <span
-                        key={`${member}-${index}`}
+                        key={member.teamMemberId}
                         className="rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[11px] text-[#6E7780] md:text-[12px]"
                       >
-                        {member}
+                        {member.name}
                       </span>
                     ))}
                   </div>
@@ -863,14 +843,24 @@ export default function TeamDetail() {
                                   top: `${topOffset}px`,
                                   left: 0,
                                   right: 0,
-                                  backgroundColor: schedule.color,
+                                  backgroundColor:
+                                    EVENT_COLOR_MAP[schedule.color],
                                   borderLeftColor:
                                     isDone || (isPeriod && !isPeriodStart)
                                       ? 'transparent'
-                                      : darkenColor(schedule.color, 25),
+                                      : darkenColor(
+                                          EVENT_COLOR_MAP[schedule.color],
+                                          25
+                                        ),
                                   color: isDone
-                                    ? darkenColor(schedule.color, 70)
-                                    : darkenColor(schedule.color, 100),
+                                    ? darkenColor(
+                                        EVENT_COLOR_MAP[schedule.color],
+                                        70
+                                      )
+                                    : darkenColor(
+                                        EVENT_COLOR_MAP[schedule.color],
+                                        100
+                                      ),
                                 }}
                               >
                                 {!isPeriodMiddle &&
@@ -1083,10 +1073,10 @@ export default function TeamDetail() {
                       isDone ? 'border-l-transparent pl-3' : ''
                     }`}
                     style={{
-                      backgroundColor: schedule.color,
+                      backgroundColor: EVENT_COLOR_MAP[schedule.color],
                       borderLeftColor: isDone
                         ? 'transparent'
-                        : darkenColor(schedule.color, 25),
+                        : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
                     }}
                   >
                     <div>
@@ -1121,14 +1111,20 @@ export default function TeamDetail() {
                             <Check
                               size={16}
                               style={{
-                                color: darkenColor(schedule.color, 80),
+                                color: darkenColor(
+                                  EVENT_COLOR_MAP[schedule.color],
+                                  80
+                                ),
                               }}
                             />
                           ) : (
                             <span
                               className="h-4 w-4 rounded-full border"
                               style={{
-                                borderColor: darkenColor(schedule.color, 80),
+                                borderColor: darkenColor(
+                                  EVENT_COLOR_MAP[schedule.color],
+                                  80
+                                ),
                               }}
                             />
                           )}

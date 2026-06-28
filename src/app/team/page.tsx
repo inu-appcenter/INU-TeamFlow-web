@@ -3,7 +3,7 @@
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
-import { teams } from '@/mocks/teams';
+import { useMyTeams } from '@/hooks/useTeamQuery';
 
 import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -36,14 +36,16 @@ const categories = [
 
 export default function Team() {
   const router = useRouter();
-
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const { data: teams = [], isLoading } = useMyTeams();
 
   const filteredTeams = teams.filter((team) => {
     if (selectedCategory === 'ALL') return true;
 
     return team.category === selectedCategory;
   });
+
+  if (isLoading) return null;
 
   return (
     <main className="h-screen overflow-hidden bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
@@ -75,7 +77,7 @@ export default function Team() {
                   className={`z-50 cursor-pointer px-4 pb-4 text-lg font-bold whitespace-nowrap transition sm:text-xl md:px-6 md:pb-4 ${
                     isActive
                       ? 'border-b-2 border-[#5E92F0] text-[#5E92F0]'
-                      : 'text-[#CBD2DA] hover:text-[#8E98A3]'
+                      : 'text-[#CBD2DA] hover:text-[#5E92F0]'
                   }`}
                 >
                   {category.label}

@@ -1,18 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getMyEvents,
   createMyEvent,
   updateMyEvent,
   deleteMyEvent,
-} from "@/api/event";
+  getTeamEvents,
+  createTeamEvent,
+  updateTeamEvent,
+  deleteTeamEvent,
+} from '@/api/event';
+import type { MyEventCreateRequest, MyEventUpdateRequest } from '@/types/event';
 import type {
-  MyEventCreateRequest,
-  MyEventUpdateRequest,
-} from "@/types/event";
+  TeamEventCreateRequest,
+  TeamEventUpdateRequest,
+} from '@/types/event';
 
 export const eventKeys = {
   myEvents: (year: number, month: number) =>
-    ["events", "my", year, month] as const,
+    ['events', 'my', year, month] as const,
 };
 
 export const useMyEvents = (year: number, month: number) =>
@@ -26,7 +31,7 @@ export const useCreateMyEvent = () => {
   return useMutation({
     mutationFn: (body: MyEventCreateRequest) => createMyEvent(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 };
@@ -42,7 +47,7 @@ export const useUpdateMyEvent = () => {
       body: MyEventUpdateRequest;
     }) => updateMyEvent(eventId, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 };
@@ -60,7 +65,57 @@ export const useDeleteMyEvent = () => {
       occurence: string;
     }) => deleteMyEvent(eventId, scope, occurence),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+};
+
+export const useTeamEvents = (teamId: number, year: number, month: number) =>
+  useQuery({
+    queryKey: ['events', 'team', teamId, year, month],
+    queryFn: () => getTeamEvents(teamId, year, month),
+  });
+
+export const useCreateTeamEvent = (teamId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: TeamEventCreateRequest) => createTeamEvent(teamId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+};
+
+export const useUpdateTeamEvent = (teamId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      body,
+    }: {
+      eventId: number;
+      body: TeamEventUpdateRequest;
+    }) => updateTeamEvent(teamId, eventId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+};
+
+export const useDeleteTeamEvent = (teamId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      scope,
+      occurence,
+    }: {
+      eventId: number;
+      scope: string;
+      occurence: string;
+    }) => deleteTeamEvent(teamId, eventId, scope, occurence),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 };
