@@ -179,12 +179,25 @@ export default function CalendarPage() {
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
 
   const [selectedDate, setSelectedDate] = useState(today);
-  const { data: schedules = [], isLoading } = useMyEvents(year, month + 1);
+
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
   const prevLastDate = new Date(year, month, 0).getDate();
+
+  // 이전달, 다음달도 조회
+  const { data: prevSchedules = [] } = useMyEvents(
+    month === 0 ? year - 1 : year,
+    month === 0 ? 12 : month
+  );
+  const { data: currentSchedules = [] } = useMyEvents(year, month + 1);
+  const { data: nextSchedules = [] } = useMyEvents(
+    month === 11 ? year + 1 : year,
+    month === 11 ? 1 : month + 2
+  );
+
+  const schedules = [...prevSchedules, ...currentSchedules, ...nextSchedules];
 
   const { mutateAsync: createEvent } = useCreateMyEvent();
   const { mutateAsync: updateEvent } = useUpdateMyEvent();

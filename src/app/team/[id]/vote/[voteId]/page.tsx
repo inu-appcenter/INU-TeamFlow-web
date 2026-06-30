@@ -15,6 +15,7 @@ import VoteResult from '@/components/vote/VoteResult';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { getDepartmentName } from '@/utils/getDepartmentName';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -81,21 +82,13 @@ export default function VoteDetailPage() {
 
   const participantList =
     participantTab === 'completed'
-      ? (vote.completedVoterNameList ?? [])
-      : (vote.uncompletedVoterNameList ?? []);
+      ? (vote.completedVoterList ?? [])
+      : (vote.uncompletedVoterList ?? []);
 
   const maxParticipantCount = Math.max(
     1,
     ...voteSlots.map((slot) => slot.participantCount)
   );
-
-  const getSlot = (date: string, hour: number | string) => {
-    return voteSlots.find((slot) =>
-      vote.isAllDay
-        ? slot.date === date
-        : slot.date === date && Number(slot.startAt.slice(0, 2)) === hour
-    );
-  };
 
   const getSlotColor = (participantCount: number) => {
     const ratio = participantCount / maxParticipantCount;
@@ -245,13 +238,16 @@ export default function VoteDetailPage() {
                           </div>
                         ) : (
                           <div className="grid grid-cols-2 gap-x-12 gap-y-5">
-                            {participantList.map((name) => (
-                              <div key={name} className="flex justify-between">
+                            {participantList.map((voter) => (
+                              <div
+                                key={voter.name}
+                                className="flex justify-between"
+                              >
                                 <span className="text-sm font-semibold">
-                                  {name}
+                                  {voter.name}
                                 </span>
                                 <span className="text-sm text-[#989898]">
-                                  학과가들어가야하는뎅..
+                                  {getDepartmentName(voter.department)}
                                 </span>
                               </div>
                             ))}
@@ -372,10 +368,17 @@ export default function VoteDetailPage() {
                       {/* 관리자만 */}
                       {isAdmin && (
                         <button
-                          onClick={() => setIsSelectingResult(true)}
-                          className="cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#EEF1F5] px-4 py-2 font-semibold text-[#5E92F0]"
+                          onClick={() =>
+                            !vote.isOpened ? null : setIsSelectingResult(true)
+                          }
+                          disabled={!vote.isOpened}
+                          className={`rounded-xl font-semibold transition-all ${
+                            vote.isOpened
+                              ? 'cursor-pointer border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-4 py-2 text-[#5E92F0] active:scale-95'
+                              : 'cursor-not-allowed bg-[#EEF1F5] px-8 py-2 text-[#989898]'
+                          }`}
                         >
-                          일정 확정하기
+                          {vote.isOpened ? '일정 확정하기' : '확정 완료'}
                         </button>
                       )}
                     </div>

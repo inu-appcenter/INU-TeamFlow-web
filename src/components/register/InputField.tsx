@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { INPUT_FIELD_TEXT } from '@/constants/messages';
 import { colleges } from '@/constants/departments';
 
+interface Department {
+  value: string;
+  name: string;
+  note?: string;
+}
 interface College {
-  //단과대 및 학과 정보용
   id: string;
   name: string;
-  departments: string[];
+  departments: Department[];
 }
 interface InputFieldProps {
   value?: string;
@@ -87,8 +91,9 @@ export default function InputField({
           >
             <option value="">{INPUT_FIELD_TEXT.DEPARTMENT_SELECT}</option>
             {currentCollege?.departments.map((department) => (
-              <option key={department} value={department}>
-                {department}
+              <option key={department.value} value={department.value}>
+                {department.name}
+                {department.note ? ` ${department.note}` : ''}
               </option>
             ))}
           </select>

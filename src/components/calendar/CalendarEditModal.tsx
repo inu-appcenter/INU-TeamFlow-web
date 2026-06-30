@@ -477,7 +477,7 @@ export default function CalendarEditModal({
         {isDeleteConfirmOpen && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 px-6"
+            className="absolute inset-0 z-40 flex items-center justify-center bg-black/10 px-6"
           >
             <div className="w-full max-w-[320px] animate-[popup_0.18s_ease-out] rounded-3xl bg-white p-6 shadow-sm">
               <h3 className="text-lg font-bold text-[#2C2C2C]">

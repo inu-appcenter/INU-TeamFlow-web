@@ -5,8 +5,11 @@ import NotificationButton from '@/components/common/notification/NotificationBut
 import Card from '@/components/main/Card';
 
 import { notices } from '@/mocks/notices';
-import { recruitments } from '@/mocks/recruitments';
-import { schedules, type Schedule } from '@/mocks/schedules';
+
+import { useMyEvents } from '@/hooks/useEventQuery';
+import { useRecruitments } from '@/hooks/useRecruitmentQuery';
+import type { Schedule } from '@/types/event';
+import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -31,6 +34,14 @@ const categories = [
   { label: '동아리', value: 'CLUB' },
   { label: '기타', value: 'ETC' },
 ];
+
+const categoryColorMap = {
+  CONTEST: '#FBE4F8',
+  STUDY: '#D8FAD8',
+  PROJECT: '#DCEBFF',
+  CLUB: '#FFF1CC',
+  ETC: '#E9E9E9',
+};
 
 type CalendarDate = {
   date: number;
@@ -116,15 +127,31 @@ export default function Main() {
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
   const [selectedDate, setSelectedDate] = useState(today);
   const selectedDateKey = formatDateKey(selectedDate);
+
+  const { data: prevSchedules = [] } = useMyEvents(
+    month === 0 ? year - 1 : year,
+    month === 0 ? 12 : month
+  );
+  const { data: currentSchedules = [] } = useMyEvents(year, month + 1);
+  const { data: nextSchedules = [] } = useMyEvents(
+    month === 11 ? year + 1 : year,
+    month === 11 ? 1 : month + 2
+  );
+
+  const schedules = [...prevSchedules, ...currentSchedules, ...nextSchedules];
 
   const selectedSchedules = schedules.filter((schedule) =>
     isScheduleOnDate(schedule, selectedDateKey)
   );
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  const { data: recruitmentData } = useRecruitments(0, 100);
+  const recruitments = recruitmentData?.content ?? [];
 
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
@@ -307,7 +334,10 @@ export default function Main() {
                               <div
                                 key={schedule.eventId}
                                 className="h-1.5 rounded-full"
-                                style={{ backgroundColor: schedule.color }}
+                                style={{
+                                  backgroundColor:
+                                    EVENT_COLOR_MAP[schedule.color],
+                                }}
                               />
                             ))}
                           </div>
@@ -340,7 +370,10 @@ export default function Main() {
                           <div className="flex items-center gap-2">
                             <span
                               className="h-3 w-3 rounded-full"
-                              style={{ backgroundColor: schedule.color }}
+                              style={{
+                                backgroundColor:
+                                  EVENT_COLOR_MAP[schedule.color],
+                              }}
                             />
 
                             <p className="truncate text-sm font-semibold text-[#2C2C2C]">
@@ -408,11 +441,11 @@ export default function Main() {
                     onClick={() => router.push(`/notice/${notice.noticeId}`)}
                     className="z-50 border-b-[0.5px] border-[#D6DDE5] py-4 text-left last:border-b-0 active:scale-[0.99]"
                   >
-                    <h3 className="truncate text-base font-semibold text-[#2C2C2C]">
+                    <h3 className="truncate text-[17px] font-semibold text-[#2C2C2C]">
                       [ {notice.teamName} ] {notice.title}
                     </h3>
 
-                    <p className="mt-2 text-xs text-[#989898]">
+                    <p className="mt-1.5 text-xs text-[#989898]">
                       {notice.createdAt}
                     </p>
                   </button>
@@ -497,7 +530,7 @@ export default function Main() {
                     }
                     className="z-50 cursor-pointer border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left last:border-b-0 active:scale-[0.99]"
                   >
-                    <h3 className="truncate text-base font-semibold text-[#2C2C2C]">
+                    <h3 className="truncate text-[17px] font-semibold text-[#2C2C2C]">
                       [ {categoryMap[recruitment.category]} ]{' '}
                       {recruitment.title}
                     </h3>
