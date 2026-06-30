@@ -5,7 +5,7 @@ import {
   EVENT_COLOR_MAP,
   type ScheduleColor,
 } from '@/constants/scheduleColor';
-import type { Schedule } from '@/types/event';
+import type { Schedule, RecurrenceEditScope } from '@/types/event';
 import { Repeat, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -19,8 +19,8 @@ interface CalendarEditModalProps {
   open: boolean;
   schedule: Schedule | null;
   onClose: () => void;
-  onEdit: (schedule: Schedule) => void;
-  onDelete: (eventId: number) => void;
+  onEdit: (schedule: Schedule, scope: RecurrenceEditScope) => void;
+  onDelete: (eventId: number, scope: RecurrenceEditScope) => void;
 }
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -112,6 +112,8 @@ export default function CalendarEditModal({
   const [repeatDays, setRepeatDays] = useState<number[]>(
     getInitialRepeatDays(schedule)
   );
+  const [recurrenceScope, setRecurrenceScope] =
+    useState<RecurrenceEditScope>('THIS_INSTANCE');
 
   const [form, setForm] = useState(getInitialForm(schedule));
 
@@ -156,36 +158,39 @@ export default function CalendarEditModal({
           ? createDateTime(form.startDate, '23:59')
           : createDateTime(form.startDate, form.endTime);
 
-    onEdit({
-      ...schedule,
-      title: form.title,
-      description: form.description,
-      startAt,
-      endAt,
-      isAllDay,
-      color: form.color,
-      isSingle: scheduleType !== 'REPEAT',
-      recurrence:
-        scheduleType === 'REPEAT'
-          ? {
-              freq: repeatType,
-              intervalValue: 1,
-              byDay:
-                repeatType === 'WEEKLY'
-                  ? repeatDays.map((day) => dayNumberToByDay[day] as string)
+    onEdit(
+      {
+        ...schedule,
+        title: form.title,
+        description: form.description,
+        startAt,
+        endAt,
+        isAllDay,
+        color: form.color,
+        isSingle: scheduleType !== 'REPEAT',
+        recurrence:
+          scheduleType === 'REPEAT'
+            ? {
+                freq: repeatType,
+                intervalValue: 1,
+                byDay:
+                  repeatType === 'WEEKLY'
+                    ? repeatDays.map((day) => dayNumberToByDay[day] as string)
+                    : null,
+                byMonthDay:
+                  repeatType === 'MONTHLY'
+                    ? Number(form.startDate.slice(8, 10))
+                    : null,
+                seriesStartAt: null,
+                untilAt: form.endDate
+                  ? createDateTime(form.endDate, '23:59')
                   : null,
-              byMonthDay:
-                repeatType === 'MONTHLY'
-                  ? Number(form.startDate.slice(8, 10))
-                  : null,
-              seriesStartAt: startAt,
-              untilAt: form.endDate
-                ? createDateTime(form.endDate, '23:59')
-                : null,
-              occurrenceCount: null,
-            }
-          : null,
-    });
+                occurrenceCount: null,
+              }
+            : null,
+      },
+      recurrenceScope
+    );
 
     handleClose();
   };
@@ -193,7 +198,7 @@ export default function CalendarEditModal({
   const handleDelete = () => {
     if (!schedule) return;
 
-    onDelete(schedule.eventId);
+    onDelete(schedule.eventId, recurrenceScope);
     setIsDeleteConfirmOpen(false);
     handleClose();
   };
@@ -459,7 +464,7 @@ export default function CalendarEditModal({
             <button
               type="button"
               onClick={() => setIsDeleteConfirmOpen(true)}
-              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222]"
+              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
             >
               삭제
             </button>
@@ -467,7 +472,7 @@ export default function CalendarEditModal({
             <button
               type="button"
               onClick={handleSave}
-              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C]"
+              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
             >
               저장
             </button>

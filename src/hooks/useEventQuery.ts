@@ -58,12 +58,12 @@ export const useDeleteMyEvent = () => {
     mutationFn: ({
       eventId,
       scope,
-      occurence,
+      occurrence,
     }: {
       eventId: number;
       scope: string;
-      occurence: string;
-    }) => deleteMyEvent(eventId, scope, occurence),
+      occurrence: string;
+    }) => deleteMyEvent(eventId, scope, occurrence),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },
@@ -108,12 +108,12 @@ export const useDeleteTeamEvent = (teamId: number) => {
     mutationFn: ({
       eventId,
       scope,
-      occurence,
+      occurrence,
     }: {
       eventId: number;
       scope: string;
-      occurence: string;
-    }) => deleteTeamEvent(teamId, eventId, scope, occurence),
+      occurrence: string;
+    }) => deleteTeamEvent(teamId, eventId, scope, occurrence),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },

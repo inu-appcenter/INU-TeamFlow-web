@@ -4,7 +4,7 @@ import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
 import CalendarEditModal from '@/components/calendar/CalendarEditModal';
 import { useMyEvents } from '@/hooks/useEventQuery';
-import type { Schedule } from '@/types/event';
+import type { Schedule, RecurrenceEditScope } from '@/types/event';
 import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
 import { Check, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
@@ -35,59 +35,15 @@ const formatTime = (dateString: string) => {
   return dateString.slice(11, 16);
 };
 
-const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
-
 const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
+  // 반복 일정이면 occurrenceAt 기준
+  if (!schedule.isSingle && schedule.occurrenceAt) {
+    return schedule.occurrenceAt.slice(0, 10) === dateKey;
+  }
+
+  // 일반 일정/기간 일정이면 기존 방식
   const startDate = schedule.startAt.slice(0, 10);
   const endDate = schedule.endAt.slice(0, 10);
-
-  if (!schedule.isSingle && schedule.recurrence) {
-    const recurrence = schedule.recurrence;
-
-    const seriesStartDate = recurrence.seriesStartAt?.slice(0, 10) ?? startDate;
-    const untilDate = recurrence.untilAt?.slice(0, 10) ?? endDate;
-
-    if (dateKey < seriesStartDate || dateKey > untilDate) return false;
-
-    const targetDate = new Date(dateKey);
-    const seriesStart = new Date(seriesStartDate);
-
-    if (recurrence.freq === 'WEEKLY') {
-      const targetDay = dayMap[targetDate.getDay()];
-
-      if (!recurrence.byDay?.includes(targetDay)) return false;
-
-      const diffWeeks = Math.floor(
-        (targetDate.getTime() - seriesStart.getTime()) /
-          (1000 * 60 * 60 * 24 * 7)
-      );
-
-      return diffWeeks % recurrence.intervalValue === 0;
-    }
-
-    if (recurrence.freq === 'MONTHLY') {
-      const byMonthDay = recurrence.byMonthDay ?? seriesStart.getDate();
-
-      const diffMonths =
-        (targetDate.getFullYear() - seriesStart.getFullYear()) * 12 +
-        (targetDate.getMonth() - seriesStart.getMonth());
-
-      return (
-        targetDate.getDate() === byMonthDay &&
-        diffMonths % recurrence.intervalValue === 0
-      );
-    }
-
-    if (recurrence.freq === 'YEARLY') {
-      const diffYears = targetDate.getFullYear() - seriesStart.getFullYear();
-
-      return (
-        targetDate.getMonth() === seriesStart.getMonth() &&
-        targetDate.getDate() === seriesStart.getDate() &&
-        diffYears % recurrence.intervalValue === 0
-      );
-    }
-  }
 
   return dateKey >= startDate && dateKey <= endDate;
 };
@@ -98,13 +54,15 @@ function assignWeekSlots(
   weekDateKeys: string[],
   schedules: Schedule[]
 ): Map<string, SlottedSchedule[]> {
-  const seen = new Set<number>();
+  const seen = new Set<string>();
   const weekSchedules: Schedule[] = [];
 
   for (const dk of weekDateKeys) {
     for (const s of schedules) {
-      if (!seen.has(s.eventId) && isScheduleOnDate(s, dk)) {
-        seen.add(s.eventId);
+      const key = `${s.eventId}-${s.occurrenceAt ?? s.startAt}`;
+
+      if (!seen.has(key) && isScheduleOnDate(s, dk)) {
+        seen.add(key);
         weekSchedules.push(s);
       }
     }
@@ -197,7 +155,14 @@ export default function CalendarPage() {
     month === 11 ? 1 : month + 2
   );
 
-  const schedules = [...prevSchedules, ...currentSchedules, ...nextSchedules];
+  const schedules = Array.from(
+    new Map(
+      [...prevSchedules, ...currentSchedules, ...nextSchedules].map((s) => [
+        `${s.eventId}-${s.occurrenceAt ?? s.startAt}`,
+        s,
+      ])
+    ).values()
+  );
 
   const { mutateAsync: createEvent } = useCreateMyEvent();
   const { mutateAsync: updateEvent } = useUpdateMyEvent();
@@ -277,7 +242,10 @@ export default function CalendarPage() {
     }
   };
 
-  const handleEditSchedule = async (updated: Schedule) => {
+  const handleEditSchedule = async (
+    updated: Schedule,
+    scope: RecurrenceEditScope
+  ) => {
     try {
       await updateEvent({
         eventId: updated.eventId,
@@ -290,26 +258,33 @@ export default function CalendarPage() {
           color: updated.color,
           isFinished: updated.isFinished,
           occurrenceAt: updated.occurrenceAt ?? updated.startAt,
-          recurrenceEditScope: 'THIS_INSTANCE',
-          ...(updated.recurrence && { recurrence: updated.recurrence }),
+          recurrenceEditScope: scope,
+          ...(updated.recurrence && {
+            recurrence: updated.recurrence,
+          }),
         },
       });
     } catch (error) {
       console.error('일정 수정 실패', error);
     }
+
     setEditSchedule(null);
   };
 
-  const handleDeleteSchedule = async (eventId: number) => {
+  const handleDeleteSchedule = async (
+    eventId: number,
+    scope: RecurrenceEditScope
+  ) => {
     try {
       await deleteEvent({
         eventId,
-        scope: 'THIS_INSTANCE',
-        occurence: editSchedule?.occurrenceAt ?? '',
+        scope,
+        occurrence: editSchedule?.occurrenceAt ?? '',
       });
     } catch (error) {
       console.error('일정 삭제 실패', error);
     }
+
     setEditSchedule(null);
   };
 
@@ -528,7 +503,7 @@ export default function CalendarPage() {
 
                           return (
                             <div
-                              key={schedule.eventId}
+                              key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}-${dateKey}`}
                               className={`absolute h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold ${
                                 isDone ? 'border-l-transparent' : 'pl-1'
                               } ${
@@ -598,7 +573,7 @@ export default function CalendarPage() {
 
                 return (
                   <div
-                    key={schedule.eventId}
+                    key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
                     onClick={() => setEditSchedule(schedule)}
                     className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
                       isDone ? 'border-l-transparent pl-3' : ''
@@ -698,7 +673,7 @@ export default function CalendarPage() {
 
                     return (
                       <div
-                        key={schedule.eventId}
+                        key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
                         onClick={() => setEditSchedule(schedule)}
                         className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
                           isDone ? 'border-l-transparent' : ''
@@ -787,7 +762,7 @@ export default function CalendarPage() {
       />
 
       <CalendarEditModal
-        key={editSchedule?.eventId}
+        key={`${editSchedule?.eventId}-${editSchedule?.occurrenceAt ?? ''}`}
         open={editSchedule !== null}
         schedule={editSchedule}
         onClose={() => setEditSchedule(null)}

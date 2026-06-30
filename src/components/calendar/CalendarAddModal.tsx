@@ -44,10 +44,18 @@ type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
-const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
+const dayMap = [
+  'SUNDAY',
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+] as const;
 
 const createDateTime = (date: string, time: string) => {
-  return `${date}T${time}`;
+  return `${date}T${time}:00`;
 };
 
 export default function CalendarAddModal({
@@ -150,6 +158,17 @@ export default function CalendarAddModal({
       isAllDay: false,
     });
   };
+  useEffect(() => {
+    if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm((prev) => ({
+      ...prev,
+      startDate: formatDate(selectedDate),
+      endDate: formatDate(selectedDate),
+    }));
+
+    setRepeatDays([selectedDate.getDay()]);
+  }, [selectedDate, open]);
 
   const handleClose = () => {
     setIsClosing(true);

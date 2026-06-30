@@ -286,7 +286,7 @@ export default function Main() {
                         .filter((schedule) =>
                           isScheduleOnDate(schedule, dateKey)
                         )
-                        .slice(0, 2);
+                        .slice(0, 3);
 
                       const isCurrentMonth = item.type === 'current';
 

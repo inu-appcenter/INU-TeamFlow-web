@@ -457,7 +457,7 @@ export default function TeamDetail() {
       await deleteEvent({
         eventId,
         scope: 'THIS_INSTANCE',
-        occurence: editSchedule?.occurrenceAt ?? '',
+        occurrence: editSchedule?.occurrenceAt ?? '',
       });
     } catch (err) {
       console.error('일정 삭제 실패', err);
