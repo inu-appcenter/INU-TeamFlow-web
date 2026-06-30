@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import { getPresignedUrl } from '@/api/team';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export type TeamFormData = {
   name: string;

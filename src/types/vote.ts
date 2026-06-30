@@ -1,3 +1,8 @@
+export interface VoterInfo {
+  name: string;
+  department: string;
+}
+
 export interface EventVoteResponse {
   voteId: number;
   teamId: number;
@@ -9,8 +14,8 @@ export interface EventVoteResponse {
   dates: string[];
   dailyTimeStart: string | null;
   dailyTimeEnd: string | null;
-  completedVoterNameList: string[];
-  uncompletedVoterNameList: string[];
+  completedVoterList: VoterInfo[];
+  uncompletedVoterList: VoterInfo[];
 }
 
 export interface EventVoteCreateRequest {

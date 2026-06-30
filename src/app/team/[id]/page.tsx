@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -253,7 +254,6 @@ export default function TeamDetail() {
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
 
   const [selectedDate, setSelectedDate] = useState(today);
-  const { data: schedules = [] } = useTeamEvents(teamId, year, month + 1);
   const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isVoteAddOpen, setIsVoteAddOpen] = useState(false);
@@ -261,6 +261,24 @@ export default function TeamDetail() {
   const [isMd, setIsMd] = useState(false);
 
   const { data: allVotes = [] } = useTeamVotes(teamId);
+
+  const { data: prevSchedules = [] } = useTeamEvents(
+    teamId,
+    month === 0 ? year - 1 : year,
+    month === 0 ? 12 : month
+  );
+  const { data: currentSchedules = [] } = useTeamEvents(
+    teamId,
+    year,
+    month + 1
+  );
+  const { data: nextSchedules = [] } = useTeamEvents(
+    teamId,
+    month === 11 ? year + 1 : year,
+    month === 11 ? 1 : month + 2
+  );
+
+  const schedules = [...prevSchedules, ...currentSchedules, ...nextSchedules];
 
   useEffect(() => {
     const checkScreen = () => {

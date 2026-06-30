@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { recruitments } from '@/mocks/recruitments';
+import { useRecruitments } from '@/hooks/useRecruitmentQuery';
 import { getDday } from '@/utils/date/getDday';
 
 import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
@@ -25,6 +25,14 @@ const categories = [
   { label: '기타', value: 'ETC' },
 ];
 
+const categoryColorMap = {
+  CONTEST: '#FBE4F8',
+  STUDY: '#D8FAD8',
+  PROJECT: '#DCEBFF',
+  CLUB: '#FFF1CC',
+  ETC: '#E9E9E9',
+};
+
 export default function Recruitment() {
   const router = useRouter();
 
@@ -34,9 +42,15 @@ export default function Recruitment() {
 
   const normalizedKeyword = keyword.replace(/\s/g, '');
 
+  const { data: recruitmentData } = useRecruitments(0, 20);
+  const recruitments = recruitmentData?.content ?? [];
+
   const filtered = recruitments.filter((recruitment) => {
     const title = recruitment.title.replace(/\s/g, '');
-    const announcementTitle = recruitment.announcementTitle.replace(/\s/g, '');
+    const announcementTitle = (recruitment.announcementTitle ?? '').replace(
+      /\s/g,
+      ''
+    );
 
     const matchesCategory =
       selectedCategory === 'ALL' || recruitment.category === selectedCategory;
@@ -56,10 +70,7 @@ export default function Recruitment() {
         <header className="mt-12 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => {
-                if (window.history.length > 1) router.back();
-                else router.push('/');
-              }}
+              onClick={() => router.push('/')}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={28} strokeWidth={2.5} />
@@ -75,7 +86,7 @@ export default function Recruitment() {
             <button
               key={category.value}
               onClick={() => setSelectedCategory(category.value)}
-              className={`sm:text-md cursor-pointer rounded-2xl border-[0.5] px-3 py-1.5 text-[18px] font-normal ${
+              className={`sm:text-md cursor-pointer rounded-2xl border-[0.5px] px-3 py-1.5 text-[18px] font-normal ${
                 selectedCategory === category.value
                   ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
                   : 'border-[#D6DDE5] bg-white text-[#2C2C2C]'
@@ -86,7 +97,10 @@ export default function Recruitment() {
           ))}
 
           {/* PC 버튼 */}
-          <button className="ml-auto hidden cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] px-4 py-2 text-sm font-medium text-white md:flex">
+          <button
+            onClick={() => router.push('/recruitment/create')}
+            className="ml-auto hidden cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] px-4 py-2 text-sm font-medium text-white md:flex"
+          >
             <Plus size={14} strokeWidth={2.5} />
             모집글 쓰기
           </button>
@@ -94,12 +108,12 @@ export default function Recruitment() {
 
         {/* 검색바 */}
         <section className="mb-5 flex items-center gap-4">
-          <div className="flex h-10 flex-1 items-center overflow-hidden rounded-2xl border-[0.5] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
+          <div className="flex h-10 flex-1 items-center overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
             <div className="relative h-full">
               <select
                 value={searchType}
                 onChange={(e) => setSearchType(e.target.value)}
-                className="h-full appearance-none rounded-l-full border-r-[0.5] border-[#D6DDE5] bg-white px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
+                className="h-full appearance-none rounded-l-full border-r-[0.5px] border-[#D6DDE5] bg-white px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
               >
                 <option value="title">제목</option>
                 <option value="announcementTitle">정보글</option>
@@ -131,52 +145,82 @@ export default function Recruitment() {
 
         {/* 리스트 */}
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {filtered.map((recruitment) => (
-            <div
-              key={recruitment.recruitmentId}
-              className="cursor-pointer rounded-2xl bg-white p-6"
-              onClick={() =>
-                router.push(`/recruitment/${recruitment.recruitmentId}`)
-              }
-            >
-              <h2 className="truncate text-lg font-bold text-[#2C2C2C]">
-                [ {categoryMap[recruitment.category]} ] {recruitment.title}
-              </h2>
+          {filtered.map((recruitment) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-              <p
-                className={`mt-2 text-sm ${
-                  recruitment.announcementTitle
-                    ? 'text-[#2C2C2C]'
-                    : 'text-[#B0B0B0]'
-                }`}
+            const endDate = new Date(recruitment.endAt);
+            endDate.setHours(0, 0, 0, 0);
+
+            const isClosed = endDate < today || recruitment.status === 'CLOSED';
+
+            const formatDate = (dateString: string) => {
+              const date = new Date(dateString);
+
+              return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+              });
+            };
+            return (
+              <div
+                key={recruitment.recruitmentId}
+                className="cursor-pointer rounded-2xl bg-white p-6"
+                onClick={() =>
+                  router.push(`/recruitment/${recruitment.recruitmentId}`)
+                }
               >
-                {recruitment.announcementTitle || '연결된 정보글이 없습니다'}
-              </p>
-
-              <div className="mt-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <p className="text-xs text-[#989898]">
-                    {recruitment.createdAt} ~ {recruitment.endAt}
-                  </p>
-
-                  <span className="text-xs font-medium text-[#5E92F0]">
-                    {getDday(recruitment.endAt)}
-                    {getDday(recruitment.endAt) === '오늘' && ' 마감'}
+                  <span
+                    className="rounded-full px-3 py-1 text-sm font-semibold"
+                    style={{
+                      backgroundColor: categoryColorMap[recruitment.category],
+                      color: '#5c5c5c',
+                    }}
+                  >
+                    {categoryMap[recruitment.category]}
                   </span>
+
+                  <h2 className="truncate text-lg font-bold text-[#2C2C2C]">
+                    {recruitment.title}
+                  </h2>
                 </div>
 
-                <span
-                  className={`rounded-full px-4 py-1.5 text-xs font-medium ${
-                    recruitment.status === 'OPEN'
-                      ? 'bg-[#A7ECA7] text-[#2C2C2C]'
-                      : 'bg-[#F67F8F] text-white'
+                <p
+                  className={`mt-2 text-sm ${
+                    recruitment.announcementTitle
+                      ? 'text-[#2C2C2C]'
+                      : 'text-[#B0B0B0]'
                   }`}
                 >
-                  {recruitment.status === 'OPEN' ? '모집중' : '모집마감'}
-                </span>
+                  {recruitment.announcementTitle || '연결된 정보글이 없습니다'}
+                </p>
+
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[13px] text-[#989898]">
+                      {formatDate(recruitment.endAt)}
+                    </p>
+
+                    <span className="text-[13px] font-medium text-[#5E92F0]">
+                      {getDday(recruitment.endAt)}
+                    </span>
+                  </div>
+
+                  <span
+                    className={`rounded-full px-4 py-1 text-sm font-medium ${
+                      isClosed
+                        ? 'bg-[#EEF1F5] text-[#989898]'
+                        : 'bg-[#A7ECA7] text-[#1F4D1A]'
+                    }`}
+                  >
+                    {isClosed ? '모집마감' : '모집중'}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </section>
       </div>
     </main>

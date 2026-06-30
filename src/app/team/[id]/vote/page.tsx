@@ -74,10 +74,10 @@ export default function TeamVotePage() {
           <div className="flex-1 overflow-y-auto px-6 sm:px-8">
             <section className="flex flex-col">
               {teamVotes.map((vote) => {
-                const completed = vote.completedVoterNameList?.length ?? 0;
+                const completed = vote.completedVoterList?.length ?? 0;
                 const total =
-                  (vote.completedVoterNameList?.length ?? 0) +
-                  (vote.uncompletedVoterNameList?.length ?? 0);
+                  (vote.completedVoterList?.length ?? 0) +
+                  (vote.uncompletedVoterList?.length ?? 0);
 
                 const progress = total === 0 ? 0 : (completed / total) * 100;
 
