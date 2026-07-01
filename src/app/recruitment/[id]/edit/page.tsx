@@ -25,12 +25,10 @@ export default function RecruitmentEditPage() {
         description: detail.description,
         category: detail.category,
         targetMemberCount: detail.targetMemberCount,
-        endAt: detail.endAt,
-
+        endAt: detail.endAt.slice(0, 10), // 변경
         announcementId: detail.announcementId
           ? Number(detail.announcementId)
           : undefined,
-
         teamId: detail.teamId ? Number(detail.teamId) : undefined,
       }
     : null;
@@ -47,6 +45,7 @@ export default function RecruitmentEditPage() {
           title: form.title,
           description: form.description,
           targetMemberCount: form.targetMemberCount,
+          recruitmentCategory: form.category,
           endAt: form.endAt,
         },
       });

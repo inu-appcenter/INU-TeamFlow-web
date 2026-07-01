@@ -30,14 +30,14 @@ export const updateMyEvent = (
 ): Promise<EventDetailResponse> =>
   axiosInstance.put(`/events/${eventId}`, body).then((res) => res.data);
 
-/** DELETE /events/{eventId}?scope=...&occurence=... */
+/** DELETE /events/{eventId}?scope=...&occurrence=... */
 export const deleteMyEvent = (
   eventId: number,
   scope: string,
-  occurence: string
+  occurrence: string
 ): Promise<void> =>
   axiosInstance
-    .delete(`/events/${eventId}`, { params: { scope, occurence } })
+    .delete(`/events/${eventId}`, { params: { scope, occurrence } })
     .then((res) => res.data);
 
 // 팀 일정
@@ -69,15 +69,15 @@ export const updateTeamEvent = (
     .put(`/teams/${teamId}/events/${eventId}`, body)
     .then((res) => res.data);
 
-/** DELETE /teams/{teamId}/events/{eventId}?scope=...&occurence=... */
+/** DELETE /teams/{teamId}/events/{eventId}?scope=...&occurrence=... */
 export const deleteTeamEvent = (
   teamId: number,
   eventId: number,
   scope: string,
-  occurence: string
+  occurrence: string
 ): Promise<void> =>
   axiosInstance
     .delete(`/teams/${teamId}/events/${eventId}`, {
-      params: { scope, occurence },
+      params: { scope, occurrence },
     })
     .then((res) => res.data);

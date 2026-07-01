@@ -57,64 +57,14 @@ const formatDateKey = (date: Date) => {
 };
 
 const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
+  // 반복 일정이면 occurrenceAt 기준 우선 처리 (CalendarPage 방식)
+  if (!schedule.isSingle && schedule.occurrenceAt) {
+    return schedule.occurrenceAt.slice(0, 10) === dateKey;
+  }
+
+  // 일반 일정 / 기간 일정 fallback
   const startDate = schedule.startAt.slice(0, 10);
   const endDate = schedule.endAt.slice(0, 10);
-
-  if (!schedule.isSingle && schedule.recurrence) {
-    const recurrence = schedule.recurrence;
-
-    const seriesStartDate = recurrence.seriesStartAt?.slice(0, 10) ?? startDate;
-    const untilDate = recurrence.untilAt?.slice(0, 10) ?? endDate;
-
-    if (dateKey < seriesStartDate || dateKey > untilDate) return false;
-
-    const targetDate = new Date(dateKey);
-    const seriesStart = new Date(seriesStartDate);
-
-    if (recurrence.freq === 'DAILY') {
-      const diffDays = Math.floor(
-        (targetDate.getTime() - seriesStart.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      return diffDays % recurrence.intervalValue === 0;
-    }
-
-    if (recurrence.freq === 'WEEKLY') {
-      const targetDay = dayMap[targetDate.getDay()];
-
-      if (!recurrence.byDay?.includes(targetDay)) return false;
-
-      const diffWeeks = Math.floor(
-        (targetDate.getTime() - seriesStart.getTime()) /
-          (1000 * 60 * 60 * 24 * 7)
-      );
-
-      return diffWeeks % recurrence.intervalValue === 0;
-    }
-
-    if (recurrence.freq === 'MONTHLY') {
-      const byMonthDay = recurrence.byMonthDay ?? seriesStart.getDate();
-
-      const diffMonths =
-        (targetDate.getFullYear() - seriesStart.getFullYear()) * 12 +
-        (targetDate.getMonth() - seriesStart.getMonth());
-
-      return (
-        targetDate.getDate() === byMonthDay &&
-        diffMonths % recurrence.intervalValue === 0
-      );
-    }
-
-    if (recurrence.freq === 'YEARLY') {
-      const diffYears = targetDate.getFullYear() - seriesStart.getFullYear();
-
-      return (
-        targetDate.getMonth() === seriesStart.getMonth() &&
-        targetDate.getDate() === seriesStart.getDate() &&
-        diffYears % recurrence.intervalValue === 0
-      );
-    }
-  }
 
   return dateKey >= startDate && dateKey <= endDate;
 };
@@ -144,7 +94,14 @@ export default function Main() {
     month === 11 ? 1 : month + 2
   );
 
-  const schedules = [...prevSchedules, ...currentSchedules, ...nextSchedules];
+  const schedules = Array.from(
+    new Map(
+      [...prevSchedules, ...currentSchedules, ...nextSchedules].map((s) => [
+        `${s.eventId}-${s.occurrenceAt ?? s.startAt}`,
+        s,
+      ])
+    ).values()
+  );
 
   const selectedSchedules = schedules.filter((schedule) =>
     isScheduleOnDate(schedule, selectedDateKey)
@@ -286,7 +243,7 @@ export default function Main() {
                         .filter((schedule) =>
                           isScheduleOnDate(schedule, dateKey)
                         )
-                        .slice(0, 2);
+                        .slice(0, 3);
 
                       const isCurrentMonth = item.type === 'current';
 

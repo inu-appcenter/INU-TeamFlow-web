@@ -35,60 +35,12 @@ const formatTime = (dateString: string) => {
   return dateString.slice(11, 16);
 };
 
-const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
-
 const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
+  if (!schedule.isSingle && schedule.occurrenceAt) {
+    return schedule.occurrenceAt.slice(0, 10) === dateKey;
+  }
   const startDate = schedule.startAt.slice(0, 10);
   const endDate = schedule.endAt.slice(0, 10);
-
-  if (!schedule.isSingle && schedule.recurrence) {
-    const recurrence = schedule.recurrence;
-
-    const seriesStartDate = recurrence.seriesStartAt?.slice(0, 10) ?? startDate;
-    const untilDate = recurrence.untilAt?.slice(0, 10) ?? endDate;
-
-    if (dateKey < seriesStartDate || dateKey > untilDate) return false;
-
-    const targetDate = new Date(dateKey);
-    const seriesStart = new Date(seriesStartDate);
-
-    if (recurrence.freq === 'WEEKLY') {
-      const targetDay = dayMap[targetDate.getDay()];
-
-      if (!recurrence.byDay?.includes(targetDay)) return false;
-
-      const diffWeeks = Math.floor(
-        (targetDate.getTime() - seriesStart.getTime()) /
-          (1000 * 60 * 60 * 24 * 7)
-      );
-
-      return diffWeeks % recurrence.intervalValue === 0;
-    }
-
-    if (recurrence.freq === 'MONTHLY') {
-      const byMonthDay = recurrence.byMonthDay ?? seriesStart.getDate();
-
-      const diffMonths =
-        (targetDate.getFullYear() - seriesStart.getFullYear()) * 12 +
-        (targetDate.getMonth() - seriesStart.getMonth());
-
-      return (
-        targetDate.getDate() === byMonthDay &&
-        diffMonths % recurrence.intervalValue === 0
-      );
-    }
-
-    if (recurrence.freq === 'YEARLY') {
-      const diffYears = targetDate.getFullYear() - seriesStart.getFullYear();
-
-      return (
-        targetDate.getMonth() === seriesStart.getMonth() &&
-        targetDate.getDate() === seriesStart.getDate() &&
-        diffYears % recurrence.intervalValue === 0
-      );
-    }
-  }
-
   return dateKey >= startDate && dateKey <= endDate;
 };
 

@@ -6,6 +6,7 @@ import CalendarEditModal from '@/components/calendar/CalendarEditModal';
 import VoteAddModal, {
   type EventVoteCreateRequest,
 } from '@/components/vote/VoteAddModar';
+import type { Schedule, RecurrenceEditScope } from '@/types/event';
 
 import Card from '@/components/main/Card';
 import { useCreateVote } from '@/hooks/useVoteQuery';
@@ -19,7 +20,6 @@ import {
 import { useTeamDetail, useTeamMembers } from '@/hooks/useTeamQuery';
 import { useTeamVotes } from '@/hooks/useVoteQuery';
 
-import type { Schedule } from '@/types/event';
 import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
 
@@ -90,60 +90,12 @@ const darkenColor = (hex: string, amount: number) => {
   return `rgb(${r}, ${g}, ${b})`;
 };
 
-const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
-
 const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
+  if (!schedule.isSingle && schedule.occurrenceAt) {
+    return schedule.occurrenceAt.slice(0, 10) === dateKey;
+  }
   const startDate = schedule.startAt.slice(0, 10);
   const endDate = schedule.endAt.slice(0, 10);
-
-  if (!schedule.isSingle && schedule.recurrence) {
-    const recurrence = schedule.recurrence;
-
-    const seriesStartDate = recurrence.seriesStartAt?.slice(0, 10) ?? startDate;
-    const untilDate = recurrence.untilAt?.slice(0, 10) ?? endDate;
-
-    if (dateKey < seriesStartDate || dateKey > untilDate) return false;
-
-    const targetDate = new Date(dateKey);
-    const seriesStart = new Date(seriesStartDate);
-
-    if (recurrence.freq === 'WEEKLY') {
-      const targetDay = dayMap[targetDate.getDay()];
-
-      if (!recurrence.byDay?.includes(targetDay)) return false;
-
-      const diffWeeks = Math.floor(
-        (targetDate.getTime() - seriesStart.getTime()) /
-          (1000 * 60 * 60 * 24 * 7)
-      );
-
-      return diffWeeks % recurrence.intervalValue === 0;
-    }
-
-    if (recurrence.freq === 'MONTHLY') {
-      const byMonthDay = recurrence.byMonthDay ?? seriesStart.getDate();
-
-      const diffMonths =
-        (targetDate.getFullYear() - seriesStart.getFullYear()) * 12 +
-        (targetDate.getMonth() - seriesStart.getMonth());
-
-      return (
-        targetDate.getDate() === byMonthDay &&
-        diffMonths % recurrence.intervalValue === 0
-      );
-    }
-
-    if (recurrence.freq === 'YEARLY') {
-      const diffYears = targetDate.getFullYear() - seriesStart.getFullYear();
-
-      return (
-        targetDate.getMonth() === seriesStart.getMonth() &&
-        targetDate.getDate() === seriesStart.getDate() &&
-        diffYears % recurrence.intervalValue === 0
-      );
-    }
-  }
-
   return dateKey >= startDate && dateKey <= endDate;
 };
 
@@ -151,13 +103,14 @@ function assignWeekSlots(
   weekDateKeys: string[],
   schedules: Schedule[]
 ): Map<string, SlottedSchedule[]> {
-  const seen = new Set<number>();
+  const seen = new Set<string>();
   const weekSchedules: Schedule[] = [];
 
   for (const dk of weekDateKeys) {
     for (const s of schedules) {
-      if (!seen.has(s.eventId) && isScheduleOnDate(s, dk)) {
-        seen.add(s.eventId);
+      const key = `${s.eventId}-${s.occurrenceAt ?? s.startAt}`;
+      if (!seen.has(key) && isScheduleOnDate(s, dk)) {
+        seen.add(key);
         weekSchedules.push(s);
       }
     }
@@ -278,7 +231,14 @@ export default function TeamDetail() {
     month === 11 ? 1 : month + 2
   );
 
-  const schedules = [...prevSchedules, ...currentSchedules, ...nextSchedules];
+  const schedules = Array.from(
+    new Map(
+      [...prevSchedules, ...currentSchedules, ...nextSchedules].map((s) => [
+        `${s.eventId}-${s.occurrenceAt ?? s.startAt}`,
+        s,
+      ])
+    ).values()
+  );
 
   useEffect(() => {
     const checkScreen = () => {
@@ -428,7 +388,10 @@ export default function TeamDetail() {
     }
   };
 
-  const handleEditSchedule = async (updated: Schedule) => {
+  const handleEditSchedule = async (
+    updated: Schedule,
+    scope: RecurrenceEditScope
+  ) => {
     try {
       await updateEvent({
         eventId: updated.eventId,
@@ -441,7 +404,7 @@ export default function TeamDetail() {
           color: updated.color,
           isFinished: updated.isFinished,
           occurrenceAt: updated.occurrenceAt ?? updated.startAt,
-          recurrenceEditScope: 'THIS_INSTANCE',
+          recurrenceEditScope: scope,
           participants: [],
           ...(updated.recurrence && { recurrence: updated.recurrence }),
         },
@@ -452,12 +415,15 @@ export default function TeamDetail() {
     setEditSchedule(null);
   };
 
-  const handleDeleteSchedule = async (eventId: number) => {
+  const handleDeleteSchedule = async (
+    eventId: number,
+    scope: RecurrenceEditScope
+  ) => {
     try {
       await deleteEvent({
         eventId,
-        scope: 'THIS_INSTANCE',
-        occurence: editSchedule?.occurrenceAt ?? '',
+        scope,
+        occurrence: editSchedule?.occurrenceAt ?? '',
       });
     } catch (err) {
       console.error('일정 삭제 실패', err);
@@ -832,14 +798,16 @@ export default function TeamDetail() {
                                 DATE_HEADER_H +
                                 schedule.slot * (EVENT_H + EVENT_GAP);
                             } else {
-                              const periodCountOnThisDate =
-                                dateSchedules.filter(
-                                  (s) => s.slot !== -1
-                                ).length;
+                              const maxSlotOnThisDate = dateSchedules
+                                .filter((s) => s.slot !== -1)
+                                .reduce(
+                                  (max, s) => Math.max(max, s.slot + 1),
+                                  0
+                                );
 
                               topOffset =
                                 DATE_HEADER_H +
-                                periodCountOnThisDate * (EVENT_H + EVENT_GAP) +
+                                maxSlotOnThisDate * (EVENT_H + EVENT_GAP) +
                                 singleIdx * (EVENT_H + EVENT_GAP);
 
                               singleIdx++;
@@ -847,7 +815,7 @@ export default function TeamDetail() {
 
                             return (
                               <div
-                                key={schedule.eventId}
+                                key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
                                 className={`absolute h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold ${
                                   isDone ? 'border-l-transparent' : 'pl-1'
                                 } ${
@@ -1172,7 +1140,7 @@ export default function TeamDetail() {
 
       {isAdmin && (
         <CalendarEditModal
-          key={editSchedule?.eventId}
+          key={`${editSchedule?.eventId}-${editSchedule?.occurrenceAt ?? ''}`}
           open={editSchedule !== null}
           schedule={editSchedule}
           onClose={() => setEditSchedule(null)}

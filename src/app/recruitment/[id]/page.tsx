@@ -23,11 +23,6 @@ const categoryColorMap: Record<string, string> = {
   ETC: '#E9E9E9',
 };
 
-const statusMap: Record<string, string> = {
-  OPEN: '모집중',
-  CLOSED: '모집마감',
-};
-
 export default function RecruitmentDetail() {
   const router = useRouter();
   const params = useParams();
@@ -96,7 +91,7 @@ export default function RecruitmentDetail() {
             }}
           >
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/recruitment')}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft
