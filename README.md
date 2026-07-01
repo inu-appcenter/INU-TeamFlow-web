@@ -1,36 +1,19 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TeamFlow
 
-## Getting Started
+> 대학생 팀 프로젝트와 스터디를 위한 올인원 협업 플랫폼
 
-First, run the development server:
+## 📖 서비스 소개
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+TeamFlow는 교내 팀 프로젝트, 스터디, 공모전, 동아리 등 다양한 협업 활동을 위한 플랫폼입니다.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+기존에는 팀 모집, 교내 정보 탐색, 일정 관리와 조율을 여러 서비스에서 각각 진행해야 했습니다. TeamFlow는 이러한 과정을 하나의 서비스로 통합하여 팀 구성부터 운영까지 효율적으로 관리할 수 있도록 지원합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎯 서비스 목표
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 🤝 팀 모집과 팀 운영을 하나의 서비스에서 제공
 
-## Learn More
+- 📅 개인 일정과 팀 일정을 함께 관리하는 통합 캘린더
 
-To learn more about Next.js, take a look at the following resources:
+- 🗳️ 일정 투표를 통한 팀원 간 일정 조율
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 📢 교내 정보 탐색부터 모집까지 자연스럽게 연결

@@ -574,7 +574,10 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
-                    onClick={() => setEditSchedule(schedule)}
+                    onClick={() => {
+                      if (schedule.teamId) return;
+                      setEditSchedule(schedule);
+                    }}
                     className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
                       isDone ? 'border-l-transparent pl-3' : ''
                     }`}
@@ -674,7 +677,10 @@ export default function CalendarPage() {
                     return (
                       <div
                         key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
-                        onClick={() => setEditSchedule(schedule)}
+                        onClick={() => {
+                          if (schedule.teamId) return;
+                          setEditSchedule(schedule);
+                        }}
                         className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
                           isDone ? 'border-l-transparent' : ''
                         }`}
