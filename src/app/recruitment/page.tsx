@@ -86,7 +86,7 @@ export default function Recruitment() {
             <button
               key={category.value}
               onClick={() => setSelectedCategory(category.value)}
-              className={`sm:text-md cursor-pointer rounded-2xl border-[0.5px] px-3 py-1.5 text-[18px] font-normal ${
+              className={`sm:text-md cursor-pointer rounded-2xl border-[0.5px] px-3.5 py-1.5 text-[18px] font-normal ${
                 selectedCategory === category.value
                   ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
                   : 'border-[#D6DDE5] bg-white text-[#2C2C2C]'
@@ -157,29 +157,24 @@ export default function Recruitment() {
             const formatDate = (dateString: string) => {
               const date = new Date(dateString);
 
-              return date.toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-              });
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+
+              return `${year}.${month}.${day}`;
             };
             return (
               <div
                 key={recruitment.recruitmentId}
-                className="cursor-pointer rounded-2xl bg-white p-6"
+                className="cursor-pointer rounded-2xl border-l-15 bg-white p-6"
+                style={{ borderColor: categoryColorMap[recruitment.category] }}
                 onClick={() =>
                   router.push(`/recruitment/${recruitment.recruitmentId}`)
                 }
               >
                 <div className="flex items-center gap-2">
-                  <span
-                    className="rounded-full px-3 py-1 text-sm font-semibold"
-                    style={{
-                      backgroundColor: categoryColorMap[recruitment.category],
-                      color: '#5c5c5c',
-                    }}
-                  >
-                    {categoryMap[recruitment.category]}
+                  <span className="truncate text-lg font-bold text-[#2C2C2C]">
+                    [ {categoryMap[recruitment.category]} ]
                   </span>
 
                   <h2 className="truncate text-lg font-bold text-[#2C2C2C]">
@@ -209,7 +204,7 @@ export default function Recruitment() {
                   </div>
 
                   <span
-                    className={`rounded-full px-4 py-1 text-sm font-medium ${
+                    className={`rounded-xl px-3 py-1 text-sm font-medium ${
                       isClosed
                         ? 'bg-[#EEF1F5] text-[#989898]'
                         : 'bg-[#A7ECA7] text-[#1F4D1A]'

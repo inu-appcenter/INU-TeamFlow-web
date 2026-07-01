@@ -60,7 +60,7 @@ const InputField = ({
     </div>
 
     <input
-      className="mb-3 w-full max-w-[400px] rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-2 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+      className="mb-3 w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-2 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -87,7 +87,7 @@ const TextAreaField = ({
     </div>
 
     <textarea
-      className="min-h-[90px] w-full max-w-[400px] resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+      className="min-h-[90px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -95,7 +95,7 @@ const TextAreaField = ({
     />
 
     {maxLength && (
-      <div className="max-w-[400px] text-right text-xs text-[#B0B0B0]">
+      <div className="text-right text-xs text-[#B0B0B0]">
         {value.length}/{maxLength}
       </div>
     )}
@@ -221,153 +221,161 @@ export default function TeamForm({
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
-            <section className="flex items-start justify-between">
-              <div className="relative">
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mb-2 flex h-[160px] w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
-                >
-                  {previewUrl ? (
-                    <img
-                      src={previewUrl}
-                      alt="팀 이미지"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Upload className="text-[#9C9C9C]" />
-                  )}
+          <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6">
+            <div className="mx-auto max-w-[500px]">
+              <section>
+                <div className="mb-2 text-sm font-bold tracking-wide text-[#B0B0B0]">
+                  팀 이미지
+                </div>
+                <div className="flex justify-between">
+                  <div className="relative">
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="mb-2 flex h-[160px] w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
+                    >
+                      {previewUrl ? (
+                        <img
+                          src={previewUrl}
+                          alt="팀 이미지"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Upload className="text-[#9C9C9C]" />
+                      )}
+                    </div>
+
+                    {previewUrl && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          setPreviewUrl(null);
+
+                          setForm((prev) => ({
+                            ...prev,
+                            imageKey: '',
+                          }));
+
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                        className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[#989898]/50 text-white"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {previewUrl && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </section>
 
-                      setPreviewUrl(null);
+              <p className="mb-4 flex items-center text-[10px] text-[#b0b0b0]">
+                이미지를 선택하지 않으면 기본 이미지가 적용됩니다
+              </p>
 
-                      setForm((prev) => ({
-                        ...prev,
-                        imageKey: '',
-                      }));
+              <section className="mb-16">
+                <div className="mb-2 text-sm font-bold tracking-wide text-[#B0B0B0]">
+                  카테고리
+                </div>
 
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                      }
-                    }}
-                    className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[#989898]/50 text-white"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+                <div className="mb-3 flex flex-wrap gap-2.5">
+                  {Object.keys(categoryMap).map((key) => {
+                    const typedKey = key as keyof typeof categoryMap;
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
+                    const isSelected = form.category === typedKey;
 
-              <div className="flex gap-2">
-                {mode === 'edit' && onDelete && (
-                  <button
-                    onClick={onDelete}
-                    className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-6 py-2 font-semibold text-[#E22222]"
-                  >
-                    삭제
-                  </button>
-                )}
-                <button
-                  onClick={async () => {
-                    if (!form.name.trim()) {
-                      showErrorMessage('팀 이름을 입력해주세요');
-                      return;
-                    }
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => onChange('category', typedKey)}
+                        className={`cursor-pointer rounded-2xl border-[0.5px] px-4 py-2 text-sm transition-all duration-150 ${
+                          isSelected ? '' : 'border-[#D6DDE5] bg-[#EEF1F5]'
+                        }`}
+                        style={
+                          isSelected
+                            ? {
+                                backgroundColor: categoryColorMap[typedKey],
+                                borderColor: categoryBorderColorMap[typedKey],
+                              }
+                            : undefined
+                        }
+                      >
+                        {categoryMap[typedKey]}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                    if (!form.description.trim()) {
-                      showErrorMessage('팀 소개를 입력해주세요');
-                      return;
-                    }
+                <InputField
+                  label="팀 이름"
+                  required
+                  value={form.name}
+                  onChange={(e) => onChange('name', e.target.value)}
+                />
+                <TextAreaField
+                  label="팀 소개"
+                  required
+                  maxLength={50}
+                  value={form.description}
+                  onChange={(e) => onChange('description', e.target.value)}
+                />
+                <InputField
+                  label="팀 링크"
+                  value={form.link}
+                  onChange={(e) => onChange('link', e.target.value)}
+                />
 
-                    if (mode === 'create') {
-                      setIsConfirmOpen(true);
-                    } else {
-                      await onSubmit(form);
-                    }
-                  }}
-                  className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 py-2 font-semibold text-white"
-                >
-                  {mode === 'create' ? '생성' : '수정'}
-                </button>
-              </div>
-            </section>
-
-            <p className="mb-4 text-[10px] text-[#b0b0b0]">
-              이미지를 선택하지 않으면 기본 이미지가 적용됩니다
-            </p>
-
-            <section className="mb-30">
-              <div className="mb-2 text-sm font-bold tracking-wide text-[#B0B0B0]">
-                카테고리
-              </div>
-
-              <div className="mb-3 flex flex-wrap gap-2.5">
-                {Object.keys(categoryMap).map((key) => {
-                  const typedKey = key as keyof typeof categoryMap;
-
-                  const isSelected = form.category === typedKey;
-
-                  return (
+                <InputField
+                  label="팀 SNS"
+                  value={form.sns}
+                  onChange={(e) => onChange('sns', e.target.value)}
+                />
+                <div className="mt-6 flex justify-center">
+                  <div className="flex gap-2">
+                    {mode === 'edit' && onDelete && (
+                      <button
+                        onClick={onDelete}
+                        className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-8 py-2 font-semibold text-[#E22222]"
+                      >
+                        삭제
+                      </button>
+                    )}
                     <button
-                      key={key}
-                      type="button"
-                      onClick={() => onChange('category', typedKey)}
-                      className={`cursor-pointer rounded-full border-[0.5px] px-4 py-2 text-sm transition-all duration-150 ${
-                        isSelected ? '' : 'border-[#D6DDE5] bg-[#EEF1F5]'
-                      }`}
-                      style={
-                        isSelected
-                          ? {
-                              backgroundColor: categoryColorMap[typedKey],
-                              borderColor: categoryBorderColorMap[typedKey],
-                            }
-                          : undefined
-                      }
+                      onClick={async () => {
+                        if (!form.name.trim()) {
+                          showErrorMessage('팀 이름을 입력해주세요');
+                          return;
+                        }
+
+                        if (!form.description.trim()) {
+                          showErrorMessage('팀 소개를 입력해주세요');
+                          return;
+                        }
+
+                        if (mode === 'create') {
+                          setIsConfirmOpen(true);
+                        } else {
+                          await onSubmit(form);
+                        }
+                      }}
+                      className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-semibold text-white"
                     >
-                      {categoryMap[typedKey]}
+                      {mode === 'create' ? '생성' : '수정'}
                     </button>
-                  );
-                })}
-              </div>
-
-              <InputField
-                label="팀 이름"
-                required
-                value={form.name}
-                onChange={(e) => onChange('name', e.target.value)}
-              />
-              <TextAreaField
-                label="팀 소개"
-                required
-                maxLength={50}
-                value={form.description}
-                onChange={(e) => onChange('description', e.target.value)}
-              />
-              <InputField
-                label="팀 링크"
-                value={form.link}
-                onChange={(e) => onChange('link', e.target.value)}
-              />
-
-              <InputField
-                label="팀 SNS"
-                value={form.sns}
-                onChange={(e) => onChange('sns', e.target.value)}
-              />
-            </section>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
         </Card>
       </section>

@@ -437,7 +437,7 @@ export default function Main() {
                     key={category.value}
                     type="button"
                     onClick={() => setSelectedCategory(category.value)}
-                    className={`z-50 cursor-pointer rounded-2xl border-[0.5px] px-2.5 py-1 text-sm font-normal transition-all duration-150 active:scale-95 sm:px-3 sm:py-1.5 sm:text-base ${
+                    className={`z-50 cursor-pointer rounded-2xl border-[0.5px] px-2.5 py-1 text-sm font-normal transition-all duration-150 active:scale-95 sm:px-3.5 sm:py-1.5 sm:text-base ${
                       selectedCategory === category.value
                         ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
                         : 'border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C] hover:bg-[#E3E7EC]'
