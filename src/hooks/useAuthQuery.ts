@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { signup } from '@/api/auth';
-import type { SignupRequest } from '@/types/auth';
+import { login, signup } from '@/api/auth';
+import type { LoginRequest, SignupRequest } from '@/types/auth';
 
 export const authKeys = {
   all: () => ['auth'] as const,
@@ -10,4 +10,9 @@ export const authKeys = {
 export const useSignup = () =>
   useMutation({
     mutationFn: (body: SignupRequest) => signup(body),
+  });
+
+export const useLogin = () =>
+  useMutation({
+    mutationFn: (body: LoginRequest) => login(body),
   });

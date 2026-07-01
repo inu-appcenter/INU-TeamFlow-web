@@ -23,3 +23,13 @@ export interface SchoolVerifyRequest {
 export interface SchoolVerifyResponse {
   message?: string;
 }
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  grantType: string;
+  accessToken: string;
+}
