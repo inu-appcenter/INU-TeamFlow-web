@@ -6,10 +6,10 @@ import { useState } from 'react';
 
 import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
-import { registerList } from '@/mocks/register';
 import { MESSAGES, REGISTER_TEXT } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { colleges } from '@/constants/departments';
+import { useSignup } from '@/hooks/useAuthQuery';
 
 interface Department {
   value: string;
@@ -26,6 +26,8 @@ interface College {
 export default function Register() {
   const router = useRouter();
 
+  const { mutate: signupMutate, isPending: isSignupPending } = useSignup();
+
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [checkPassword, setCheckPassword] = useState('');
@@ -41,66 +43,67 @@ export default function Register() {
   const currentCollege = colleges.find((item) => item.id === college);
 
   const emailCheck = () => {
-    const check = registerList.find((user) => user.email === email);
-
-    if (check) {
-      alert(MESSAGES.REGISTER.EMAIL.DUPLICATED);
-    } else if (email.trim() === '') {
+    if (email.trim() === '') {
       alert(MESSAGES.REGISTER.EMAIL.EMPTY);
-    } else {
-      setIsEmailChecked(true);
-      alert(MESSAGES.REGISTER.EMAIL.AVAILABLE);
+      return;
     }
+    setIsEmailChecked(true);
+    alert(MESSAGES.REGISTER.EMAIL.AVAILABLE);
   };
 
   const userNameCheck = () => {
-    const check = registerList.find((user) => user.userName === userName);
-
-    if (check) {
-      alert(MESSAGES.REGISTER.USERNAME.DUPLICATED);
-    } else if (userName.trim() === '') {
+    if (userName.trim() === '') {
       alert(MESSAGES.REGISTER.USERNAME.EMPTY);
-    } else {
-      setIsUserNameChecked(true);
-      alert(MESSAGES.REGISTER.USERNAME.AVAILABLE);
+      return;
     }
+
+    setIsUserNameChecked(true);
+    alert(MESSAGES.REGISTER.USERNAME.AVAILABLE);
   };
 
   const register = () => {
-    const emailCheck = registerList.find((user) => user.email === email);
-    const userNameCheck = registerList.find(
-      (user) => user.userName === userName
-    );
-
     if (
       userName.trim() === '' ||
       password.trim() === '' ||
+      checkPassword.trim() === '' ||
       email.trim() === '' ||
       name.trim() === '' ||
       college.trim() === '' ||
       department.trim() === ''
     ) {
       alert(MESSAGES.REGISTER.EMPTY_FIELD);
-    } else if (password !== checkPassword) {
-      alert(MESSAGES.REGISTER.PASSWORD_MISMATCH);
-    } else if (!isUserNameChecked || !isEmailChecked) {
-      alert(MESSAGES.REGISTER.NEED_DUPLICATE_CHECK);
-    } else if (emailCheck?.email === email) {
-      alert(MESSAGES.REGISTER.EMAIL_ALREADY_EXISTS);
-    } else if (userNameCheck?.userName === userName) {
-      alert(MESSAGES.REGISTER.USERNAME_ALREADY_EXISTS);
-    } else {
-      console.log({
-        userName,
-        password,
-        email,
-        name,
-        college,
-        department,
-      });
-
-      router.push(ROUTES.SIGNIN);
+      return;
     }
+
+    if (password !== checkPassword) {
+      alert(MESSAGES.REGISTER.PASSWORD_MISMATCH);
+      return;
+    }
+
+    if (!isUserNameChecked || !isEmailChecked) {
+      alert(MESSAGES.REGISTER.NEED_DUPLICATE_CHECK);
+      return;
+    }
+
+signupMutate(
+  {
+    username: userName,
+    password,
+    email,
+    name,
+    department,
+    imageKey: null,
+  },
+  {
+    onSuccess: () => {
+      alert('회원가입이 완료되었습니다.');
+      router.push(ROUTES.SIGNIN);
+    },
+    onError: () => {
+      alert('회원가입에 실패했습니다.');
+    },
+  }
+);
   };
 
   return (
@@ -126,7 +129,10 @@ export default function Register() {
 
           <InputField
             value={userName}
-            onChange={(e) => setUserName(e.target.value)}
+            onChange={(e) => {
+              setUserName(e.target.value);
+              setIsUserNameChecked(false);
+            }}
             fieldName={REGISTER_TEXT.USERNAME_LABEL}
             typeOption="text"
             placeHolder={REGISTER_TEXT.USERNAME_PLACEHOLDER}
@@ -164,7 +170,10 @@ export default function Register() {
 
           <InputField
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setIsEmailChecked(false);
+            }}
             fieldName={REGISTER_TEXT.EMAIL_LABEL}
             typeOption="text"
             placeHolder={REGISTER_TEXT.EMAIL_PLACEHOLDER}
@@ -207,9 +216,10 @@ export default function Register() {
 
           <button
             onClick={register}
-            className="relative left-1/2 mb-7 w-[45%] min-w-28 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[14px] text-nowrap text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 sm:w-[25%]"
+            disabled={isSignupPending}
+            className="relative left-1/2 mb-7 w-[45%] min-w-28 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[14px] text-nowrap text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] sm:w-[25%]"
           >
-            {REGISTER_TEXT.REGISTER_BUTTON}
+            {isSignupPending ? '가입 중...' : REGISTER_TEXT.REGISTER_BUTTON}
           </button>
         </Card>
       </section>
