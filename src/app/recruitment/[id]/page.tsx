@@ -72,12 +72,13 @@ export default function RecruitmentDetail() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
 
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}.${month}.${day}`;
   };
+  const isDisabled = isRecruiter || recruitment.hasApplied || isClosed;
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
@@ -158,7 +159,7 @@ export default function RecruitmentDetail() {
               </button>
             )}
 
-            <div className="mt-7 grid grid-cols-[72px_1fr] gap-y-4 text-[13px] sm:mt-8 sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-[15px]">
+            <div className="mt-7 grid grid-cols-[72px_1fr] items-center gap-y-4 text-[13px] sm:mt-8 sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-[15px]">
               <span className="text-[#989898]">종류</span>
               <span className="text-[#2C2C2C]">
                 {categoryMap[recruitment.category]}
@@ -167,7 +168,7 @@ export default function RecruitmentDetail() {
               <span className="text-[#989898]">모집현황</span>
               <div>
                 <span
-                  className={`rounded-full px-3 py-1 text-[11px] font-medium sm:px-4 sm:py-1 sm:text-sm ${
+                  className={`rounded-xl px-3 py-1 text-[11px] font-medium sm:text-sm ${
                     isClosed
                       ? 'bg-[#EEF1F5] text-[#989898]'
                       : 'bg-[#A7ECA7] text-[#1F4D1A]'
@@ -214,8 +215,24 @@ export default function RecruitmentDetail() {
             <div className="mt-14 border-b-[0.5px] border-[#D6DDE5] sm:mt-20" />
 
             <div className="mt-6 flex justify-center">
-              <button className="cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2 text-[14px] text-white transition hover:bg-[#5C86EB] sm:px-6 sm:text-base">
-                지원하기
+              <button
+                disabled={isDisabled}
+                onClick={() =>
+                  router.push(`/recruitment/${recruitmentId}/apply`)
+                }
+                className={`rounded-xl px-5 py-2 text-[14px] transition sm:px-6 sm:text-base ${
+                  isDisabled
+                    ? 'cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
+                    : 'cursor-pointer bg-[#5E92F0] text-white hover:bg-[#5C86EB]'
+                }`}
+              >
+                {isRecruiter
+                  ? '내가 쓴 글'
+                  : recruitment.hasApplied
+                    ? '지원 완료'
+                    : isClosed
+                      ? '모집 마감'
+                      : '지원하기'}
               </button>
             </div>
           </div>

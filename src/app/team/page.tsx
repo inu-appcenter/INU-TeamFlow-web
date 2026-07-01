@@ -105,7 +105,7 @@ export default function Team() {
                         {team.name}
                       </h2>
 
-                      <ChevronRight size={22} />
+                      <ChevronRight size={22} strokeWidth={2.5} />
                     </div>
 
                     <p className="mb-6 truncate text-sm text-[#9C9C9C]">

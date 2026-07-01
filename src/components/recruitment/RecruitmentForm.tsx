@@ -265,7 +265,7 @@ export default function TeamForm({
                         key={key}
                         type="button"
                         disabled
-                        className={`rounded-full border-[0.5px] px-4 py-2 text-sm transition-all ${
+                        className={`rounded-2xl border-[0.5px] px-4 py-2 text-sm transition-all ${
                           isSelected
                             ? 'font-semibold opacity-100'
                             : 'opacity-40'
