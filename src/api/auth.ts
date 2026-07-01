@@ -1,6 +1,15 @@
 import axiosInstance from '@/lib/axiosInstance';
-import type { SignupRequest, SignupResponse } from '@/types/auth';
+import type {
+  LoginRequest,
+  LoginResponse,
+  SignupRequest,
+  SignupResponse,
+} from '@/types/auth';
 
 /** POST /auth/signup */
 export const signup = (body: SignupRequest): Promise<SignupResponse> =>
   axiosInstance.post('/auth/signup', body).then((res) => res.data);
+
+/** POST /auth/login */
+export const login = (body: LoginRequest): Promise<LoginResponse> =>
+  axiosInstance.post('/auth/login', body).then((res) => res.data);
