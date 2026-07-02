@@ -7,11 +7,14 @@ import { ChevronLeft, X } from 'lucide-react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import {
-  invitations as mockInvitations,
-  type Invitation,
-  type InvitationStatus,
-  type InvitationTab,
-} from '@/mocks/invitations';
+  useInvitations,
+  useUpdateInvitationStatus,
+} from '@/hooks/useMypageInvitationQuery';
+import type {
+  Invitation,
+  InvitationStatus,
+  InvitationTab,
+} from '@/types/mypageInvitation';
 
 const tabs: { label: string; value: InvitationTab }[] = [
   { label: '받은 초대', value: 'RECEIVED' },
@@ -50,41 +53,66 @@ export default function InvitationsPage() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<InvitationTab>('RECEIVED');
-  const [invitations, setInvitations] = useState(mockInvitations);
   const [selectedInvitation, setSelectedInvitation] =
     useState<Invitation | null>(null);
+
+  const { data: receivedInvitations = [], isLoading: isReceivedLoading } =
+    useInvitations('RECEIVED');
+  const { data: sentInvitations = [], isLoading: isSentLoading } =
+    useInvitations('SENT');
+
+  const { mutate: updateStatusMutate, isPending: isUpdatePending } =
+    useUpdateInvitationStatus();
+
+  const invitations: Invitation[] = [
+    ...receivedInvitations.map((invitation) => ({
+      ...invitation,
+      type: 'RECEIVED' as const,
+    })),
+    ...sentInvitations.map((invitation) => ({
+      ...invitation,
+      type: 'SENT' as const,
+    })),
+  ].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   const filteredInvitations = invitations.filter(
     (invitation) => invitation.type === activeTab
   );
 
-  const updateInvitationStatus = (
+  const isLoading = isReceivedLoading || isSentLoading;
+
+  const changeInvitationStatus = (
     invitationId: number,
-    status: InvitationStatus
+    status: 'ACCEPTED' | 'REJECTED'
   ) => {
-    const respondedAt = new Date().toISOString();
-
-    setInvitations((prev) =>
-      prev.map((invitation) =>
-        invitation.invitationId === invitationId
-          ? { ...invitation, status, respondedAt }
-          : invitation
-      )
-    );
-
-    setSelectedInvitation((prev) =>
-      prev?.invitationId === invitationId
-        ? { ...prev, status, respondedAt }
-        : prev
+    updateStatusMutate(
+      {
+        invitationId,
+        body: { status },
+      },
+      {
+        onSuccess: (data) => {
+          setSelectedInvitation((prev) =>
+            prev?.invitationId === invitationId
+              ? { ...data, type: 'RECEIVED' }
+              : prev
+          );
+        },
+        onError: () => {
+          alert('초대 상태 변경에 실패했습니다.');
+        },
+      }
     );
   };
 
   const handleAccept = (invitationId: number) => {
-    updateInvitationStatus(invitationId, 'ACCEPTED');
+    changeInvitationStatus(invitationId, 'ACCEPTED');
   };
 
   const handleReject = (invitationId: number) => {
-    updateInvitationStatus(invitationId, 'REJECTED');
+    changeInvitationStatus(invitationId, 'REJECTED');
   };
 
   return (
@@ -123,7 +151,11 @@ export default function InvitationsPage() {
           </div>
 
           <div className="thin-scrollbar grid max-h-[500px] gap-4 overflow-y-auto pr-1 lg:grid-cols-2">
-            {filteredInvitations.length === 0 ? (
+            {isLoading ? (
+              <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
+                초대 이력을 불러오는 중입니다.
+              </div>
+            ) : filteredInvitations.length === 0 ? (
               <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
                 초대 이력이 없습니다.
               </div>
@@ -169,22 +201,24 @@ export default function InvitationsPage() {
                       <div className="mt-6 flex gap-2">
                         <button
                           type="button"
+                          disabled={isUpdatePending}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAccept(invitation.invitationId);
                           }}
-                          className="h-11 flex-1 rounded-2xl bg-[#5E92F0] text-[13px] font-semibold text-white transition-all duration-150 active:scale-95"
+                          className="h-11 flex-1 rounded-2xl bg-[#5E92F0] text-[13px] font-semibold text-white transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
                         >
                           수락
                         </button>
 
                         <button
                           type="button"
+                          disabled={isUpdatePending}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleReject(invitation.invitationId);
                           }}
-                          className="h-11 flex-1 rounded-2xl bg-[#EEF1F5] text-[13px] font-semibold text-[#989898] transition-all duration-150 active:scale-95"
+                          className="h-11 flex-1 rounded-2xl bg-[#EEF1F5] text-[13px] font-semibold text-[#989898] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#D6DDE5]"
                         >
                           거절
                         </button>
@@ -247,19 +281,21 @@ export default function InvitationsPage() {
               selectedInvitation.status === 'WAITING' && (
                 <div className="mt-6 flex gap-2">
                   <button
+                    disabled={isUpdatePending}
                     onClick={() =>
                       handleAccept(selectedInvitation.invitationId)
                     }
-                    className="h-12 flex-1 rounded-2xl bg-[#5E92F0] text-[14px] font-semibold text-white transition-all duration-150 active:scale-95"
+                    className="h-12 flex-1 rounded-2xl bg-[#5E92F0] text-[14px] font-semibold text-white transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
                   >
                     수락
                   </button>
 
                   <button
+                    disabled={isUpdatePending}
                     onClick={() =>
                       handleReject(selectedInvitation.invitationId)
                     }
-                    className="h-12 flex-1 rounded-2xl bg-[#EEF1F5] text-[14px] font-semibold text-[#989898] transition-all duration-150 active:scale-95"
+                    className="h-12 flex-1 rounded-2xl bg-[#EEF1F5] text-[14px] font-semibold text-[#989898] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#D6DDE5]"
                   >
                     거절
                   </button>
