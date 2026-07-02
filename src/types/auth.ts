@@ -1,3 +1,5 @@
+import type { UserMeResponse } from '@/types/user';
+
 export interface SignupRequest {
   username: string;
   password: string;
@@ -33,3 +35,10 @@ export interface LoginResponse {
   grantType: string;
   accessToken: string;
 }
+
+export interface VerifySchoolRequest {
+  studentNumber: string;
+  portalPassword: string;
+}
+
+export type VerifySchoolResponse = UserMeResponse;
