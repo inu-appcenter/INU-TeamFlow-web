@@ -38,7 +38,7 @@ const DEFAULT_PROFILE_IMAGE = '/images/default-profile.png';
 
 const menuItems = [
   { icon: Vote, title: '내가 작성한 글', path: '/mypage/mypost' },
-  { icon: SquarePen, title: '진행중인 투표', path: '/mypage/votes' },
+  { icon: SquarePen, title: '내 투표', path: '/mypage/votes' },
   { icon: UserRoundPlus, title: '초대 이력', path: '/mypage/invitations' },
 ];
 
@@ -207,12 +207,8 @@ export default function MyPage() {
             <ChevronLeft size={28} strokeWidth={2.5} />
           </button>
 
-          <div>
-            <h1 className="text-[26px] font-bold text-[#2C2C2C]">마이페이지</h1>
-            <p className="mt-1 text-[14px] text-[#989898]">
-              내 프로필과 활동 정보를 확인해요
-            </p>
-          </div>
+
+          <h1 className="text-[26px] font-bold text-[#2C2C2C]">마이페이지</h1>
         </div>
 
         <button
