@@ -1,0 +1,38 @@
+export type MyPostType = 'ALL' | 'RECRUIT' | 'INFO' | 'APPLY' | 'NOTICE';
+
+export interface MyRecruitmentResponse {
+  recruitmentId: number;
+  title: string;
+  isOpened: boolean;
+  category: string;
+  recruiterName: string;
+  createdAt: string;
+  endAt: string;
+}
+
+export interface MyApplicationResponse {
+  applicationId: number;
+  applicationStatus: 'WAITING' | 'ACCEPTED' | 'REJECTED';
+  recruitmentCategory: string;
+  recruiterName: string;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface MyTeamNoticeResponse {
+  noticeId: number;
+  teamId: number;
+  teamName: string;
+  title: string;
+  isPinned: boolean;
+  isRead: boolean;
+  authorName: string;
+  teamRole: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type MyPost =
+  | (MyRecruitmentResponse & { type: 'RECRUIT' })
+  | (MyApplicationResponse & { type: 'APPLY' })
+  | (MyTeamNoticeResponse & { type: 'NOTICE' });

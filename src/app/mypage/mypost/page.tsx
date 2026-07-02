@@ -7,13 +7,17 @@ import { ChevronLeft } from 'lucide-react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import {
-  myRecruitments,
-  type MyPostType,
-  type MyRecruitment,
-} from '@/mocks/myRecruitments';
-import { myApplications, type MyApplication } from '@/mocks/myApplications';
-
-type MyPost = MyRecruitment | MyApplication;
+  useMyApplications,
+  useMyRecruitments,
+  useMyTeamNotices,
+} from '@/hooks/useMypagePostQuery';
+import type {
+  MyApplicationResponse,
+  MyPost,
+  MyPostType,
+  MyRecruitmentResponse,
+  MyTeamNoticeResponse,
+} from '@/types/mypagePost';
 
 const tabs: { label: string; value: MyPostType }[] = [
   { label: '전체', value: 'ALL' },
@@ -51,7 +55,38 @@ export default function MyPostPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<MyPostType>('ALL');
 
-  const myPosts: MyPost[] = [...myRecruitments, ...myApplications].sort(
+  const {
+    data: recruitments = [],
+    isLoading: isRecruitmentsLoading,
+    isError: isRecruitmentsError,
+  } = useMyRecruitments();
+
+  const {
+    data: applications = [],
+    isLoading: isApplicationsLoading,
+    isError: isApplicationsError,
+  } = useMyApplications();
+
+  const {
+    data: notices = [],
+    isLoading: isNoticesLoading,
+    isError: isNoticesError,
+  } = useMyTeamNotices();
+
+  const myPosts: MyPost[] = [
+    ...recruitments.map((recruitment) => ({
+      ...recruitment,
+      type: 'RECRUIT' as const,
+    })),
+    ...applications.map((application) => ({
+      ...application,
+      type: 'APPLY' as const,
+    })),
+    ...notices.map((notice) => ({
+      ...notice,
+      type: 'NOTICE' as const,
+    })),
+  ].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
@@ -59,6 +94,12 @@ export default function MyPostPage() {
     activeTab === 'ALL'
       ? myPosts
       : myPosts.filter((post) => post.type === activeTab);
+
+  const isLoading =
+    isRecruitmentsLoading || isApplicationsLoading || isNoticesLoading;
+
+  const isError =
+    isRecruitmentsError || isApplicationsError || isNoticesError;
 
   return (
     <main className="min-h-screen px-3 py-6 pb-28 sm:px-6 sm:pt-10">
@@ -72,7 +113,9 @@ export default function MyPostPage() {
           <ChevronLeft size={28} strokeWidth={2.5} />
         </button>
 
-        <h1 className="text-[26px] font-bold text-[#2C2C2C]">내가 작성한 글</h1>
+        <h1 className="text-[26px] font-bold text-[#2C2C2C]">
+          내가 작성한 글
+        </h1>
       </header>
 
       <section className="mx-auto max-w-[1180px]">
@@ -96,30 +139,56 @@ export default function MyPostPage() {
           </div>
 
           <div className="thin-scrollbar grid max-h-[500px] gap-4 overflow-y-auto pr-1 lg:grid-cols-2">
-            {filteredPosts.length === 0 ? (
+            {isLoading ? (
+              <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
+                내역을 불러오는 중입니다.
+              </div>
+            ) : isError ? (
+              <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
+                내역을 불러오지 못했습니다.
+              </div>
+            ) : filteredPosts.length === 0 ? (
               <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
                 내역이 없습니다.
               </div>
             ) : (
-              filteredPosts.map((post) =>
-                post.type === 'APPLY' ? (
-                  <ApplicationCard
-                    key={post.applicationId}
-                    application={post}
-                    onClick={() =>
-                      router.push(`/applications/${post.applicationId}`)
-                    }
-                  />
-                ) : (
+              filteredPosts.map((post) => {
+                if (post.type === 'APPLY') {
+                  return (
+                    <ApplicationCard
+                      key={`application-${post.applicationId}`}
+                      application={post}
+                      onClick={() =>
+                        router.push(`/applications/${post.applicationId}`)
+                      }
+                    />
+                  );
+                }
+
+                if (post.type === 'NOTICE') {
+                  return (
+                    <NoticeCard
+                      key={`notice-${post.noticeId}`}
+                      notice={post}
+                      onClick={() =>
+                        router.push(
+                          `/teams/${post.teamId}/notices/${post.noticeId}`
+                        )
+                      }
+                    />
+                  );
+                }
+
+                return (
                   <RecruitmentCard
-                    key={post.recruitmentId}
+                    key={`recruitment-${post.recruitmentId}`}
                     recruitment={post}
                     onClick={() =>
-                      router.push(`/recruitments/${post.recruitmentId}`)
+                      router.push(`/recruitment/${post.recruitmentId}`)
                     }
                   />
-                )
-              )
+                );
+              })
             )}
           </div>
         </section>
@@ -134,7 +203,7 @@ function RecruitmentCard({
   recruitment,
   onClick,
 }: {
-  recruitment: MyRecruitment;
+  recruitment: MyRecruitmentResponse;
   onClick: () => void;
 }) {
   return (
@@ -178,7 +247,7 @@ function ApplicationCard({
   application,
   onClick,
 }: {
-  application: MyApplication;
+  application: MyApplicationResponse;
   onClick: () => void;
 }) {
   return (
@@ -207,9 +276,57 @@ function ApplicationCard({
         <span>신청일 {formatDate(application.createdAt)}</span>
         <span>·</span>
         <span>
-          응답일
-          {application.respondedAt ? formatDate(application.respondedAt) : ''}
+          응답일{' '}
+          {application.respondedAt ? formatDate(application.respondedAt) : '-'}
         </span>
+      </div>
+    </button>
+  );
+}
+
+function NoticeCard({
+  notice,
+  onClick,
+}: {
+  notice: MyTeamNoticeResponse;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-[180px] flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
+    >
+      <div>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="line-clamp-1 text-[19px] font-bold text-[#2C2C2C]">
+            [ 공지 ] {notice.title}
+          </h2>
+
+          <span
+            className={`shrink-0 rounded-full px-4 py-1.5 text-[12px] font-semibold ${
+              notice.isRead
+                ? 'bg-[#EEF1F5] text-[#989898]'
+                : 'bg-[#5E92F0] text-white'
+            }`}
+          >
+            {notice.isRead ? '읽음' : '안읽음'}
+          </span>
+        </div>
+
+        <p className="text-[14px] text-[#5C5C5C]">
+          {notice.teamName} · {notice.authorName}
+        </p>
+      </div>
+
+      <div className="mt-8 flex items-center gap-2 text-[13px] text-[#989898]">
+        <span>{formatDate(notice.createdAt)}</span>
+        {notice.isPinned && (
+          <>
+            <span>·</span>
+            <span>고정됨</span>
+          </>
+        )}
       </div>
     </button>
   );
