@@ -4,6 +4,8 @@ import type {
   LoginResponse,
   SignupRequest,
   SignupResponse,
+  VerifySchoolRequest,
+  VerifySchoolResponse,
 } from '@/types/auth';
 
 /** POST /auth/signup */
@@ -13,3 +15,9 @@ export const signup = (body: SignupRequest): Promise<SignupResponse> =>
 /** POST /auth/login */
 export const login = (body: LoginRequest): Promise<LoginResponse> =>
   axiosInstance.post('/auth/login', body).then((res) => res.data);
+
+/** POST /auth/verify-school */
+export const verifySchool = (
+  body: VerifySchoolRequest
+): Promise<VerifySchoolResponse> =>
+  axiosInstance.post('/auth/verify-school', body).then((res) => res.data);
