@@ -1,7 +1,14 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { login, signup, getMyInfo } from '@/api/auth';
-import type { LoginRequest, SignupRequest } from '@/types/auth';
+
+import { useMutation, useQueryClient,useQuery } from '@tanstack/react-query';
+import { login, signup, verifySchool,getMyInfo } from '@/api/auth';
+import { userKeys } from '@/hooks/useUserQuery';
+import type {
+  LoginRequest,
+  SignupRequest,
+  VerifySchoolRequest,
+} from '@/types/auth';
+
 
 export const authKeys = {
   all: () => ['auth'] as const,
@@ -21,5 +28,17 @@ export const useMyInfo = () => {
   return useQuery({
     queryKey: ['myInfo'],
     queryFn: getMyInfo,
+  });
+};
+export const useVerifySchool = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: VerifySchoolRequest) => verifySchool(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: userKeys.me(),
+      });
+    },
   });
 };

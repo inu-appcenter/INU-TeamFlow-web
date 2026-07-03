@@ -4,28 +4,40 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
-
 import inuLogo from '@/public/images/inuLogo/inu-logo.png';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
+import { useVerifySchool } from '@/hooks/useAuthQuery';
 
 export default function SchoolAuthenticationPage() {
   const router = useRouter();
 
   const [studentNumber, setStudentNumber] = useState('');
   const [portalPassword, setPortalPassword] = useState('');
+  const { mutate: verifySchoolMutate, isPending } = useVerifySchool();
+const handleVerifySchool = () => {
+  if (studentNumber.trim() === '' || portalPassword.trim() === '') {
+    alert('학번과 비밀번호를 입력해주세요.');
+    return;
+  }
 
-  const handleVerifySchool = () => {
-    if (studentNumber.trim() === '' || portalPassword.trim() === '') {
-      alert('학번과 비밀번호를 입력해주세요.');
-      return;
-    }
-
-    console.log('학교 인증 요청', {
+  verifySchoolMutate(
+    {
       studentNumber,
       portalPassword,
-    });
-  };
+    },
+    {
+      onSuccess: (data) => {
+        console.log('학교 인증 응답:', data);
+        alert('학교 인증이 완료되었습니다.');
+        router.push('/mypage');
+      },
+      onError: () => {
+        alert('학교 인증에 실패했습니다.');
+      },
+    }
+  );
+};
 
   return (
     <main className="min-h-screen px-3 py-6 pb-28 sm:px-6 sm:pt-10">
@@ -87,9 +99,10 @@ export default function SchoolAuthenticationPage() {
               <button
                 type="button"
                 onClick={handleVerifySchool}
-                className="mt-6 flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#5E92F0] text-[15px] font-semibold text-white transition-all duration-150 active:scale-95"
+                disabled={isPending}
+                className="mt-6 flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#5E92F0] text-[15px] font-semibold text-white transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
               >
-                인증하기
+                {isPending ? '인증 중...' : '인증하기'}
               </button>
             </div>
 

@@ -11,6 +11,8 @@ import { votes, type Vote } from '@/mocks/votes';
 import { formatDate } from '@/utils/date/formatDate';
 
 type VoteTab = 'ALL' | 'OPENED' | 'CLOSED';
+import { useMyVotes } from '@/hooks/useMypageVoteQuery';
+import type { MyVote, VoteTab } from '@/types/mypageVote';
 
 const tabs: { label: string; value: VoteTab }[] = [
   { label: '전체', value: 'ALL' },
@@ -23,15 +25,11 @@ const formatTime = (time: string | null) => {
   return time.slice(0, 5);
 };
 
-const getTeamName = (teamId: number) => {
-  if (teamId === 1) return 'TEAM FLOW';
-  if (teamId === 2) return '스터디 팀';
-  return `팀 ${teamId}`;
-};
-
 export default function VotesPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<VoteTab>('ALL');
+
+  const { data: votes = [], isLoading, isError } = useMyVotes();
 
   const sortedVotes = [...votes].sort(
     (a, b) =>
@@ -56,7 +54,7 @@ export default function VotesPage() {
           <ChevronLeft size={28} strokeWidth={2.5} />
         </button>
 
-        <h1 className="text-[26px] font-bold text-[#2C2C2C]">진행 중인 투표</h1>
+        <h1 className="text-[26px] font-bold text-[#2C2C2C]">내 투표</h1>
       </header>
 
       <section className="mx-auto max-w-[1180px]">
@@ -80,7 +78,15 @@ export default function VotesPage() {
           </div>
 
           <div className="thin-scrollbar grid max-h-[500px] gap-4 overflow-y-auto pr-1 lg:grid-cols-2">
-            {filteredVotes.length === 0 ? (
+            {isLoading ? (
+              <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
+                투표 내역을 불러오는 중입니다.
+              </div>
+            ) : isError ? (
+              <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
+                투표 내역을 불러오지 못했습니다.
+              </div>
+            ) : filteredVotes.length === 0 ? (
               <div className="col-span-full flex h-[360px] items-center justify-center text-[14px] text-[#B0B8C1]">
                 투표 내역이 없습니다.
               </div>
@@ -104,9 +110,9 @@ export default function VotesPage() {
   );
 }
 
-function VoteCard({ vote, onClick }: { vote: Vote; onClick: () => void }) {
-  const completedCount = vote.completedVoterNameList.length;
-  const uncompletedCount = vote.uncompletedVoterNameList.length;
+function VoteCard({ vote, onClick }: { vote: MyVote; onClick: () => void }) {
+  const completedCount = vote.completedVoterList.length;
+  const uncompletedCount = vote.uncompletedVoterList.length;
   const totalCount = completedCount + uncompletedCount;
 
   return (
@@ -119,7 +125,7 @@ function VoteCard({ vote, onClick }: { vote: Vote; onClick: () => void }) {
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="mb-2 truncate text-[13px] font-semibold text-[#5E92F0]">
-              {getTeamName(vote.teamId)}
+              {vote.teamName}
             </p>
 
             <h2 className="line-clamp-2 text-[19px] font-bold text-[#2C2C2C]">

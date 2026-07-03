@@ -1,3 +1,5 @@
+import type { UserMeResponse } from '@/types/user';
+
 export interface SignupRequest {
   username: string;
   password: string;
@@ -45,3 +47,9 @@ export interface MyInfoResponse {
   isSchoolVerified: boolean;
   imageUrl?: string | null;
 }
+export interface VerifySchoolRequest {
+  studentNumber: string;
+  portalPassword: string;
+}
+
+export type VerifySchoolResponse = UserMeResponse;
