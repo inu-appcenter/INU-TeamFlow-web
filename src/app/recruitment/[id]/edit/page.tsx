@@ -45,7 +45,6 @@ export default function RecruitmentEditPage() {
           title: form.title,
           description: form.description,
           targetMemberCount: form.targetMemberCount,
-          recruitmentCategory: form.category,
           endAt: form.endAt,
         },
       });
