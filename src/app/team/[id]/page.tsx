@@ -10,6 +10,8 @@ import type { Schedule, RecurrenceEditScope } from '@/types/event';
 
 import Card from '@/components/main/Card';
 import { useCreateVote } from '@/hooks/useVoteQuery';
+import { formatDate } from '@/utils/date/formatDate';
+import { getTeamRoleLabel } from '@/utils/teamRole';
 
 import {
   useTeamEvents,
@@ -23,7 +25,7 @@ import { useTeamVotes } from '@/hooks/useVoteQuery';
 import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
 
-import { notices } from '@/mocks/notices';
+import { useTeamNotices } from '@/hooks/useNoticeQuery';
 import {
   Check,
   ChevronLeft,
@@ -231,6 +233,8 @@ export default function TeamDetail() {
     month === 11 ? 1 : month + 2
   );
 
+  const { data: teamNoticesAll = [] } = useTeamNotices(teamId);
+
   const schedules = Array.from(
     new Map(
       [...prevSchedules, ...currentSchedules, ...nextSchedules].map((s) => [
@@ -315,10 +319,6 @@ export default function TeamDetail() {
   const isAdmin = team.role === 'LEADER' || team.role === 'MANAGER';
 
   const displayCount = isMd ? 4 : 3;
-
-  const teamNotices = notices
-    .filter((notice) => notice.teamId === teamId)
-    .slice(0, displayCount);
 
   const teamVotes = allVotes.slice(0, displayCount);
 
@@ -443,6 +443,8 @@ export default function TeamDetail() {
   const DATE_HEADER_H = 28;
   const EVENT_H = 20;
   const EVENT_GAP = 4;
+
+  const teamNotices = teamNoticesAll.slice(0, displayCount);
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
@@ -760,16 +762,16 @@ export default function TeamDetail() {
                           style={{ minHeight: `${cellMinH}px` }}
                         >
                           <span
-                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[14px] ${
+                            className={`flex shrink-0 items-center justify-center rounded-full text-[14px] ${
                               !isCurrentMonth
-                                ? 'text-[#D6DDE5]'
+                                ? 'h-6 w-6 text-[#D6DDE5]'
                                 : isToday
-                                  ? 'bg-[#5E92F0] font-semibold text-white'
+                                  ? 'h-5 w-5 bg-[#5E92F0] font-semibold text-white'
                                   : isSunday
-                                    ? 'text-red-500'
+                                    ? 'h-6 w-6 text-red-500'
                                     : isSaturday
-                                      ? 'text-blue-500'
-                                      : 'text-[#5C5C5C]'
+                                      ? 'h-6 w-6 text-blue-500'
+                                      : 'h-6 w-6 text-[#5C5C5C]'
                             }`}
                           >
                             {item.date}
@@ -906,12 +908,12 @@ export default function TeamDetail() {
                         </div>
 
                         <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
-                          {vote.description}
+                          {vote.description || '-'}
                         </p>
                       </div>
 
                       <p className="ml-4 shrink-0 text-xs text-[#989898] md:hidden">
-                        {vote.createdDate}
+                        {formatDate(vote.createdDate)}
                       </p>
                     </button>
                   ))}
@@ -944,14 +946,19 @@ export default function TeamDetail() {
                       }
                       className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left transition"
                     >
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <h2 className="truncate text-[16px] font-semibold text-[#2C2C2C] md:text-[17px]">
                           {notice.title}
                         </h2>
-
-                        <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
-                          {notice.content}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
+                            {getTeamRoleLabel(notice.teamRole)} •{' '}
+                            {notice.authorName}
+                          </p>
+                          <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
+                            {formatDate(notice.createdAt)}
+                          </p>
+                        </div>
                       </div>
                     </button>
                   ))}

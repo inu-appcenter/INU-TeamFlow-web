@@ -33,3 +33,15 @@ export interface LoginResponse {
   grantType: string;
   accessToken: string;
 }
+
+export interface MyInfoResponse {
+  userId: number;
+  username: string;
+  email: string;
+  studentNumber: string;
+  name: string;
+  role: 'USER' | 'ADMIN';
+  department: string;
+  isSchoolVerified: boolean;
+  imageUrl?: string | null;
+}

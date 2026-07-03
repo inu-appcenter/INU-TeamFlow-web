@@ -59,9 +59,9 @@ export default function Team() {
 
           <button
             onClick={() => router.push('/team/create')}
-            className="z-50 flex cursor-pointer items-center gap-2 rounded-xl bg-[#5E92F0] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#4C82E5]"
+            className="z-50 flex cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] py-2.5 pr-4 pl-3.5 text-[15px] font-medium text-white transition hover:bg-[#4C82E5]"
           >
-            <Plus size={18} />팀 생성하기
+            <Plus size={18} strokeWidth={2.5} />팀 생성하기
           </button>
         </div>
 

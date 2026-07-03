@@ -12,6 +12,7 @@ import {
   type MyRecruitment,
 } from '@/mocks/myRecruitments';
 import { myApplications, type MyApplication } from '@/mocks/myApplications';
+import { formatDate } from '@/utils/date/formatDate';
 
 type MyPost = MyRecruitment | MyApplication;
 
@@ -38,14 +39,7 @@ const getApplicationStatusLabel = (status: string) => {
   return status;
 };
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
 
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(
-    2,
-    '0'
-  )}.${String(date.getDate()).padStart(2, '0')}`;
-};
 
 export default function MyPostPage() {
   const router = useRouter();
