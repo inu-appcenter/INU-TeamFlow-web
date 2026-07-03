@@ -7,14 +7,6 @@ import { ChevronLeft } from 'lucide-react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import {
-  myRecruitments,
-  type MyPostType,
-  type MyRecruitment,
-} from '@/mocks/myRecruitments';
-import { myApplications, type MyApplication } from '@/mocks/myApplications';
-import { formatDate } from '@/utils/date/formatDate';
-
-type MyPost = MyRecruitment | MyApplication;
   useMyApplications,
   useMyRecruitments,
   useMyTeamNotices,
@@ -26,6 +18,7 @@ import type {
   MyRecruitmentResponse,
   MyTeamNoticeResponse,
 } from '@/types/mypagePost';
+import { formatDate } from '@/utils/date/formatDate';
 
 const tabs: { label: string; value: MyPostType }[] = [
   { label: '전체', value: 'ALL' },
@@ -49,8 +42,6 @@ const getApplicationStatusLabel = (status: string) => {
   if (status === 'REJECTED') return '거절';
   return status;
 };
-
-
 
 export default function MyPostPage() {
   const router = useRouter();
@@ -99,8 +90,7 @@ export default function MyPostPage() {
   const isLoading =
     isRecruitmentsLoading || isApplicationsLoading || isNoticesLoading;
 
-  const isError =
-    isRecruitmentsError || isApplicationsError || isNoticesError;
+  const isError = isRecruitmentsError || isApplicationsError || isNoticesError;
 
   return (
     <main className="min-h-screen px-3 py-6 pb-28 sm:px-6 sm:pt-10">
@@ -114,9 +104,7 @@ export default function MyPostPage() {
           <ChevronLeft size={28} strokeWidth={2.5} />
         </button>
 
-        <h1 className="text-[26px] font-bold text-[#2C2C2C]">
-          내가 작성한 글
-        </h1>
+        <h1 className="text-[26px] font-bold text-[#2C2C2C]">내가 작성한 글</h1>
       </header>
 
       <section className="mx-auto max-w-[1180px]">
