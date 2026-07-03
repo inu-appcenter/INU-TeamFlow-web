@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import Card from '@/components/main/Card';
 import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
+import { formatDate } from '@/utils/date/formatDate';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -69,15 +70,6 @@ export default function RecruitmentDetail() {
 
   const isRecruiter = recruitment.isRecruiter;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}.${month}.${day}`;
-  };
   const isDisabled = isRecruiter || recruitment.hasApplied || isClosed;
 
   return (
@@ -217,9 +209,9 @@ export default function RecruitmentDetail() {
             <div className="mt-6 flex justify-center">
               <button
                 disabled={isDisabled}
-                onClick={() =>
-                  router.push(`/recruitment/${recruitmentId}/apply`)
-                }
+                onClick={() => {
+                  router.push(`/recruitment/${recruitmentId}/apply`);
+                }}
                 className={`rounded-xl px-5 py-2 text-[14px] transition sm:px-6 sm:text-base ${
                   isDisabled
                     ? 'cursor-not-allowed bg-[#EEF1F5] text-[#989898]'

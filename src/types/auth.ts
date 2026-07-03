@@ -36,6 +36,17 @@ export interface LoginResponse {
   accessToken: string;
 }
 
+export interface MyInfoResponse {
+  userId: number;
+  username: string;
+  email: string;
+  studentNumber: string;
+  name: string;
+  role: 'USER' | 'ADMIN';
+  department: string;
+  isSchoolVerified: boolean;
+  imageUrl?: string | null;
+}
 export interface VerifySchoolRequest {
   studentNumber: string;
   portalPassword: string;

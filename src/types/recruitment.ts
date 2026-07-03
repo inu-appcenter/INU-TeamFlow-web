@@ -57,7 +57,6 @@ export interface RecruitmentUpdateRequest {
   title: string;
   description: string;
   targetMemberCount: number;
-  recruitmentCategory: RecruitmentCategory;
   endAt: string;
 }
 

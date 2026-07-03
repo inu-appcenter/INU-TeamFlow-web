@@ -6,6 +6,11 @@ import { ChevronLeft } from 'lucide-react';
 
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
+import { votes, type Vote } from '@/mocks/votes';
+
+import { formatDate } from '@/utils/date/formatDate';
+
+type VoteTab = 'ALL' | 'OPENED' | 'CLOSED';
 import { useMyVotes } from '@/hooks/useMypageVoteQuery';
 import type { MyVote, VoteTab } from '@/types/mypageVote';
 
@@ -14,15 +19,6 @@ const tabs: { label: string; value: VoteTab }[] = [
   { label: '진행중', value: 'OPENED' },
   { label: '종료', value: 'CLOSED' },
 ];
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(
-    2,
-    '0'
-  )}.${String(date.getDate()).padStart(2, '0')}`;
-};
 
 const formatTime = (time: string | null) => {
   if (!time) return '';

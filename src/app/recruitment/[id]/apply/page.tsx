@@ -3,18 +3,12 @@
 import { ChevronLeft, LoaderCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { getDepartmentName } from '@/utils/getDepartmentName';
 
 import Card from '@/components/main/Card';
 import { applyRecruitment } from '@/api/recruitment';
 import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
+import { useMyInfo } from '@/hooks/useAuthQuery';
 
 const categoryColorMap: Record<string, string> = {
   CONTEST: '#FBE4F8',
@@ -34,6 +28,8 @@ export default function RecruitmentApplyPage() {
 
   const [introduction, setIntroduction] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: myInfo } = useMyInfo();
 
   if (isLoading) return null;
   if (!recruitment) return null;
@@ -89,11 +85,15 @@ export default function RecruitmentApplyPage() {
             </h1>
             <div className="mt-8 grid grid-cols-[70px_1fr] gap-y-6 text-[15px]">
               <span className="text-[#989898]">이름</span>
-              <span>-</span>
+              <span className="font-semibold">{myInfo?.name ?? '-'}</span>
               <span className="text-[#989898]">학과</span>
-              <span>-</span>
+              <span className="font-semibold">
+                {myInfo ? getDepartmentName(myInfo.department) : '-'}
+              </span>
               <span className="text-[#989898]">학번</span>
-              <span>-</span>
+              <span className="font-semibold">
+                {myInfo?.studentNumber ?? '-'}
+              </span>
             </div>
             <div className="mt-7 border-b-[0.5px] border-[#D6DDE5] sm:mt-8" />
             <div className="mt-8">

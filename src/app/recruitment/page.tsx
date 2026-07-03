@@ -7,6 +7,7 @@ import { useRecruitments } from '@/hooks/useRecruitmentQuery';
 import { getDday } from '@/utils/date/getDday';
 
 import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
+import { formatDate } from '@/utils/date/formatDate';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -101,7 +102,7 @@ export default function Recruitment() {
             onClick={() => router.push('/recruitment/create')}
             className="ml-auto hidden cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] px-4 py-2 text-sm font-medium text-white md:flex"
           >
-            <Plus size={14} strokeWidth={2.5} />
+            <Plus size={14} strokeWidth={3} />
             모집글 쓰기
           </button>
         </section>
@@ -154,15 +155,6 @@ export default function Recruitment() {
 
             const isClosed = endDate < today || recruitment.status === 'CLOSED';
 
-            const formatDate = (dateString: string) => {
-              const date = new Date(dateString);
-
-              const year = date.getFullYear();
-              const month = String(date.getMonth() + 1).padStart(2, '0');
-              const day = String(date.getDate()).padStart(2, '0');
-
-              return `${year}.${month}.${day}`;
-            };
             return (
               <div
                 key={recruitment.recruitmentId}

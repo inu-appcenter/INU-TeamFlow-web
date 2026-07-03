@@ -4,7 +4,7 @@ import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
 
-import { notices } from '@/mocks/notices';
+import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 
 import { useMyEvents } from '@/hooks/useEventQuery';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
@@ -15,8 +15,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { formatDate } from '@/utils/date/formatDate';
+import { getTeamRoleLabel } from '@/utils/teamRole';
+
 const days = ['일', '월', '화', '수', '목', '금', '토'];
-const dayMap = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -168,8 +170,14 @@ export default function Main() {
   const mobileRecruitments = filteredRecruitments.slice(0, 4);
   const desktopRecruitments = filteredRecruitments.slice(0, 3);
 
-  const mobileNotices = notices.slice(0, 5);
-  const desktopNotices = notices.slice(0, 4);
+  const { data: myNotices = [] } = useMyTeamNotices();
+
+  const sortedNotices = [...myNotices].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt)
+  );
+
+  const mobileNotices = sortedNotices.slice(0, 5);
+  const desktopNotices = sortedNotices.slice(0, 4);
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
@@ -177,9 +185,7 @@ export default function Main() {
         {/* 상단 */}
         <section className="relative mb-10 pt-4 md:min-h-[160px]">
           <div className="h-12 w-40 rounded-full bg-white" />
-
           <div className="absolute top-4 left-1/2 hidden h-36 w-[50%] max-w-3xl -translate-x-1/2 rounded-2xl bg-white md:block" />
-
           <NotificationButton />
         </section>
 
@@ -376,7 +382,11 @@ export default function Main() {
                   <button
                     key={notice.noticeId}
                     type="button"
-                    onClick={() => router.push(`/notice/${notice.noticeId}`)}
+                    onClick={() =>
+                      router.push(
+                        `/team/${notice.teamId}/notice/${notice.noticeId}`
+                      )
+                    }
                     className="z-50 border-b-[0.5px] border-[#D6DDE5] py-3 text-left last:border-b-0 active:scale-[0.99]"
                   >
                     <h3 className="truncate text-[15px] font-semibold text-[#2C2C2C]">
@@ -384,7 +394,8 @@ export default function Main() {
                     </h3>
 
                     <p className="mt-0.5 text-[11px] text-[#989898]">
-                      {notice.createdAt}
+                      {getTeamRoleLabel(notice.teamRole)} · {notice.authorName}{' '}
+                      · {formatDate(notice.createdAt)}
                     </p>
                   </button>
                 ))}
@@ -395,7 +406,11 @@ export default function Main() {
                   <button
                     key={notice.noticeId}
                     type="button"
-                    onClick={() => router.push(`/notice/${notice.noticeId}`)}
+                    onClick={() =>
+                      router.push(
+                        `/team/${notice.teamId}/notice/${notice.noticeId}`
+                      )
+                    }
                     className="z-50 border-b-[0.5px] border-[#D6DDE5] py-4 text-left last:border-b-0 active:scale-[0.99]"
                   >
                     <h3 className="truncate text-[17px] font-semibold text-[#2C2C2C]">
@@ -403,7 +418,8 @@ export default function Main() {
                     </h3>
 
                     <p className="mt-1.5 text-xs text-[#989898]">
-                      {notice.createdAt}
+                      {getTeamRoleLabel(notice.teamRole)} · {notice.authorName}{' '}
+                      · {formatDate(notice.createdAt)}
                     </p>
                   </button>
                 ))}
