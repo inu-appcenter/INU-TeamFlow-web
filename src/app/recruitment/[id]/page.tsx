@@ -72,6 +72,10 @@ export default function RecruitmentDetail() {
 
   const isDisabled = isRecruiter || recruitment.hasApplied || isClosed;
 
+  const handleDeleteRecruitment = async () => {
+    // 삭제 api 되면할거임
+  };
+
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
       <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
@@ -108,24 +112,23 @@ export default function RecruitmentDetail() {
                     className="fixed inset-0 z-10"
                     onClick={() => setIsMenuOpen(false)}
                   />
-                  <div className="absolute top-6 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-2">
+                  <div className="absolute top-6 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
+                    {!isClosed && (
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          router.push(`/recruitment/${recruitmentId}/edit`);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                      >
+                        수정하기
+                      </button>
+                    )}
                     <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        router.push(`/recruitment/${recruitmentId}/edit`);
-                      }}
+                      onClick={handleDeleteRecruitment}
                       className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
                     >
-                      수정하기
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        // TODO: 복사 기능
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
-                    >
-                      복사하기
+                      삭제하기
                     </button>
                   </div>
                 </>

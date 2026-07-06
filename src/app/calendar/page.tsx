@@ -279,7 +279,7 @@ export default function CalendarPage() {
       await deleteEvent({
         eventId,
         scope,
-        occurrence: editSchedule?.occurrenceAt ?? '',
+        occurrence: editSchedule?.occurrenceAt ?? editSchedule?.startAt ?? '',
       });
     } catch (error) {
       console.error('일정 삭제 실패', error);
@@ -288,13 +288,10 @@ export default function CalendarPage() {
     setEditSchedule(null);
   };
 
-  const handleToggleSchedule = async (eventId: number) => {
-    const target = schedules.find((s) => s.eventId === eventId);
-    if (!target) return;
-
+  const handleToggleSchedule = async (target: Schedule) => {
     try {
       await updateEvent({
-        eventId,
+        eventId: target.eventId,
         body: {
           title: target.title,
           description: target.description,
@@ -303,7 +300,7 @@ export default function CalendarPage() {
           isAllDay: target.isAllDay,
           color: target.color,
           isFinished: !target.isFinished,
-          occurrenceAt: target.occurrenceAt,
+          occurrenceAt: target.occurrenceAt ?? target.startAt,
           recurrenceEditScope: 'THIS_INSTANCE',
           ...(target.recurrence && { recurrence: target.recurrence }),
         },
@@ -504,7 +501,7 @@ export default function CalendarPage() {
                           return (
                             <div
                               key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}-${dateKey}`}
-                              className={`absolute h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold ${
+                              className={`absolute h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold transition-all duration-150 ${
                                 isDone ? 'border-l-transparent' : 'pl-1'
                               } ${
                                 isPeriod
@@ -578,8 +575,8 @@ export default function CalendarPage() {
                       if (schedule.teamId) return;
                       setEditSchedule(schedule);
                     }}
-                    className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
-                      isDone ? 'border-l-transparent pl-3' : ''
+                    className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
+                      isDone ? 'border-l-transparent pl-2' : ''
                     }`}
                     style={{
                       backgroundColor: EVENT_COLOR_MAP[schedule.color],
@@ -610,9 +607,9 @@ export default function CalendarPage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleToggleSchedule(schedule.eventId);
+                          handleToggleSchedule(schedule);
                         }}
-                        className="flex h-5 w-5 items-center justify-center"
+                        className="flex h-5 w-5 cursor-pointer items-center justify-center"
                       >
                         {isDone ? (
                           <Check
@@ -711,10 +708,11 @@ export default function CalendarPage() {
 
                           <button
                             type="button"
-                            onClick={() =>
-                              handleToggleSchedule(schedule.eventId)
-                            }
-                            className="flex h-5 w-5 items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleSchedule(schedule);
+                            }}
+                            className="flex h-5 w-5 cursor-pointer items-center justify-center"
                           >
                             {isDone ? (
                               <Check

@@ -101,7 +101,7 @@ export default function RecruitmentApplyPage() {
                 <span className="text-[18px] font-semibold text-[#2c2c2c]">
                   지원서를 작성해주세요
                 </span>
-                <span className="text-[14px] font-medium text-[#b0b0b0]">
+                <span className="text-[14px] text-[#b0b0b0]">
                   Tip. 경험이나 목표를 함께 적으면 더 좋아요, 너무 짧은 지원서는
                   승인받기 어려울 수 있어요
                 </span>

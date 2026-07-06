@@ -70,7 +70,7 @@ export default function TeamEditPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-4 py-6 sm:px-6">
+    <main className="min-h-screen bg-[#F0F2F5] px-4 sm:px-6">
       <div className="mx-auto max-w-[800px]">
         <TeamForm
           mode="edit"

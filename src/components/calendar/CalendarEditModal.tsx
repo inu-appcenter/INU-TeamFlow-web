@@ -13,7 +13,14 @@ import CalendarDatePicker from './CalendarDatePicker';
 
 type RepeatType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
-type ByDay = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
+type ByDay =
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
 
 interface CalendarEditModalProps {
   open: boolean;
@@ -26,23 +33,23 @@ interface CalendarEditModalProps {
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
 const dayNumberToByDay: Record<number, ByDay> = {
-  0: 'SUN',
-  1: 'MON',
-  2: 'TUE',
-  3: 'WED',
-  4: 'THU',
-  5: 'FRI',
-  6: 'SAT',
+  0: 'SUNDAY',
+  1: 'MONDAY',
+  2: 'TUESDAY',
+  3: 'WEDNESDAY',
+  4: 'THURSDAY',
+  5: 'FRIDAY',
+  6: 'SATURDAY',
 };
 
 const byDayToDayNumber: Record<ByDay, number> = {
-  SUN: 0,
-  MON: 1,
-  TUE: 2,
-  WED: 3,
-  THU: 4,
-  FRI: 5,
-  SAT: 6,
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
 };
 const defaultColor: ScheduleColor = 'SUN';
 
@@ -90,6 +97,11 @@ const createDateTime = (date: string, time: string) => {
   return `${date}T${time}`;
 };
 
+// 반복 일정인지 여부 (범위 선택 팝업이 필요한지 판단)
+const isRecurringSchedule = (schedule: Schedule | null) => {
+  return !!schedule && !schedule.isSingle && !!schedule.recurrence;
+};
+
 export default function CalendarEditModal({
   open,
   schedule,
@@ -100,6 +112,12 @@ export default function CalendarEditModal({
   const [isClosing, setIsClosing] = useState(false);
   const [isColorOpen, setIsColorOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
+  // 반복 일정 수정/삭제 시 범위(이 일정만 / 이후 전체 / 전체) 선택 팝업
+  const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
+  const [scopeAction, setScopeAction] = useState<'save' | 'delete' | null>(
+    null
+  );
 
   const [scheduleType, setScheduleType] = useState<ScheduleType>(
     getInitialScheduleType(schedule)
@@ -112,8 +130,6 @@ export default function CalendarEditModal({
   const [repeatDays, setRepeatDays] = useState<number[]>(
     getInitialRepeatDays(schedule)
   );
-  const [recurrenceScope, setRecurrenceScope] =
-    useState<RecurrenceEditScope>('THIS_INSTANCE');
 
   const [form, setForm] = useState(getInitialForm(schedule));
 
@@ -124,6 +140,8 @@ export default function CalendarEditModal({
       setIsClosing(false);
       setIsColorOpen(false);
       setIsDeleteConfirmOpen(false);
+      setIsScopeModalOpen(false);
+      setScopeAction(null);
       onClose();
     }, 250);
   };
@@ -142,7 +160,8 @@ export default function CalendarEditModal({
     }
   };
 
-  const handleSave = () => {
+  // 실제 저장 처리 (스코프 확정 후 호출)
+  const commitSave = (scope: RecurrenceEditScope) => {
     if (!schedule) return;
 
     const isAllDay = scheduleType === 'PERIOD' ? true : form.isAllDay;
@@ -158,6 +177,28 @@ export default function CalendarEditModal({
           ? createDateTime(form.startDate, '23:59')
           : createDateTime(form.startDate, form.endTime);
 
+    // THIS_INSTANCE는 반복 패턴을 바꾸는 요청이 아니므로 recurrence를 보내지 않음
+    const recurrencePayload =
+      scheduleType === 'REPEAT' && scope !== 'THIS_INSTANCE'
+        ? {
+            freq: repeatType,
+            intervalValue: 1,
+            byDay:
+              repeatType === 'WEEKLY'
+                ? repeatDays.map((day) => dayNumberToByDay[day] as string)
+                : null,
+            byMonthDay:
+              repeatType === 'MONTHLY'
+                ? Number(form.startDate.slice(8, 10))
+                : null,
+            seriesStartAt: null,
+            untilAt: form.endDate
+              ? createDateTime(form.endDate, '23:59')
+              : null,
+            occurrenceCount: null,
+          }
+        : null;
+
     onEdit(
       {
         ...schedule,
@@ -168,39 +209,60 @@ export default function CalendarEditModal({
         isAllDay,
         color: form.color,
         isSingle: scheduleType !== 'REPEAT',
-        recurrence:
-          scheduleType === 'REPEAT'
-            ? {
-                freq: repeatType,
-                intervalValue: 1,
-                byDay:
-                  repeatType === 'WEEKLY'
-                    ? repeatDays.map((day) => dayNumberToByDay[day] as string)
-                    : null,
-                byMonthDay:
-                  repeatType === 'MONTHLY'
-                    ? Number(form.startDate.slice(8, 10))
-                    : null,
-                seriesStartAt: null,
-                untilAt: form.endDate
-                  ? createDateTime(form.endDate, '23:59')
-                  : null,
-                occurrenceCount: null,
-              }
-            : null,
+        recurrence: recurrencePayload,
       },
-      recurrenceScope
+      scope
     );
 
     handleClose();
   };
 
+  // 저장 버튼: 반복 일정이면 범위 선택 팝업, 아니면 바로 저장
+  const handleSave = () => {
+    if (!schedule) return;
+
+    if (isRecurringSchedule(schedule)) {
+      setScopeAction('save');
+      setIsScopeModalOpen(true);
+      return;
+    }
+
+    commitSave('THIS_INSTANCE');
+  };
+
+  // 실제 삭제 처리 (스코프 확정 후 호출)
+  const commitDelete = (scope: RecurrenceEditScope) => {
+    if (!schedule) return;
+
+    onDelete(schedule.eventId, scope);
+    setIsDeleteConfirmOpen(false);
+    handleClose();
+  };
+
+  // 삭제 확인 팝업에서 최종 확인 시: 반복 일정이면 범위 선택 팝업, 아니면 바로 삭제
   const handleDelete = () => {
     if (!schedule) return;
 
-    onDelete(schedule.eventId, recurrenceScope);
-    setIsDeleteConfirmOpen(false);
-    handleClose();
+    if (isRecurringSchedule(schedule)) {
+      setIsDeleteConfirmOpen(false);
+      setScopeAction('delete');
+      setIsScopeModalOpen(true);
+      return;
+    }
+
+    commitDelete('THIS_INSTANCE');
+  };
+
+  const handleScopeSelect = (scope: RecurrenceEditScope) => {
+    setIsScopeModalOpen(false);
+
+    if (scopeAction === 'delete') {
+      commitDelete(scope);
+    } else if (scopeAction === 'save') {
+      commitSave(scope);
+    }
+
+    setScopeAction(null);
   };
 
   if (!open || !schedule) return null;
@@ -460,11 +522,11 @@ export default function CalendarEditModal({
             className="h-[110px] w-full resize-none rounded-2xl bg-[#F6F8FA] px-6 py-4 text-[16px] font-semibold text-[#2C2C2C] outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50"
           />
 
-          <div className="mt-16 flex shrink-0 items-center justify-between">
+          <div className="mt-16 mb-10 flex shrink-0 items-center justify-between">
             <button
               type="button"
               onClick={() => setIsDeleteConfirmOpen(true)}
-              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+              className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
             >
               삭제
             </button>
@@ -472,7 +534,7 @@ export default function CalendarEditModal({
             <button
               type="button"
               onClick={handleSave}
-              className="mb-6 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+              className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
             >
               저장
             </button>
@@ -481,23 +543,26 @@ export default function CalendarEditModal({
 
         {isDeleteConfirmOpen && (
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="absolute inset-0 z-40 flex items-center justify-center bg-black/10 px-6"
+            onClick={() => setIsDeleteConfirmOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           >
-            <div className="w-full max-w-[320px] animate-[popup_0.18s_ease-out] rounded-3xl bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-[#2C2C2C]">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+            >
+              <h3 className="text-center text-xl font-bold text-[#2C2C2C]">
                 일정을 삭제할까요?
               </h3>
 
-              <p className="mt-2 text-sm font-medium text-[#989898]">
-                삭제한 일정은 다시 복구할 수 없어요.
+              <p className="mt-1 text-center text-[15px] text-[#989898]">
+                삭제한 일정은 다시 복구할 수 없어요
               </p>
 
-              <div className="mt-6 flex justify-end gap-2">
+              <div className="mt-3 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="h-10 rounded-2xl bg-[#EEF1F5] px-5 text-sm font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
                 >
                   취소
                 </button>
@@ -505,9 +570,54 @@ export default function CalendarEditModal({
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="h-10 rounded-2xl bg-[#E22222] px-5 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#CC1C1C] active:scale-95"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
                 >
                   삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isScopeModalOpen && (
+          <div
+            onClick={() => {
+              setIsScopeModalOpen(false);
+              setScopeAction(null);
+            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="animate-modal-pop w-[360px] rounded-2xl bg-white p-6 shadow-xl"
+            >
+              <p className="text-center text-base font-medium text-[#989898]">
+                어떤 범위로 {scopeAction === 'delete' ? '삭제' : '수정'}할까요?
+              </p>
+
+              <div className="mt-4 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => handleScopeSelect('THIS_INSTANCE')}
+                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
+                >
+                  이 일정만
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleScopeSelect('THIS_AND_FOLLOWING')}
+                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
+                >
+                  이 일정부터 이후 일정 모두
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleScopeSelect('ALL_SERIES')}
+                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2c2c2c] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
+                >
+                  전체 반복 일정
                 </button>
               </div>
             </div>

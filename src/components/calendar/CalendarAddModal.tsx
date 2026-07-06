@@ -562,7 +562,7 @@ export default function CalendarAddModal({
             <button
               type="button"
               onClick={handleClose}
-              className="mb-16 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
+              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
             >
               삭제
             </button>
@@ -571,7 +571,7 @@ export default function CalendarAddModal({
           <button
             type="button"
             onClick={handleSave}
-            className="mb-16 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+            className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
           >
             저장
           </button>

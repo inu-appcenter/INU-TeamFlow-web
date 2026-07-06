@@ -344,7 +344,7 @@ export default function Main() {
                             </p>
                           </div>
 
-                          <p className="mt-1 text-xs text-[#989898]">
+                          <p className="mt-1 truncate text-xs text-[#989898]">
                             {schedule.teamName ?? '개인 일정'}
                           </p>
                         </div>
@@ -384,7 +384,7 @@ export default function Main() {
                     type="button"
                     onClick={() =>
                       router.push(
-                        `/team/${notice.teamId}/notice/${notice.noticeId}`
+                        `/team/${notice.teamId}/notice/${notice.noticeId}?from=home`
                       )
                     }
                     className="z-50 border-b-[0.5px] border-[#D6DDE5] py-3 text-left last:border-b-0 active:scale-[0.99]"
@@ -393,8 +393,8 @@ export default function Main() {
                       [ {notice.teamName} ] {notice.title}
                     </h3>
 
-                    <p className="mt-0.5 text-[11px] text-[#989898]">
-                      {getTeamRoleLabel(notice.teamRole)} · {notice.authorName}{' '}
+                    <p className="mt-0.5 truncate text-[11px] text-[#989898]">
+                      {notice.authorName} · {getTeamRoleLabel(notice.teamRole)}{' '}
                       · {formatDate(notice.createdAt)}
                     </p>
                   </button>
@@ -408,7 +408,7 @@ export default function Main() {
                     type="button"
                     onClick={() =>
                       router.push(
-                        `/team/${notice.teamId}/notice/${notice.noticeId}`
+                        `/team/${notice.teamId}/notice/${notice.noticeId}?from=home`
                       )
                     }
                     className="z-50 border-b-[0.5px] border-[#D6DDE5] py-4 text-left last:border-b-0 active:scale-[0.99]"
@@ -417,8 +417,8 @@ export default function Main() {
                       [ {notice.teamName} ] {notice.title}
                     </h3>
 
-                    <p className="mt-1.5 text-xs text-[#989898]">
-                      {getTeamRoleLabel(notice.teamRole)} · {notice.authorName}{' '}
+                    <p className="mt-1.5 truncate text-xs text-[#989898]">
+                      {notice.authorName} · {getTeamRoleLabel(notice.teamRole)}{' '}
                       · {formatDate(notice.createdAt)}
                     </p>
                   </button>

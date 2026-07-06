@@ -27,7 +27,7 @@ export interface TeamDetailResponse {
 export interface TeamMemberResponse {
   teamMemberId: number;
   userId: number;
-  name: string;
+  username: string;
   teamRole: TeamRole;
 }
 

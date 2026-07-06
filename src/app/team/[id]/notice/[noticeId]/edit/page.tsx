@@ -7,10 +7,13 @@ import { useRef, useState } from 'react';
 
 import { useTeamDetail } from '@/hooks/useTeamQuery';
 import {
-  useCreateTeamNotice,
+  useTeamNoticeDetail,
+  useUpdateTeamNotice,
   useGetPresignedUrls,
 } from '@/hooks/useNoticeQuery';
 import { uploadImageToS3 } from '@/utils/uploadImageToS3';
+import { getImageKeyFromUrl } from '@/utils/getImageKey';
+import type { TeamNoticeDetail } from '@/types/notice';
 
 const categoryColorMap: Record<string, string> = {
   CONTEST: '#FBE4F8',
@@ -32,6 +35,12 @@ type LocalImage = {
   id: string;
   file: File;
   previewUrl: string;
+};
+
+type ExistingImage = {
+  id: string;
+  imageKey: string;
+  imageUrl: string;
 };
 
 type InputFieldProps = {
@@ -116,21 +125,36 @@ const TextAreaField = ({
   </div>
 );
 
-export default function TeamNoticeWrite() {
+// 데이터 로딩 완료 후에만 마운트되는 실제 폼
+function NoticeEditForm({
+  teamId,
+  noticeId,
+  notice,
+}: {
+  teamId: number;
+  noticeId: number;
+  notice: TeamNoticeDetail;
+}) {
   const router = useRouter();
-  const params = useParams();
-  const teamId = Number(params.id);
-
   const { data: team } = useTeamDetail(teamId);
   const { mutateAsync: getPresignedUrls } = useGetPresignedUrls();
-  const { mutateAsync: createNotice } = useCreateTeamNotice(teamId);
+  const { mutateAsync: updateNotice } = useUpdateTeamNotice(teamId);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isPinned, setIsPinned] = useState(false);
-  const [images, setImages] = useState<LocalImage[]>([]);
+  const [title, setTitle] = useState(notice.title);
+  const [content, setContent] = useState(notice.content);
+  const [isPinned, setIsPinned] = useState(notice.isPinned);
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>(
+    [...notice.images]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((img) => ({
+        id: `existing-${img.sortOrder}`,
+        imageKey: getImageKeyFromUrl(img.imageUrl),
+        imageUrl: img.imageUrl,
+      }))
+  );
+  const [newImages, setNewImages] = useState<LocalImage[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -151,18 +175,22 @@ export default function TeamNoticeWrite() {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
 
-    const newImages: LocalImage[] = files.map((file) => ({
+    const newLocalImages: LocalImage[] = files.map((file) => ({
       id: `${file.name}-${Date.now()}-${Math.random()}`,
       file,
       previewUrl: URL.createObjectURL(file),
     }));
 
-    setImages((prev) => [...prev, ...newImages]);
+    setNewImages((prev) => [...prev, ...newLocalImages]);
     e.target.value = '';
   };
 
-  const handleRemoveImage = (id: string) => {
-    setImages((prev) => {
+  const handleRemoveExistingImage = (id: string) => {
+    setExistingImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
+  const handleRemoveNewImage = (id: string) => {
+    setNewImages((prev) => {
       const target = prev.find((img) => img.id === id);
       if (target) URL.revokeObjectURL(target.previewUrl);
       return prev.filter((img) => img.id !== id);
@@ -175,11 +203,11 @@ export default function TeamNoticeWrite() {
     setIsSubmitting(true);
 
     try {
-      let imageKeys: string[] = [];
+      let uploadedImageKeys: string[] = [];
 
-      if (images.length > 0) {
+      if (newImages.length > 0) {
         const presignedList = await getPresignedUrls(
-          images.map((img) => ({
+          newImages.map((img) => ({
             fileName: img.file.name,
             contentType: img.file.type,
           }))
@@ -187,24 +215,32 @@ export default function TeamNoticeWrite() {
 
         await Promise.all(
           presignedList.map((presigned, i) =>
-            uploadImageToS3(presigned.uploadUrl, images[i].file)
+            uploadImageToS3(presigned.uploadUrl, newImages[i].file)
           )
         );
 
-        imageKeys = presignedList.map((p) => p.imageKey);
+        uploadedImageKeys = presignedList.map((p) => p.imageKey);
       }
 
-      await createNotice({
-        title: title.trim(),
-        content: content.trim(),
-        isPinned,
-        imageKeys,
+      const imageKeys = [
+        ...existingImages.map((img) => img.imageKey),
+        ...uploadedImageKeys,
+      ];
+
+      await updateNotice({
+        noticeId,
+        body: {
+          title: title.trim(),
+          content: content.trim(),
+          isPinned,
+          imageKeys,
+        },
       });
 
-      router.push(`/team/${teamId}/notice`);
+      router.push(`/team/${teamId}/notice/${noticeId}`);
     } catch (err) {
-      console.error('공지 작성 실패', err);
-      showErrorMessage('공지 작성에 실패했어요');
+      console.error('공지 수정 실패', err);
+      showErrorMessage('공지 수정에 실패했어요');
     } finally {
       setIsSubmitting(false);
     }
@@ -225,14 +261,14 @@ export default function TeamNoticeWrite() {
             style={{ backgroundColor: currentColor }}
           >
             <button
-              onClick={() => router.push(`/team/${teamId}/notice`)}
+              onClick={() => router.push(`/team/${teamId}/notice/${noticeId}`)}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
             <span className="rounded-full bg-white/80 px-5 py-2 text-sm font-semibold text-[#2C2C2C]">
-              {team ? categoryMap[team.category] : '공지 작성'}
+              {team ? categoryMap[team.category] : '공지 수정'}
             </span>
           </div>
 
@@ -245,7 +281,28 @@ export default function TeamNoticeWrite() {
                 </div>
 
                 <div className="flex flex-wrap gap-2.5">
-                  {images.map((img) => (
+                  {existingImages.map((img) => (
+                    <div
+                      key={img.id}
+                      className="relative h-[150px] w-[150px] shrink-0 overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
+                    >
+                      <img
+                        src={img.imageUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExistingImage(img.id)}
+                        className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[#989898]/50 text-white"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {newImages.map((img) => (
                     <div
                       key={img.id}
                       className="relative h-[150px] w-[150px] shrink-0 overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
@@ -258,7 +315,7 @@ export default function TeamNoticeWrite() {
 
                       <button
                         type="button"
-                        onClick={() => handleRemoveImage(img.id)}
+                        onClick={() => handleRemoveNewImage(img.id)}
                         className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[#989898]/50 text-white"
                       >
                         <X size={14} />
@@ -331,7 +388,9 @@ export default function TeamNoticeWrite() {
               <div className="mt-6 mb-16 flex justify-center">
                 <div className="flex gap-2">
                   <button
-                    onClick={() => router.push(`/team/${teamId}/notice`)}
+                    onClick={() =>
+                      router.push(`/team/${teamId}/notice/${noticeId}`)
+                    }
                     className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-8 py-2 font-semibold text-[#2C2C2C]"
                   >
                     취소
@@ -354,7 +413,7 @@ export default function TeamNoticeWrite() {
                     disabled={isSubmitting}
                     className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-semibold text-white disabled:opacity-60"
                   >
-                    작성
+                    수정
                   </button>
                 </div>
               </div>
@@ -373,7 +432,7 @@ export default function TeamNoticeWrite() {
             className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
           >
             <h2 className="text-center text-xl font-bold">
-              공지를 작성할까요?
+              공지를 수정할까요?
             </h2>
 
             <div className="mt-4 flex gap-3">
@@ -391,12 +450,41 @@ export default function TeamNoticeWrite() {
                 }}
                 className="flex-1 rounded-xl bg-[#5E92F0] py-3 font-semibold text-white"
               >
-                작성
+                수정
               </button>
             </div>
           </div>
         </div>
       )}
     </main>
+  );
+}
+
+export default function TeamNoticeEdit() {
+  const params = useParams();
+  const teamId = Number(params.id);
+  const noticeId = Number(params.noticeId);
+
+  const { data: notice, isLoading } = useTeamNoticeDetail(teamId, noticeId);
+
+  if (isLoading) return null;
+
+  if (!notice) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
+        <p className="font-semibold text-[#2C2C2C]">
+          존재하지 않는 공지입니다.
+        </p>
+      </main>
+    );
+  }
+
+  return (
+    <NoticeEditForm
+      key={notice.noticeId}
+      teamId={teamId}
+      noticeId={noticeId}
+      notice={notice}
+    />
   );
 }
