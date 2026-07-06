@@ -96,20 +96,11 @@ export default function Recruitment() {
               {category.label}
             </button>
           ))}
-
-          {/* PC 버튼 */}
-          <button
-            onClick={() => router.push('/recruitment/create')}
-            className="ml-auto hidden cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] px-4 py-2 text-sm font-medium text-white md:flex"
-          >
-            <Plus size={14} strokeWidth={3} />
-            모집글 쓰기
-          </button>
         </section>
 
         {/* 검색바 */}
-        <section className="mb-5 flex items-center gap-4">
-          <div className="flex h-10 flex-1 items-center overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
+        <section className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
             <div className="relative h-full">
               <select
                 value={searchType}
@@ -137,10 +128,14 @@ export default function Recruitment() {
             </div>
           </div>
 
-          {/* 모바일 버튼 */}
-          <button className="flex h-10 shrink-0 cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] px-3 text-sm font-medium text-white md:hidden">
-            <Plus size={14} strokeWidth={2.5} />
-            모집글 쓰기
+          <button
+            type="button"
+            onClick={() => router.push('/recruitment/create')}
+            className="flex h-10 w-10 cursor-pointer items-center justify-center gap-1 rounded-full bg-[#5E92F0] text-white transition-all duration-150 active:scale-95 sm:w-auto sm:rounded-lg sm:px-4"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+
+            <span className="hidden sm:inline">모집글 작성</span>
           </button>
         </section>
 

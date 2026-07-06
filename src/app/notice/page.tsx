@@ -89,11 +89,7 @@ export default function Notice() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => {
-                if (window.history.length > 1) {
-                  router.back();
-                } else {
-                  router.push('/');
-                }
+                router.push('/');
               }}
               className="cursor-pointer text-[#2C2C2C]"
             >
@@ -104,7 +100,7 @@ export default function Notice() {
           </div>
 
           {/* 검색바 */}
-          <div className="flex h-10 w-[280px] items-center overflow-hidden rounded-xl border-[0.5] border-[#D6DDE5] bg-white sm:w-[400px]">
+          <div className="flex h-10 w-full items-center overflow-hidden rounded-xl border-[0.5] border-[#D6DDE5] bg-white sm:w-[400px]">
             <div className="relative h-full">
               <select
                 value={searchType}
@@ -149,7 +145,7 @@ export default function Notice() {
           {paged.map((notice) => (
             <Link
               key={notice.noticeId}
-              href={`/team/${notice.teamId}/notice/${notice.noticeId}`}
+              href={`/team/${notice.teamId}/notice/${notice.noticeId}?from=home`}
             >
               <div
                 className={`rounded-xl border-[0.5px] bg-white px-4 py-4 transition hover:bg-[#FAFAFA] ${
@@ -159,7 +155,12 @@ export default function Notice() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="shrink-0 rounded-full bg-[#EEF1F5] px-3 py-1 text-xs font-semibold text-[#6E7780]">
+                  <span
+                    style={{
+                      backgroundColor: categoryColorMap[notice.teamCategory],
+                    }}
+                    className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-[#2c2c2c]/80"
+                  >
                     {notice.teamName}
                   </span>
 
@@ -172,8 +173,8 @@ export default function Notice() {
                   )}
                 </div>
 
-                <p className="mt-2 px-1 text-xs text-[#989898]">
-                  {getTeamRoleLabel(notice.teamRole)} · {notice.authorName} ·{' '}
+                <p className="mt-2 truncate px-1 text-xs text-[#989898]">
+                  {notice.authorName} ·{getTeamRoleLabel(notice.teamRole)} ·{' '}
                   {formatDate(notice.createdAt)}
                 </p>
               </div>

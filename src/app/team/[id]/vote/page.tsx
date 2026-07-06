@@ -96,7 +96,7 @@ export default function TeamVotePage() {
                         </h2>
 
                         <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[12px] font-semibold ${
                             vote.isOpened
                               ? 'bg-[#E8F1FF] text-[#5E92F0]'
                               : 'bg-[#EEF1F5] text-[#989898]'

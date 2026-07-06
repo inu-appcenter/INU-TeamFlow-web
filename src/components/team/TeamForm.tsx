@@ -135,7 +135,9 @@ export default function TeamForm({
   const router = useRouter();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    initialData?.imageUrl ?? null
+  );
   const [errorMessage, setErrorMessage] = useState('');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [form, setForm] = useState<TeamFormData>(

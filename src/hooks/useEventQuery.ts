@@ -9,10 +9,12 @@ import {
   updateTeamEvent,
   deleteTeamEvent,
 } from '@/api/event';
-import type { MyEventCreateRequest, MyEventUpdateRequest } from '@/types/event';
 import type {
+  MyEventCreateRequest,
+  MyEventUpdateRequest,
   TeamEventCreateRequest,
   TeamEventUpdateRequest,
+  EventListResponse,
 } from '@/types/event';
 
 export const eventKeys = {
@@ -38,6 +40,7 @@ export const useCreateMyEvent = () => {
 
 export const useUpdateMyEvent = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       eventId,
@@ -46,7 +49,45 @@ export const useUpdateMyEvent = () => {
       eventId: number;
       body: MyEventUpdateRequest;
     }) => updateMyEvent(eventId, body),
-    onSuccess: () => {
+
+    onMutate: async ({ eventId, body }) => {
+      await queryClient.cancelQueries({ queryKey: ['events'] });
+
+      const previousData = queryClient.getQueriesData<EventListResponse[]>({
+        queryKey: ['events'],
+      });
+
+      queryClient.setQueriesData<EventListResponse[]>(
+        { queryKey: ['events', 'my'] },
+        (old) => {
+          if (!old) return old;
+
+          return old.map((s) => {
+            const sameEvent = s.eventId === eventId;
+            const sameOccurrence =
+              (s.occurrenceAt ?? s.startAt) ===
+              (body.occurrenceAt ?? body.startAt);
+
+            if (sameEvent && sameOccurrence) {
+              return { ...s, isFinished: body.isFinished };
+            }
+            return s;
+          });
+        }
+      );
+
+      return { previousData };
+    },
+
+    onError: (_err, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });

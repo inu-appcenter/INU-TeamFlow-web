@@ -575,7 +575,7 @@ export default function TeamDetail() {
                         key={member.teamMemberId}
                         className="rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[11px] text-[#6E7780] md:text-[12px]"
                       >
-                        {member.name}
+                        {member.username}
                       </span>
                     ))}
                   </div>
@@ -897,7 +897,7 @@ export default function TeamDetail() {
                           </h2>
 
                           <span
-                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                               vote.isOpened
                                 ? 'bg-[#E8F1FF] text-[#5E92F0]'
                                 : 'bg-[#EEF1F5] text-[#989898]'
@@ -931,7 +931,9 @@ export default function TeamDetail() {
 
                   <button
                     className="cursor-pointer"
-                    onClick={() => router.push(`/team/${teamId}/notice`)}
+                    onClick={() =>
+                      router.push(`/team/${teamId}/notice?from=team`)
+                    }
                   >
                     <ChevronRight />
                   </button>
@@ -952,8 +954,8 @@ export default function TeamDetail() {
                         </h2>
                         <div className="flex items-center justify-between">
                           <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
-                            {getTeamRoleLabel(notice.teamRole)} •{' '}
-                            {notice.authorName}
+                            {notice.authorName} •{' '}
+                            {getTeamRoleLabel(notice.teamRole)}
                           </p>
                           <p className="mt-1 line-clamp-1 text-xs text-[#989898] md:text-sm">
                             {formatDate(notice.createdAt)}

@@ -1,3 +1,5 @@
+import type { TeamCategory } from '@/constants/teamEnum';
+
 export interface TeamNoticeSummary {
   noticeId: number;
   teamId: number;
@@ -9,6 +11,7 @@ export interface TeamNoticeSummary {
   teamRole: string; // '팀장' | '매니저' | '팀원' 등
   createdAt: string;
   updatedAt: string;
+  teamCategory: TeamCategory;
 }
 
 export interface TeamNoticeAuthor {
@@ -33,6 +36,13 @@ export interface TeamNoticeDetail {
   images: TeamNoticeImage[];
   content: string;
   isEditable: boolean;
+}
+
+export interface TeamNoticeUpdateRequest {
+  title: string;
+  content: string;
+  isPinned: boolean;
+  imageKeys: string[];
 }
 
 export interface PresignedUrlRequestItem {

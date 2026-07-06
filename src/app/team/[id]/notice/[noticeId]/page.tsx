@@ -1,13 +1,17 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, Ellipsis, Pin } from 'lucide-react';
+import { ChevronLeft, Ellipsis, Pin, X } from 'lucide-react';
 import { useState } from 'react';
 
 import Card from '@/components/main/Card';
 import { useTeamDetail } from '@/hooks/useTeamQuery';
-import { useTeamNoticeDetail } from '@/hooks/useNoticeQuery';
+import {
+  useTeamNoticeDetail,
+  useDeleteTeamNotice,
+} from '@/hooks/useNoticeQuery';
 import { formatDate } from '@/utils/date/formatDate';
+import { useSearchParams } from 'next/navigation';
 
 const categoryColorMap: Record<string, string> = {
   CONTEST: '#FBE4F8',
@@ -34,6 +38,12 @@ export default function TeamNoticeDetail() {
   const { data: notice, isLoading } = useTeamNoticeDetail(teamId, noticeId);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
+  const { mutateAsync: deleteNotice } = useDeleteTeamNotice(teamId);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
 
   if (isLoading) return null;
 
@@ -51,6 +61,15 @@ export default function TeamNoticeDetail() {
     (a, b) => a.sortOrder - b.sortOrder
   );
 
+  const handleDelete = async () => {
+    try {
+      await deleteNotice(noticeId);
+      router.push(`/team/${teamId}/notice`);
+    } catch (err) {
+      console.error('공지 삭제 실패', err);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
       <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
@@ -64,7 +83,13 @@ export default function TeamNoticeDetail() {
             }}
           >
             <button
-              onClick={() => router.push(`/team/${teamId}/notice`)}
+              onClick={() => {
+                if (from === 'home') {
+                  router.push('/notice'); // 홈페이지 공지
+                } else {
+                  router.push(`/team/${teamId}/notice`); // 팀 공지
+                }
+              }}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft
@@ -104,7 +129,7 @@ export default function TeamNoticeDetail() {
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
-                          // TODO: 삭제 기능
+                          setIsDeleteConfirmOpen(true);
                         }}
                         className="w-full px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
                       >
@@ -117,46 +142,58 @@ export default function TeamNoticeDetail() {
             )}
           </div>
 
-          <div className="px-8 py-7 sm:px-10 sm:py-10">
+          <div className="px-8 py-7 sm:px-8 sm:py-10">
             <div className="flex flex-wrap items-center gap-2">
               {notice.isPinned && (
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center gap-1 rounded-full bg-[#EEF1FF] text-[15px] font-semibold text-[#5E92F0]">
-                  <Pin size={15} strokeWidth={3} />
+                <span className="flex shrink-0 items-center justify-center text-[#5E92F0]">
+                  <Pin size={24} strokeWidth={3} />
                 </span>
               )}
 
-              <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">
+              <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-[26px]">
                 {notice.title}
               </h1>
             </div>
 
-            <div className="mt-2 flex items-center gap-2">
-              <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full bg-[#EEF1F5]">
-                {notice.author.profileUrl && (
-                  <img
-                    src={notice.author.profileUrl}
-                    alt={notice.author.name}
-                    className="h-full w-full object-cover"
-                  />
-                )}
-              </div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5]">
+                  {notice.author.profileUrl && (
+                    <img
+                      src={notice.author.profileUrl}
+                      alt={notice.author.name}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
+                </div>
 
-              <p className="text-[13px] text-[#989898] sm:text-[15px]">
-                {teamRoleMap[notice.author.teamRole] ?? notice.author.teamRole}{' '}
-                · {notice.author.name} · {formatDate(notice.createdAt)}
+                <p className="text-[13px] text-[#989898] sm:text-[14px]">
+                  {notice.author.name} ·{' '}
+                  {teamRoleMap[notice.author.teamRole] ??
+                    notice.author.teamRole}
+                </p>
+              </div>
+              <p className="text-[13px] text-[#989898] sm:text-[14px]">
+                {formatDate(notice.createdAt)}
               </p>
             </div>
 
-            <div className="mt-3 border-b-[0.5px] border-[#D6DDE5]" />
+            <div className="mt-2 border-b-[0.5px] border-[#D6DDE5]" />
 
-            <section className="mt-4 flex flex-col gap-5 sm:mt-4 sm:gap-6">
+            <section className="mt-4 flex flex-col gap-4">
               {sortedImages.map((image) => (
-                <img
+                <button
                   key={image.sortOrder}
-                  src={image.imageUrl}
-                  alt=""
-                  className="w-full rounded-xl object-cover"
-                />
+                  type="button"
+                  onClick={() => setPreviewImageUrl(image.imageUrl)}
+                  className="cursor-zoom-in overflow-hidden rounded-xl"
+                >
+                  <img
+                    src={image.imageUrl}
+                    alt=""
+                    className="max-h-[400px] w-full object-cover transition-transform duration-200 hover:scale-[1.02]"
+                  />
+                </button>
               ))}
 
               <p className="text-[14px] leading-7 whitespace-pre-wrap text-[#2C2C2C] sm:text-[15px] sm:leading-8">
@@ -166,6 +203,67 @@ export default function TeamNoticeDetail() {
           </div>
         </Card>
       </section>
+
+      {/* 이미지 확대 모달 */}
+      {previewImageUrl && (
+        <div
+          onClick={() => setPreviewImageUrl(null)}
+          className="fixed inset-0 z-[300] flex cursor-zoom-out items-center justify-center bg-black/80 px-4"
+        >
+          <button
+            type="button"
+            onClick={() => setPreviewImageUrl(null)}
+            className="absolute top-6 right-6 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+          >
+            <X size={22} />
+          </button>
+
+          <img
+            src={previewImageUrl}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] max-w-full cursor-default rounded-lg object-contain"
+          />
+        </div>
+      )}
+
+      {isDeleteConfirmOpen && (
+        <div
+          onClick={() => setIsDeleteConfirmOpen(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+          >
+            <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
+              공지를 삭제할까요?
+            </h2>
+            <p className="mt-1 text-center text-[15px] text-[#989898]">
+              삭제한 공지는 복구할 수 없어요
+            </p>
+
+            <div className="mt-3 flex gap-3">
+              <button
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+              >
+                취소
+              </button>
+
+              <button
+                onClick={async () => {
+                  setIsDeleteConfirmOpen(false);
+                  await handleDelete();
+                }}
+                className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -43,11 +43,10 @@ export interface EventListResponse {
   isSingle: boolean;
   isFinished: boolean;
   isException: boolean;
-}
-
-export interface EventDetailResponse extends EventListResponse {
   recurrence: Recurrence | null;
 }
+
+export type EventDetailResponse = EventListResponse;
 
 // Request
 
@@ -99,4 +98,4 @@ export interface TeamEventUpdateRequest {
   recurrence?: Recurrence;
 }
 
-export type Schedule = EventListResponse & { recurrence?: Recurrence | null };
+export type Schedule = EventListResponse;

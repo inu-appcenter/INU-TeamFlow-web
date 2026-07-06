@@ -4,6 +4,7 @@ import type {
   PresignedUrlRequestItem,
   PresignedUrlResponseItem,
   TeamNoticeCreateRequest,
+  TeamNoticeUpdateRequest,
   TeamNoticeDetail,
   TeamNoticeSummary,
 } from '@/types/notice';
@@ -45,6 +46,47 @@ export function useCreateTeamNotice(teamId: number) {
         body
       );
       return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teamNotices', teamId] });
+    },
+  });
+}
+
+// 공지 수정
+export function useUpdateTeamNotice(teamId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      noticeId,
+      body,
+    }: {
+      noticeId: number;
+      body: TeamNoticeUpdateRequest;
+    }) => {
+      const { data } = await axios.put<TeamNoticeDetail>(
+        `/teams/${teamId}/notices/${noticeId}`,
+        body
+      );
+      return data;
+    },
+    onSuccess: (_, { noticeId }) => {
+      queryClient.invalidateQueries({ queryKey: ['teamNotices', teamId] });
+      queryClient.invalidateQueries({
+        queryKey: ['teamNoticeDetail', teamId, noticeId],
+      });
+    },
+  });
+}
+
+// 공지 삭제
+export function useDeleteTeamNotice(teamId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (noticeId: number) => {
+      await axios.delete(`/teams/${teamId}/notices/${noticeId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamNotices', teamId] });

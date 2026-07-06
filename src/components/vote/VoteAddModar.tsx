@@ -33,7 +33,7 @@ interface VoteAddModalProps {
 interface TeamMember {
   teamMemberId: number;
   userId: number;
-  name: string;
+  username: string;
   teamRole: string;
 }
 
@@ -171,7 +171,7 @@ export default function VoteAddModal({
   };
 
   const filteredMembers = members.filter((m) =>
-    m.name?.toLowerCase().includes(search.toLowerCase())
+    m.username?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleCreate = () => {
@@ -424,7 +424,7 @@ export default function VoteAddModal({
 
                       <div className="flex flex-col">
                         <span className="truncate text-base font-semibold text-[#2c2c2c]">
-                          {member.name}
+                          {member.username}
                         </span>
                       </div>
 
@@ -452,7 +452,7 @@ export default function VoteAddModal({
                           className="flex items-center justify-between rounded-lg bg-white px-3 py-2"
                         >
                           <span className="truncate text-sm font-medium text-[#2c2c2c]">
-                            {member.name}
+                            {member.username}
                           </span>
 
                           <button
