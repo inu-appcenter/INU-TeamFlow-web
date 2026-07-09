@@ -50,13 +50,32 @@ function assignWeekSlots(
   weekDateKeys: string[],
   schedules: Schedule[]
 ): Map<string, SlottedSchedule[]> {
-  const periodSchedules = schedules.filter((s) => {
+  const seen = new Set<string>();
+  const weekSchedules: Schedule[] = [];
+
+  for (const dk of weekDateKeys) {
+    for (const s of schedules) {
+      const key = `${s.eventId}-${s.occurrenceAt ?? s.startAt}`;
+
+      if (!seen.has(key) && isScheduleOnDate(s, dk)) {
+        seen.add(key);
+        weekSchedules.push(s);
+      }
+    }
+  }
+
+  const periodSchedules = weekSchedules.filter((s) => {
     const start = s.startAt.slice(0, 10);
     const end = s.endAt.slice(0, 10);
-
     return start !== end && s.isSingle;
   });
+  const singleSchedules = weekSchedules.filter((s) => {
+    const start = s.startAt.slice(0, 10);
+    const end = s.endAt.slice(0, 10);
+    return !(start !== end && s.isSingle);
+  });
 
+  // 이 주에 실제로 보이는 날짜 범위로 클램핑해서 겹침 판단
   const weekStart = weekDateKeys[0];
   const weekEnd = weekDateKeys[weekDateKeys.length - 1];
 
@@ -65,55 +84,44 @@ function assignWeekSlots(
     ce: end > weekEnd ? weekEnd : end,
   });
 
-  const periodWithSlot: SlottedSchedule[] = [];
+  const slotMap: SlottedSchedule[] = [];
   const usedSlots: { cs: string; ce: string; slot: number }[] = [];
 
   for (const s of periodSchedules) {
-    const start = s.startAt.slice(0, 10);
-    const end = s.endAt.slice(0, 10);
-
-    if (!weekDateKeys.some((dk) => isScheduleOnDate(s, dk))) continue;
-
-    const { cs, ce } = clampToWeek(start, end);
+    const { cs, ce } = clampToWeek(
+      s.startAt.slice(0, 10),
+      s.endAt.slice(0, 10)
+    );
 
     let slot = 0;
-
     while (usedSlots.some((u) => u.slot === slot && cs <= u.ce && ce >= u.cs)) {
       slot++;
     }
 
     usedSlots.push({ cs, ce, slot });
-    periodWithSlot.push({ ...s, slot });
+    slotMap.push({ ...s, slot });
+  }
+
+  for (const s of singleSchedules) {
+    slotMap.push({ ...s, slot: -1 });
   }
 
   const result = new Map<string, SlottedSchedule[]>();
-
   for (const dk of weekDateKeys) {
-    const schedulesOnDate = schedules
-      .filter((s) => {
-        const start = s.startAt.slice(0, 10);
-        const end = s.endAt.slice(0, 10);
-        const isPeriod = start !== end && s.isSingle;
-
-        return !isPeriod && isScheduleOnDate(s, dk);
-      })
-      .map((s) => ({ ...s, slot: -1 }));
-
-    const periodsOnDate = periodWithSlot.filter((s) => isScheduleOnDate(s, dk));
-
-    const forDate = [...periodsOnDate, ...schedulesOnDate].sort((a, b) => {
-      if (a.slot !== -1 && b.slot === -1) return -1;
-      if (a.slot === -1 && b.slot !== -1) return 1;
-      if (a.slot !== -1 && b.slot !== -1) return a.slot - b.slot;
-
-      return a.startAt.localeCompare(b.startAt);
-    });
-
+    const forDate = slotMap
+      .filter((s) => isScheduleOnDate(s, dk))
+      .sort((a, b) => {
+        if (a.slot !== -1 && b.slot === -1) return -1;
+        if (a.slot === -1 && b.slot !== -1) return 1;
+        if (a.slot !== -1 && b.slot !== -1) return a.slot - b.slot;
+        return a.startAt.localeCompare(b.startAt);
+      });
     result.set(dk, forDate);
   }
 
   return result;
 }
+
 export default function Calendar({
   initialSchedules = [],
   compact = false,
@@ -196,13 +204,18 @@ export default function Calendar({
     setSelectedDate(next);
   };
 
-  const handleToggleSchedule = (eventId: number) => {
+  const handleToggleSchedule = (target: Schedule) => {
     setSchedules((prev) =>
-      prev.map((schedule) =>
-        schedule.eventId === eventId
+      prev.map((schedule) => {
+        const sameEvent = schedule.eventId === target.eventId;
+        const sameOccurrence =
+          (schedule.occurrenceAt ?? schedule.startAt) ===
+          (target.occurrenceAt ?? target.startAt);
+
+        return sameEvent && sameOccurrence
           ? { ...schedule, isFinished: !schedule.isFinished }
-          : schedule
-      )
+          : schedule;
+      })
     );
   };
 
@@ -430,13 +443,13 @@ export default function Calendar({
                             DATE_HEADER_H +
                             schedule.slot * (EVENT_H + EVENT_GAP);
                         } else {
-                          const periodCountOnThisDate = dateSchedules.filter(
-                            (s) => s.slot !== -1
-                          ).length;
+                          const maxSlotOnThisDate = dateSchedules
+                            .filter((s) => s.slot !== -1)
+                            .reduce((max, s) => Math.max(max, s.slot + 1), 0);
 
                           topOffset =
                             DATE_HEADER_H +
-                            periodCountOnThisDate * (EVENT_H + EVENT_GAP) +
+                            maxSlotOnThisDate * (EVENT_H + EVENT_GAP) +
                             singleIdx * (EVENT_H + EVENT_GAP);
 
                           singleIdx++;
@@ -444,7 +457,7 @@ export default function Calendar({
 
                         return (
                           <div
-                            key={schedule.eventId}
+                            key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}-${dateKey}`}
                             className={`absolute shrink-0 truncate border-l-4 text-left font-semibold ${
                               compact
                                 ? 'h-[18px] text-[8px] leading-[18px]'
@@ -514,10 +527,10 @@ export default function Calendar({
 
                 return (
                   <div
-                    key={schedule.eventId}
+                    key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
                     onClick={() => setEditSchedule(schedule)}
-                    className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
-                      isDone ? 'border-l-transparent' : ''
+                    className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
+                      isDone ? 'border-l-transparent pl-2' : ''
                     }`}
                     style={{
                       backgroundColor: EVENT_COLOR_MAP[schedule.color],
@@ -548,7 +561,7 @@ export default function Calendar({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleToggleSchedule(schedule.eventId);
+                          handleToggleSchedule(schedule);
                         }}
                         className="flex h-5 w-5 items-center justify-center"
                       >
@@ -618,9 +631,9 @@ export default function Calendar({
 
                   return (
                     <div
-                      key={schedule.eventId}
-                      className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
-                        isDone ? 'border-l-transparent' : ''
+                      key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
+                      className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
+                        isDone ? 'border-l-transparent pl-2' : ''
                       }`}
                       style={{
                         backgroundColor: EVENT_COLOR_MAP[schedule.color],
@@ -649,7 +662,7 @@ export default function Calendar({
 
                         <button
                           type="button"
-                          onClick={() => handleToggleSchedule(schedule.eventId)}
+                          onClick={() => handleToggleSchedule(schedule)}
                           className="flex h-5 w-5 items-center justify-center"
                         >
                           {isDone ? (
@@ -707,7 +720,7 @@ export default function Calendar({
       )}
 
       <CalendarEditModal
-        key={editSchedule?.eventId}
+        key={`${editSchedule?.eventId}-${editSchedule?.occurrenceAt ?? ''}`}
         open={editSchedule !== null}
         schedule={editSchedule}
         onClose={() => setEditSchedule(null)}
