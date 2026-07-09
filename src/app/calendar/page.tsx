@@ -137,6 +137,7 @@ export default function CalendarPage() {
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
 
   const [selectedDate, setSelectedDate] = useState(today);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
 
@@ -324,6 +325,14 @@ export default function CalendarPage() {
   const EVENT_H = 20;
   const EVENT_GAP = 4;
 
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 1800);
+  };
+
   return (
     <main className="h-screen overflow-hidden px-3 py-6 pt-6 pb-28 sm:px-6 sm:pt-12 sm:pb-34">
       <section className="z-100 mx-auto flex h-full max-w-[1180px] flex-col">
@@ -342,12 +351,17 @@ export default function CalendarPage() {
 
             <button
               onClick={handleNextMonth}
-              className="z-100 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2c2c2c]/40"
+              className="relative z-100 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2c2c2c]/40"
             >
               <ChevronRight size={18} />
             </button>
           </div>
         </div>
+        {errorMessage && (
+          <div className="animate-modal-pop absolute top-28 left-1/2 z-300 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+            {errorMessage}
+          </div>
+        )}
 
         <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
           <section className="flex h-full flex-1 flex-col overflow-hidden rounded-2xl border-[0.8px] border-[#D6DDE5] bg-white py-2 pt-3 pl-2">
@@ -572,7 +586,10 @@ export default function CalendarPage() {
                   <div
                     key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
                     onClick={() => {
-                      if (schedule.teamId) return;
+                      if (schedule.teamId) {
+                        showErrorMessage('팀 일정은 수정할 수 없습니다');
+                        return;
+                      }
                       setEditSchedule(schedule);
                     }}
                     className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
@@ -607,6 +624,10 @@ export default function CalendarPage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (schedule.teamId) {
+                            showErrorMessage('팀 일정은 수정할 수 없습니다');
+                            return;
+                          }
                           handleToggleSchedule(schedule);
                         }}
                         className="flex h-5 w-5 cursor-pointer items-center justify-center"
@@ -675,7 +696,10 @@ export default function CalendarPage() {
                       <div
                         key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
                         onClick={() => {
-                          if (schedule.teamId) return;
+                          if (schedule.teamId) {
+                            showErrorMessage('팀 일정은 수정할 수 없습니다');
+                            return;
+                          }
                           setEditSchedule(schedule);
                         }}
                         className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
@@ -710,6 +734,12 @@ export default function CalendarPage() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (schedule.teamId) {
+                                showErrorMessage(
+                                  '팀 일정은 수정할 수 없습니다'
+                                );
+                                return;
+                              }
                               handleToggleSchedule(schedule);
                             }}
                             className="flex h-5 w-5 cursor-pointer items-center justify-center"

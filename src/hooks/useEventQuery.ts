@@ -129,6 +129,7 @@ export const useCreateTeamEvent = (teamId: number) => {
 
 export const useUpdateTeamEvent = (teamId: number) => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       eventId,
@@ -137,7 +138,45 @@ export const useUpdateTeamEvent = (teamId: number) => {
       eventId: number;
       body: TeamEventUpdateRequest;
     }) => updateTeamEvent(teamId, eventId, body),
-    onSuccess: () => {
+
+    onMutate: async ({ eventId, body }) => {
+      await queryClient.cancelQueries({ queryKey: ['events', 'team', teamId] });
+
+      const previousData = queryClient.getQueriesData<EventListResponse[]>({
+        queryKey: ['events', 'team', teamId],
+      });
+
+      queryClient.setQueriesData<EventListResponse[]>(
+        { queryKey: ['events', 'team', teamId] },
+        (old) => {
+          if (!old) return old;
+
+          return old.map((s) => {
+            const sameEvent = s.eventId === eventId;
+            const sameOccurrence =
+              (s.occurrenceAt ?? s.startAt) ===
+              (body.occurrenceAt ?? body.startAt);
+
+            if (sameEvent && sameOccurrence) {
+              return { ...s, isFinished: body.isFinished };
+            }
+            return s;
+          });
+        }
+      );
+
+      return { previousData };
+    },
+
+    onError: (_err, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
