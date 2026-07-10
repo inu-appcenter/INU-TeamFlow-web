@@ -2,8 +2,8 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-
-const days = ['일', '월', '화', '수', '목', '금', '토'];
+import { DAYS } from '@/constants/days';
+import { formatDateKey } from '@/utils/date/calendar';
 
 interface CalendarDatePickerProps {
   value: string;
@@ -15,14 +15,6 @@ interface CalendarDatePickerProps {
 
   minDate?: string;
 }
-
-const formatDateKey = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-
-  return `${y}-${m}-${d}`;
-};
 
 export default function CalendarDatePicker({
   value,
@@ -103,7 +95,7 @@ export default function CalendarDatePicker({
 
           <div className="rounded-2xl bg-white px-2 py-2">
             <div className="mb-4 grid grid-cols-7 text-center text-[13px] font-medium text-[#D6DDE5]">
-              {days.map((day) => (
+              {DAYS.map((day) => (
                 <div key={day}>{day}</div>
               ))}
             </div>

@@ -2,56 +2,30 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { getDday } from '@/utils/date/getDday';
-
 import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
 import { formatDate } from '@/utils/date/formatDate';
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categories = [
-  { label: '전체', value: 'ALL' },
-  { label: '공모전', value: 'CONTEST' },
-  { label: '스터디', value: 'STUDY' },
-  { label: '프로젝트', value: 'PROJECT' },
-  { label: '동아리', value: 'CLUB' },
-  { label: '기타', value: 'ETC' },
-];
-
-const categoryColorMap = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
+import {
+  categoryMap,
+  categoryColorMap,
+  categoryFilterOptions,
+} from '@/constants/category';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function Recruitment() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const [keyword, setKeyword] = useState('');
   const [searchType, setSearchType] = useState('title');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-
-  const [errorMessage, setErrorMessage] = useState(() =>
+  const { errorMessage, showErrorMessage, setErrorMessage } = useErrorToast(
+    1800,
     searchParams.get('error') === 'school-verification-required'
       ? '학교 인증 후 이용 가능합니다'
       : ''
   );
-  const showErrorMessage = (message: string) => {
-    setErrorMessage(message);
-    setTimeout(() => setErrorMessage(''), 1800);
-  };
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   useEffect(() => {
@@ -112,7 +86,7 @@ export default function Recruitment() {
 
         {/* 카테고리 */}
         <section className="mb-4 flex flex-wrap gap-2">
-          {categories.map((category) => (
+          {categoryFilterOptions.map((category) => (
             <button
               key={category.value}
               onClick={() => setSelectedCategory(category.value)}

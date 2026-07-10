@@ -1,7 +1,5 @@
 'use client';
 
-import { votes } from '@/mocks/votes';
-import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 
 interface VoteSlot {
@@ -28,7 +26,6 @@ export default function VoteResult({
   voteHours,
   voteSlots,
   isAllDay,
-  onBack,
   onSubmit,
 }: VoteResultProps) {
   const [selectedStart, setSelectedStart] = useState<{

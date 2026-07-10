@@ -4,47 +4,22 @@ import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
 import { useMyTeams } from '@/hooks/useTeamQuery';
-
 import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
-
-const categories = [
-  { label: '전체', value: 'ALL' },
-  { label: '공모전', value: 'CONTEST' },
-  { label: '스터디', value: 'STUDY' },
-  { label: '동아리', value: 'CLUB' },
-  { label: '프로젝트', value: 'PROJECT' },
-  { label: '기타', value: 'ETC' },
-];
+import {
+  categoryMap,
+  categoryColorMap,
+  categoryFilterOptions,
+} from '@/constants/category';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function Team() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const { data: teams = [], isLoading } = useMyTeams();
-
-  const [errorMessage, setErrorMessage] = useState('');
-  const showErrorMessage = (message: string) => {
-    setErrorMessage(message);
-    setTimeout(() => setErrorMessage(''), 1800);
-  };
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   const filteredTeams = teams.filter((team) => {
@@ -84,7 +59,7 @@ export default function Team() {
 
         <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-none p-6">
           <div className="mb-4 flex border-b-[0.5px] border-[#D6DDE5]">
-            {categories.map((category) => {
+            {categoryFilterOptions.map((category) => {
               const isActive = selectedCategory === category.value;
 
               return (

@@ -10,14 +10,7 @@ import { applyRecruitment } from '@/api/recruitment';
 import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
 import { useMyInfo } from '@/hooks/useAuthQuery';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
+import { categoryColorMap } from '@/constants/category';
 
 export default function RecruitmentApplyPage() {
   const router = useRouter();

@@ -220,7 +220,7 @@ export default function TeamNotice() {
 
               {paged.length === 0 && (
                 <div className="flex h-[200px] items-center justify-center rounded-xl bg-white text-sm text-[#989898]">
-                  등록된 공지사항이 없습니다.
+                  아직 등록된 공지사항이 없어요
                 </div>
               )}
             </section>

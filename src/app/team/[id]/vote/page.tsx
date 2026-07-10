@@ -3,25 +3,9 @@
 import Card from '@/components/main/Card';
 import { useTeamDetail } from '@/hooks/useTeamQuery';
 import { useTeamVotes } from '@/hooks/useVoteQuery';
-
+import { categoryMap, categoryColorMap } from '@/constants/category';
 import { ChevronLeft } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
 
 export default function TeamVotePage() {
   const router = useRouter();

@@ -1,6 +1,5 @@
 'use client';
 
-// import 추가
 import {
   SCHEDULE_COLORS,
   EVENT_COLOR_MAP,

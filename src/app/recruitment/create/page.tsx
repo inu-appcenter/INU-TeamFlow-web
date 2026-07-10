@@ -6,18 +6,13 @@ import RecruitmentForm, {
 import { useCreateRecruitment } from '@/hooks/useRecruitmentQuery';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function RecruitmentCreatePage() {
   const router = useRouter();
-
   const { mutateAsync: createRecruitment } = useCreateRecruitment();
-
-  const [errorMessage, setErrorMessage] = useState('');
-  const showErrorMessage = (message: string) => {
-    setErrorMessage(message);
-    setTimeout(() => setErrorMessage(''), 1800);
-  };
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const { isVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   useEffect(() => {
