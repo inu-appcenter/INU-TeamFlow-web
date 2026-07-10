@@ -22,7 +22,9 @@ const getRandomIndex = (excludeIndex: number) => {
 };
 
 export function TeamFlowLaunchSlide() {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() =>
+    Math.floor(Math.random() * TIPS.length)
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {

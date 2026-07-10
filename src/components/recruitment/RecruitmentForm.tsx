@@ -213,8 +213,7 @@ export default function TeamForm({
                                   {team.name}
                                 </p>
                                 <p className="text-xs text-[#989898]">
-                                  {categoryMap[team.category]} ·{' '}
-                                  {team.description}
+                                  {categoryMap[team.category]}
                                 </p>
                               </div>
                               <div
