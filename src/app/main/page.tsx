@@ -6,6 +6,9 @@ import Card from '@/components/main/Card';
 import { BannerCarousel } from '@/components/main/banner/Banner';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
+
+import { useInfoPosts } from '@/hooks/useInfoPostQuery';
+import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -27,7 +30,8 @@ import {
 export default function Main() {
   const router = useRouter();
   const today = new Date();
-
+  const [selectedInfoPostCategory, setSelectedInfoPostCategory] =
+    useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
@@ -70,6 +74,16 @@ export default function Main() {
 
   const mobileRecruitments = filteredRecruitments.slice(0, 4);
   const desktopRecruitments = filteredRecruitments.slice(0, 3);
+
+  const { data: infoPostData } = useInfoPosts(0, 100);
+  const infoPosts = infoPostData?.content ?? [];
+  const filteredInfoPosts = infoPosts.filter((infoPost) => {
+    if (selectedInfoPostCategory === 'ALL') return true;
+
+    return infoPost.category === selectedInfoPostCategory;
+  });
+  const mobileInfoPosts = filteredInfoPosts.slice(0, 4);
+  const desktopInfoPosts = filteredInfoPosts.slice(0, 3);
 
   const { data: myNotices = [] } = useMyTeamNotices();
 
@@ -245,10 +259,50 @@ export default function Main() {
 
                 <button
                   type="button"
+                  onClick={() => router.push('/infoPost')}
                   className="z-50 cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80 active:scale-90"
                 >
                   <ChevronRight />
                 </button>
+              </div>
+
+              {/* 카테고리 */}
+              <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
+                {categoryFilterOptions.map((category) => (
+                  <button
+                    key={category.value}
+                    type="button"
+                    onClick={() => setSelectedInfoPostCategory(category.value)}
+                    className={`z-50 cursor-pointer rounded-2xl border-[0.5px] px-2.5 py-1 text-sm font-normal transition-all duration-150 active:scale-95 sm:px-3.5 sm:py-1.5 sm:text-base ${
+                      selectedInfoPostCategory === category.value
+                        ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
+                        : 'border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C] hover:bg-[#E3E7EC]'
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 리스트 */}
+              <div className="mt-0 flex flex-col sm:hidden">
+                {mobileInfoPosts.map((infoPost) => (
+                  <InfoPostListItem
+                    key={infoPost.infoPostId}
+                    infoPost={infoPost}
+                    size="sm"
+                  />
+                ))}
+              </div>
+
+              <div className="mt-1 hidden flex-col sm:flex">
+                {desktopInfoPosts.map((infoPost) => (
+                  <InfoPostListItem
+                    key={infoPost.infoPostId}
+                    infoPost={infoPost}
+                    size="lg"
+                  />
+                ))}
               </div>
             </Card>
           </div>
