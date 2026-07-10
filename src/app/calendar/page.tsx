@@ -3,135 +3,20 @@
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
 import CalendarEditModal from '@/components/calendar/CalendarEditModal';
-import { useMyEvents } from '@/hooks/useEventQuery';
 import type { Schedule, RecurrenceEditScope } from '@/types/event';
 import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
-import { getDday } from '@/utils/date/getDday';
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  MoveHorizontal,
-  Repeat,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
-import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
-import {
-  useCreateMyEvent,
-  useUpdateMyEvent,
-  useDeleteMyEvent,
-} from '@/hooks/useEventQuery';
+import { assignWeekSlots } from '@/utils/calendar/assignWeekSlots';
+import { useErrorToast } from '@/hooks/useErrorToast';
+import { useCalendarEventActions } from '@/hooks/useCalendarEventActions';
+import { useCalendarGrid } from '@/hooks/useCalendarGrid';
+import { useMonthSchedules } from '@/hooks/useMonthSchedules';
+import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
+import { darkenColor } from '@/utils/color/darkenColor';
+import ScheduleDetailPanel from '@/components/calendar/ScheduleDetailPanel';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
-
-type CalendarDate = {
-  date: number;
-  type: 'prev' | 'current' | 'next';
-};
-
-const formatDateKey = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-
-  return `${y}-${m}-${d}`;
-};
-
-const formatTime = (dateString: string) => {
-  return dateString.slice(11, 16);
-};
-
-const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
-  // 반복 일정이면 occurrenceAt 기준
-  if (!schedule.isSingle && schedule.occurrenceAt) {
-    return schedule.occurrenceAt.slice(0, 10) === dateKey;
-  }
-
-  // 일반 일정/기간 일정이면 기존 방식
-  const startDate = schedule.startAt.slice(0, 10);
-  const endDate = schedule.endAt.slice(0, 10);
-
-  return dateKey >= startDate && dateKey <= endDate;
-};
-
-type SlottedSchedule = Schedule & { slot: number };
-
-function assignWeekSlots(
-  weekDateKeys: string[],
-  schedules: Schedule[]
-): Map<string, SlottedSchedule[]> {
-  const seen = new Set<string>();
-  const weekSchedules: Schedule[] = [];
-
-  for (const dk of weekDateKeys) {
-    for (const s of schedules) {
-      const key = `${s.eventId}-${s.occurrenceAt ?? s.startAt}`;
-
-      if (!seen.has(key) && isScheduleOnDate(s, dk)) {
-        seen.add(key);
-        weekSchedules.push(s);
-      }
-    }
-  }
-
-  const periodSchedules = weekSchedules.filter((s) => {
-    const start = s.startAt.slice(0, 10);
-    const end = s.endAt.slice(0, 10);
-    return start !== end && s.isSingle;
-  });
-  const singleSchedules = weekSchedules.filter((s) => {
-    const start = s.startAt.slice(0, 10);
-    const end = s.endAt.slice(0, 10);
-    return !(start !== end && s.isSingle);
-  });
-
-  // 이 주에 실제로 보이는 날짜 범위로 클램핑해서 겹침 판단
-  const weekStart = weekDateKeys[0];
-  const weekEnd = weekDateKeys[weekDateKeys.length - 1];
-
-  const clampToWeek = (start: string, end: string) => ({
-    cs: start < weekStart ? weekStart : start,
-    ce: end > weekEnd ? weekEnd : end,
-  });
-
-  const slotMap: SlottedSchedule[] = [];
-  const usedSlots: { cs: string; ce: string; slot: number }[] = [];
-
-  for (const s of periodSchedules) {
-    const { cs, ce } = clampToWeek(
-      s.startAt.slice(0, 10),
-      s.endAt.slice(0, 10)
-    );
-
-    let slot = 0;
-    while (usedSlots.some((u) => u.slot === slot && cs <= u.ce && ce >= u.cs)) {
-      slot++;
-    }
-
-    usedSlots.push({ cs, ce, slot });
-    slotMap.push({ ...s, slot });
-  }
-
-  for (const s of singleSchedules) {
-    slotMap.push({ ...s, slot: -1 });
-  }
-
-  const result = new Map<string, SlottedSchedule[]>();
-  for (const dk of weekDateKeys) {
-    const forDate = slotMap
-      .filter((s) => isScheduleOnDate(s, dk))
-      .sort((a, b) => {
-        if (a.slot !== -1 && b.slot === -1) return -1;
-        if (a.slot === -1 && b.slot !== -1) return 1;
-        if (a.slot !== -1 && b.slot !== -1) return a.slot - b.slot;
-        return a.startAt.localeCompare(b.startAt);
-      });
-    result.set(dk, forDate);
-  }
-
-  return result;
-}
 
 export default function CalendarPage() {
   const today = new Date();
@@ -142,203 +27,57 @@ export default function CalendarPage() {
   const month = currentDate.getMonth();
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
-
   const [selectedDate, setSelectedDate] = useState(today);
-  const [errorMessage, setErrorMessage] = useState('');
-
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const [isAddOpen, setIsAddOpen] = useState(false);
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-  const prevLastDate = new Date(year, month, 0).getDate();
-
-  // 이전달, 다음달도 조회
-  const { data: prevSchedules = [] } = useMyEvents(
-    month === 0 ? year - 1 : year,
-    month === 0 ? 12 : month
-  );
-  const { data: currentSchedules = [] } = useMyEvents(year, month + 1);
-  const { data: nextSchedules = [] } = useMyEvents(
-    month === 11 ? year + 1 : year,
-    month === 11 ? 1 : month + 2
-  );
-
-  const schedules = Array.from(
-    new Map(
-      [...prevSchedules, ...currentSchedules, ...nextSchedules].map((s) => [
-        `${s.eventId}-${s.occurrenceAt ?? s.startAt}`,
-        s,
-      ])
-    ).values()
-  );
-
-  const { mutateAsync: createEvent } = useCreateMyEvent();
-  const { mutateAsync: updateEvent } = useUpdateMyEvent();
-  const { mutateAsync: deleteEvent } = useDeleteMyEvent();
-
-  const prevMonthDates: CalendarDate[] = Array.from(
-    { length: firstDay },
-    (_, i) => ({
-      date: prevLastDate - firstDay + i + 1,
-      type: 'prev',
-    })
-  );
-
-  const currentMonthDates: CalendarDate[] = Array.from(
-    { length: lastDate },
-    (_, i) => ({
-      date: i + 1,
-      type: 'current',
-    })
-  );
-
-  const totalDateCount = prevMonthDates.length + currentMonthDates.length;
-  const nextMonthCount = (7 - (totalDateCount % 7)) % 7;
-
-  const nextMonthDates: CalendarDate[] = Array.from(
-    { length: nextMonthCount },
-    (_, i) => ({
-      date: i + 1,
-      type: 'next',
-    })
-  );
-
-  const calendarDates = [
-    ...prevMonthDates,
-    ...currentMonthDates,
-    ...nextMonthDates,
-  ];
-
+  const {
+    handleAddSchedule,
+    handleEditSchedule: editSchedule_,
+    handleDeleteSchedule: deleteSchedule_,
+    handleToggleSchedule,
+  } = useCalendarEventActions();
+  const schedules = useMonthSchedules(year, month);
+  const calendarDates = useCalendarGrid(year, month);
   const weeks = Array.from(
     { length: calendarDates.length / 7 },
     (_, weekIndex) => calendarDates.slice(weekIndex * 7, weekIndex * 7 + 7)
   );
-
   const selectedDateKey = formatDateKey(selectedDate);
-
   const selectedSchedules = schedules.filter((schedule) =>
     isScheduleOnDate(schedule, selectedDateKey)
   );
-
   const dayLabel = days[selectedDate.getDay()];
-
   const handlePrevMonth = () => {
     const prev = new Date(year, month - 1, 1);
     setCurrentDate(prev);
     setSelectedDate(prev);
   };
-
   const handleNextMonth = () => {
     const next = new Date(year, month + 1, 1);
     setCurrentDate(next);
     setSelectedDate(next);
   };
-
-  const handleAddSchedule = async (request: CreateEventRequest) => {
-    try {
-      await createEvent({
-        title: request.title,
-        description: request.description,
-        startAt: request.startAt,
-        endAt: request.endAt,
-        isAllDay: request.isAllDay,
-        color: request.color,
-        ...(request.recurrence && { recurrence: request.recurrence }),
-      });
-    } catch (error) {
-      console.error('일정 생성 실패', error);
-    }
-  };
-
   const handleEditSchedule = async (
     updated: Schedule,
     scope: RecurrenceEditScope
   ) => {
-    try {
-      await updateEvent({
-        eventId: updated.eventId,
-        body: {
-          title: updated.title,
-          description: updated.description,
-          startAt: updated.startAt,
-          endAt: updated.endAt,
-          isAllDay: updated.isAllDay,
-          color: updated.color,
-          isFinished: updated.isFinished,
-          occurrenceAt: updated.occurrenceAt ?? updated.startAt,
-          recurrenceEditScope: scope,
-          ...(updated.recurrence && {
-            recurrence: updated.recurrence,
-          }),
-        },
-      });
-    } catch (error) {
-      console.error('일정 수정 실패', error);
-    }
-
+    await editSchedule_(updated, scope);
     setEditSchedule(null);
   };
-
   const handleDeleteSchedule = async (
     eventId: number,
     scope: RecurrenceEditScope
   ) => {
-    try {
-      await deleteEvent({
-        eventId,
-        scope,
-        occurrence: editSchedule?.occurrenceAt ?? editSchedule?.startAt ?? '',
-      });
-    } catch (error) {
-      console.error('일정 삭제 실패', error);
-    }
-
+    await deleteSchedule_(
+      eventId,
+      scope,
+      editSchedule?.occurrenceAt ?? editSchedule?.startAt ?? ''
+    );
     setEditSchedule(null);
   };
-
-  const handleToggleSchedule = async (target: Schedule) => {
-    try {
-      await updateEvent({
-        eventId: target.eventId,
-        body: {
-          title: target.title,
-          description: target.description,
-          startAt: target.startAt,
-          endAt: target.endAt,
-          isAllDay: target.isAllDay,
-          color: target.color,
-          isFinished: !target.isFinished,
-          occurrenceAt: target.occurrenceAt ?? target.startAt,
-          recurrenceEditScope: 'THIS_INSTANCE',
-          ...(target.recurrence && { recurrence: target.recurrence }),
-        },
-      });
-    } catch (error) {
-      console.error('일정 완료 토글 실패', error);
-    }
-  };
-
-  const darkenColor = (hex: string, amount: number) => {
-    const color = hex.replace('#', '');
-
-    const r = Math.max(0, parseInt(color.substring(0, 2), 16) - amount);
-    const g = Math.max(0, parseInt(color.substring(2, 4), 16) - amount);
-    const b = Math.max(0, parseInt(color.substring(4, 6), 16) - amount);
-
-    return `rgb(${r}, ${g}, ${b})`;
-  };
-
   const DATE_HEADER_H = 28;
   const EVENT_H = 20;
   const EVENT_GAP = 4;
-
-  const showErrorMessage = (message: string) => {
-    setErrorMessage(message);
-
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 1800);
-  };
 
   return (
     <main className="h-screen overflow-hidden px-3 py-6 pt-6 pb-28 sm:px-6 sm:pt-12 sm:pb-34">
@@ -402,26 +141,22 @@ export default function CalendarPage() {
                           : new Date(year, month, item.date);
                     return formatDateKey(cellDate);
                   });
-
                   const slottedByDate = assignWeekSlots(
                     weekDateKeys,
                     schedules
                   );
-
                   const maxSlot = Math.max(
                     0,
                     ...Array.from(slottedByDate.values()).flatMap((list) =>
                       list.map((s) => (s.slot === -1 ? 0 : s.slot + 1))
                     )
                   );
-
                   const maxSingle = Math.max(
                     0,
                     ...Array.from(slottedByDate.values()).map(
                       (list) => list.filter((s) => s.slot === -1).length
                     )
                   );
-
                   const cellMinH =
                     DATE_HEADER_H +
                     maxSlot * (EVENT_H + EVENT_GAP) +
@@ -430,25 +165,20 @@ export default function CalendarPage() {
 
                   return week.map((item, i) => {
                     const isCurrentMonth = item.type === 'current';
-
                     const cellDate =
                       item.type === 'prev'
                         ? new Date(year, month - 1, item.date)
                         : item.type === 'next'
                           ? new Date(year, month + 1, item.date)
                           : new Date(year, month, item.date);
-
                     const dateKey = formatDateKey(cellDate);
                     const dateSchedules = slottedByDate.get(dateKey) ?? [];
-
                     const isSunday = cellDate.getDay() === 0;
                     const isSaturday = cellDate.getDay() === 6;
-
                     const isToday =
                       today.getFullYear() === cellDate.getFullYear() &&
                       today.getMonth() === cellDate.getMonth() &&
                       today.getDate() === cellDate.getDate();
-
                     const isSelected =
                       selectedDate.getFullYear() === cellDate.getFullYear() &&
                       selectedDate.getMonth() === cellDate.getMonth() &&
@@ -489,10 +219,8 @@ export default function CalendarPage() {
                           const isDone = schedule.isFinished;
                           const startDate = schedule.startAt.slice(0, 10);
                           const endDate = schedule.endAt.slice(0, 10);
-
                           const isPeriod =
                             startDate !== endDate && schedule.isSingle;
-
                           const isPeriodStart =
                             isPeriod && dateKey === startDate;
                           const isPeriodEnd = isPeriod && dateKey === endDate;
@@ -502,6 +230,7 @@ export default function CalendarPage() {
                             dateKey < endDate;
 
                           let topOffset: number;
+
                           if (schedule.slot !== -1) {
                             topOffset =
                               DATE_HEADER_H +
@@ -574,117 +303,26 @@ export default function CalendarPage() {
           </section>
 
           <aside className="hidden h-full w-[365px] flex-col rounded-2xl border-[0.8] border-[#D6DDE5] bg-white px-6 py-6 lg:flex">
-            <div className="mb-4 flex shrink-0 items-center justify-between">
-              <h2 className="text-[24px] font-bold text-[#2C2C2C]">
-                {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 (
-                {dayLabel})
-              </h2>
-
-              <span className="text-sm text-[#C8D0D9]">
-                {getDday(selectedDate)}
-              </span>
-            </div>
-
-            <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
-              {selectedSchedules.map((schedule) => {
-                const isDone = schedule.isFinished;
-
-                return (
-                  <div
-                    key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
-                    onClick={() => {
-                      if (schedule.teamId) {
-                        showErrorMessage('팀 일정은 수정할 수 없습니다');
-                        return;
-                      }
-                      setEditSchedule(schedule);
-                    }}
-                    className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
-                      isDone ? 'border-l-transparent pl-2' : ''
-                    }`}
-                    style={{
-                      backgroundColor: EVENT_COLOR_MAP[schedule.color],
-                      borderLeftColor: isDone
-                        ? 'transparent'
-                        : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
-                    }}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-[#5C5C5C]">
-                        {schedule.title}
-                      </p>
-                      <p className="text-[11px] text-[#9D9D9D]">
-                        {schedule.teamName ?? '개인 일정'}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#9D9D9D]">
-                        {schedule.isAllDay
-                          ? '하루 종일'
-                          : `${formatTime(schedule.startAt)}~${formatTime(
-                              schedule.endAt
-                            )}`}
-                      </span>
-                      {!schedule.isSingle && (
-                        <Repeat size={14} className="shrink-0 text-[#9D9D9D]" />
-                      )}
-                      {schedule.startAt.slice(0, 10) !==
-                        schedule.endAt.slice(0, 10) &&
-                        schedule.isSingle && (
-                          <MoveHorizontal
-                            size={16}
-                            className="shrink-0 text-[#9D9D9D]"
-                          />
-                        )}
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (schedule.teamId) {
-                            showErrorMessage('팀 일정은 수정할 수 없습니다');
-                            return;
-                          }
-                          handleToggleSchedule(schedule);
-                        }}
-                        className="flex h-5 w-5 cursor-pointer items-center justify-center"
-                      >
-                        {isDone ? (
-                          <Check
-                            size={16}
-                            style={{
-                              color: darkenColor(
-                                EVENT_COLOR_MAP[schedule.color],
-                                80
-                              ),
-                            }}
-                          />
-                        ) : (
-                          <span
-                            className="h-4 w-4 rounded-full border"
-                            style={{
-                              borderColor: darkenColor(
-                                EVENT_COLOR_MAP[schedule.color],
-                                80
-                              ),
-                            }}
-                          />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() => setIsAddOpen(true)}
-              className="mt-3 flex h-[58px] shrink-0 items-center gap-2 rounded-[10px] bg-[#EEF1F5] px-5 text-[14px] font-semibold text-[#2C2C2C]/60 transition-all duration-150 outline-none active:scale-90"
-            >
-              <Plus size={16} />
-              일정 추가
-            </button>
+            <ScheduleDetailPanel
+              selectedDate={selectedDate}
+              dayLabel={dayLabel}
+              schedules={selectedSchedules}
+              onClickItem={(schedule) => {
+                if (schedule.teamId) {
+                  showErrorMessage('팀 일정은 수정할 수 없습니다');
+                  return;
+                }
+                setEditSchedule(schedule);
+              }}
+              onToggle={(schedule) => {
+                if (schedule.teamId) {
+                  showErrorMessage('팀 일정은 수정할 수 없습니다');
+                  return;
+                }
+                handleToggleSchedule(schedule);
+              }}
+              onAddClick={() => setIsAddOpen(true)}
+            />
           </aside>
 
           {isMobileDetailOpen && (
@@ -696,124 +334,30 @@ export default function CalendarPage() {
                 onClick={(e) => e.stopPropagation()}
                 className="animate-modal-pop flex h-[70vh] w-full max-w-[365px] flex-col rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
               >
-                <div className="mb-2 flex shrink-0 items-center justify-between">
-                  <h2 className="text-[24px] font-bold text-[#2C2C2C]">
-                    {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 (
-                    {dayLabel})
-                  </h2>
-                  <div className="text-xs text-[#C8D0D9]">
-                    {getDday(selectedDate)}
-                  </div>
-                </div>
-
-                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-                  {selectedSchedules.map((schedule) => {
-                    const isDone = schedule.isFinished;
-
-                    return (
-                      <div
-                        key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
-                        onClick={() => {
-                          if (schedule.teamId) {
-                            showErrorMessage('팀 일정은 수정할 수 없습니다');
-                            return;
-                          }
-                          setEditSchedule(schedule);
-                        }}
-                        className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
-                          isDone ? 'border-l-transparent pl-2' : ''
-                        }`}
-                        style={{
-                          backgroundColor: EVENT_COLOR_MAP[schedule.color],
-                          borderLeftColor: isDone
-                            ? 'transparent'
-                            : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
-                        }}
-                      >
-                        <div>
-                          <p className="text-sm font-semibold text-[#5C5C5C]">
-                            {schedule.title}
-                          </p>
-                          <p className="text-[11px] text-[#9D9D9D]">
-                            {schedule.teamName ?? '개인 일정'}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-[#9D9D9D]">
-                            {schedule.isAllDay
-                              ? '하루 종일'
-                              : `${formatTime(schedule.startAt)}~${formatTime(
-                                  schedule.endAt
-                                )}`}
-                          </span>
-                          {!schedule.isSingle && (
-                            <Repeat
-                              size={14}
-                              className="shrink-0 text-[#9D9D9D]"
-                            />
-                          )}
-                          {schedule.startAt.slice(0, 10) !==
-                            schedule.endAt.slice(0, 10) &&
-                            schedule.isSingle && (
-                              <MoveHorizontal
-                                size={16}
-                                className="shrink-0 text-[#9D9D9D]"
-                              />
-                            )}
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (schedule.teamId) {
-                                showErrorMessage(
-                                  '팀 일정은 수정할 수 없습니다'
-                                );
-                                return;
-                              }
-                              handleToggleSchedule(schedule);
-                            }}
-                            className="flex h-5 w-5 cursor-pointer items-center justify-center"
-                          >
-                            {isDone ? (
-                              <Check
-                                size={16}
-                                style={{
-                                  color: darkenColor(
-                                    EVENT_COLOR_MAP[schedule.color],
-                                    80
-                                  ),
-                                }}
-                              />
-                            ) : (
-                              <span
-                                className="h-4 w-4 rounded-full border"
-                                style={{
-                                  borderColor: darkenColor(
-                                    EVENT_COLOR_MAP[schedule.color],
-                                    80
-                                  ),
-                                }}
-                              />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={() => {
+                <ScheduleDetailPanel
+                  selectedDate={selectedDate}
+                  dayLabel={dayLabel}
+                  schedules={selectedSchedules}
+                  titleClassName="mb-2"
+                  onClickItem={(schedule) => {
+                    if (schedule.teamId) {
+                      showErrorMessage('팀 일정은 수정할 수 없습니다');
+                      return;
+                    }
+                    setEditSchedule(schedule);
+                  }}
+                  onToggle={(schedule) => {
+                    if (schedule.teamId) {
+                      showErrorMessage('팀 일정은 수정할 수 없습니다');
+                      return;
+                    }
+                    handleToggleSchedule(schedule);
+                  }}
+                  onAddClick={() => {
                     setIsMobileDetailOpen(false);
                     setIsAddOpen(true);
                   }}
-                  className="mt-3 flex h-[58px] shrink-0 items-center gap-2 rounded-[10px] bg-[#EEF1F5] px-5 text-[14px] font-semibold text-[#2C2C2C]/60 transition-all duration-150 outline-none active:scale-90"
-                >
-                  <Plus size={16} />
-                  일정 추가
-                </button>
+                />
               </aside>
             </div>
           )}

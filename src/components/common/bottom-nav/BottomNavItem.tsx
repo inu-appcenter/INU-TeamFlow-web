@@ -24,7 +24,7 @@ export default function BottomNavItem({
       {isActive && (
         <motion.div
           layoutId="bottomNavBlob"
-          className="absolute inset-0 rounded-full bg-[#EEF1F5]/50 shadow-[inset_1.5px_1.5px_2px_rgba(255,255,255,0.7),inset_-1px_-1px_2px_rgba(149,157,165,0.15),inset_0_0_8px_rgba(255,255,255,0.25),0_1px_4px_rgba(149,157,165,0.15)] ring-1 ring-white/40 backdrop-blur-[3px]"
+          className="absolute inset-0 rounded-full bg-[#EEF1F5]/80 shadow-[inset_1.5px_1.5px_2px_rgba(255,255,255,0.7),inset_-1px_-1px_2px_rgba(149,157,165,0.15),inset_0_0_8px_rgba(255,255,255,0.25),0_1px_4px_rgba(149,157,165,0.15)] ring-1 ring-white/40 backdrop-blur-[3px]"
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         />
       )}
