@@ -4,12 +4,27 @@ import RecruitmentForm, {
   type RecruitmentFormData,
 } from '@/components/recruitment/RecruitmentForm';
 import { useCreateRecruitment } from '@/hooks/useRecruitmentQuery';
+import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function RecruitmentCreatePage() {
   const router = useRouter();
 
   const { mutateAsync: createRecruitment } = useCreateRecruitment();
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 1800);
+  };
+  const { isVerified } = useSchoolVerificationGuard(showErrorMessage);
+
+  useEffect(() => {
+    if (!isVerified) {
+      router.replace('/recruitment?error=school-verification-required');
+    }
+  }, [isVerified, router]);
 
   const handleSubmit = async (form: RecruitmentFormData) => {
     if (form.targetMemberCount === '') {
@@ -32,5 +47,14 @@ export default function RecruitmentCreatePage() {
     }
   };
 
-  return <RecruitmentForm mode="create" onSubmit={handleSubmit} />;
+  return (
+    <>
+      {errorMessage && (
+        <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+          {errorMessage}
+        </div>
+      )}
+      <RecruitmentForm mode="create" onSubmit={handleSubmit} />
+    </>
+  );
 }

@@ -7,7 +7,14 @@ import { useMyEvents } from '@/hooks/useEventQuery';
 import type { Schedule, RecurrenceEditScope } from '@/types/event';
 import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
-import { Check, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  MoveHorizontal,
+  Repeat,
+} from 'lucide-react';
 import { useState } from 'react';
 import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
 import {
@@ -358,7 +365,7 @@ export default function CalendarPage() {
           </div>
         </div>
         {errorMessage && (
-          <div className="animate-modal-pop absolute top-28 left-1/2 z-300 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+          <div className="animate-modal-pop absolute top-32 left-1/2 z-300 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
             {errorMessage}
           </div>
         )}
@@ -619,6 +626,17 @@ export default function CalendarPage() {
                               schedule.endAt
                             )}`}
                       </span>
+                      {!schedule.isSingle && (
+                        <Repeat size={14} className="shrink-0 text-[#9D9D9D]" />
+                      )}
+                      {schedule.startAt.slice(0, 10) !==
+                        schedule.endAt.slice(0, 10) &&
+                        schedule.isSingle && (
+                          <MoveHorizontal
+                            size={16}
+                            className="shrink-0 text-[#9D9D9D]"
+                          />
+                        )}
 
                       <button
                         type="button"
@@ -702,8 +720,8 @@ export default function CalendarPage() {
                           }
                           setEditSchedule(schedule);
                         }}
-                        className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-4 px-4 text-left transition-all duration-150 outline-none active:scale-95 ${
-                          isDone ? 'border-l-transparent' : ''
+                        className={`flex h-[58px] shrink-0 items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
+                          isDone ? 'border-l-transparent pl-2' : ''
                         }`}
                         style={{
                           backgroundColor: EVENT_COLOR_MAP[schedule.color],
@@ -729,6 +747,20 @@ export default function CalendarPage() {
                                   schedule.endAt
                                 )}`}
                           </span>
+                          {!schedule.isSingle && (
+                            <Repeat
+                              size={14}
+                              className="shrink-0 text-[#9D9D9D]"
+                            />
+                          )}
+                          {schedule.startAt.slice(0, 10) !==
+                            schedule.endAt.slice(0, 10) &&
+                            schedule.isSingle && (
+                              <MoveHorizontal
+                                size={16}
+                                className="shrink-0 text-[#9D9D9D]"
+                              />
+                            )}
 
                           <button
                             type="button"

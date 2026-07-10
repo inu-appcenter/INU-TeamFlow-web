@@ -1,11 +1,12 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Ellipsis } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Card from '@/components/main/Card';
 import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
+import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { formatDate } from '@/utils/date/formatDate';
 
 const categoryMap: Record<string, string> = {
@@ -27,11 +28,33 @@ const categoryColorMap: Record<string, string> = {
 export default function RecruitmentDetail() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
 
   const recruitmentId = Number(params.id);
 
   const { data: recruitment, isLoading } = useRecruitmentDetail(recruitmentId);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const [errorMessage, setErrorMessage] = useState(() =>
+    searchParams.get('error') === 'school-verification-required'
+      ? '학교 인증 후 이용 가능합니다'
+      : ''
+  );
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 1800);
+  };
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
+  useEffect(() => {
+    if (!errorMessage) return;
+
+    router.replace(`/recruitment/${recruitmentId}`);
+
+    const timer = setTimeout(() => setErrorMessage(''), 1800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isLoading) return null;
   if (!recruitment) {
@@ -78,6 +101,12 @@ export default function RecruitmentDetail() {
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
+      {errorMessage && (
+        <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+          {errorMessage}
+        </div>
+      )}
+
       <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
@@ -213,6 +242,7 @@ export default function RecruitmentDetail() {
               <button
                 disabled={isDisabled}
                 onClick={() => {
+                  if (!checkVerified()) return;
                   router.push(`/recruitment/${recruitmentId}/apply`);
                 }}
                 className={`rounded-xl px-5 py-2 text-[14px] transition sm:px-6 sm:text-base ${

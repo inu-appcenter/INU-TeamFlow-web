@@ -33,10 +33,11 @@ import {
   Plus,
   Search,
   Users,
+  MoveHorizontal,
+  Repeat,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -1093,6 +1094,18 @@ export default function TeamDetail() {
                               schedule.endAt
                             )}`}
                       </span>
+
+                      {!schedule.isSingle && (
+                        <Repeat size={14} className="shrink-0 text-[#9D9D9D]" />
+                      )}
+                      {schedule.startAt.slice(0, 10) !==
+                        schedule.endAt.slice(0, 10) &&
+                        schedule.isSingle && (
+                          <MoveHorizontal
+                            size={16}
+                            className="shrink-0 text-[#9D9D9D]"
+                          />
+                        )}
 
                       {isAdmin && (
                         <button

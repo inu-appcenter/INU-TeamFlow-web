@@ -2,13 +2,14 @@
 
 import { ChevronLeft, LoaderCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 
 import Card from '@/components/main/Card';
 import { applyRecruitment } from '@/api/recruitment';
 import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
 import { useMyInfo } from '@/hooks/useAuthQuery';
+import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 
 const categoryColorMap: Record<string, string> = {
   CONTEST: '#FBE4F8',
@@ -30,6 +31,16 @@ export default function RecruitmentApplyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: myInfo } = useMyInfo();
+
+  const { isVerified } = useSchoolVerificationGuard(() => {});
+
+  useEffect(() => {
+    if (!isVerified) {
+      router.replace(
+        `/recruitment/${recruitmentId}?error=school-verification-required`
+      );
+    }
+  }, [isVerified, router, recruitmentId]);
 
   if (isLoading) return null;
   if (!recruitment) return null;

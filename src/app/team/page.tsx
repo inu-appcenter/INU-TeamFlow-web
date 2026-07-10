@@ -8,6 +8,7 @@ import { useMyTeams } from '@/hooks/useTeamQuery';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
@@ -39,6 +40,13 @@ export default function Team() {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const { data: teams = [], isLoading } = useMyTeams();
 
+  const [errorMessage, setErrorMessage] = useState('');
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 1800);
+  };
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
   const filteredTeams = teams.filter((team) => {
     if (selectedCategory === 'ALL') return true;
 
@@ -49,6 +57,12 @@ export default function Team() {
 
   return (
     <main className="h-screen overflow-hidden bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
+      {errorMessage && (
+        <div className="animate-modal-pop fixed top-32 left-1/2 z-150 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+          {errorMessage}
+        </div>
+      )}
+
       <div className="hidden lg:block">
         <NotificationButton />
       </div>
@@ -58,7 +72,10 @@ export default function Team() {
           <h1 className="text-2xl font-bold text-[#2C2C2C]">나의 팀 목록</h1>
 
           <button
-            onClick={() => router.push('/team/create')}
+            onClick={() => {
+              if (!checkVerified()) return;
+              router.push('/team/create');
+            }}
             className="z-50 flex cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] py-2.5 pr-4 pl-3.5 text-[15px] font-medium text-white transition hover:bg-[#4C82E5]"
           >
             <Plus size={18} strokeWidth={2.5} />팀 생성하기
