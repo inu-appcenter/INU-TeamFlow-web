@@ -6,25 +6,24 @@ import CalendarEditModal from '@/components/calendar/CalendarEditModal';
 import VoteAddModal, {
   type EventVoteCreateRequest,
 } from '@/components/vote/VoteAddModar';
-import type { Schedule, RecurrenceEditScope } from '@/types/event';
-
 import Card from '@/components/main/Card';
 import { useCreateVote } from '@/hooks/useVoteQuery';
 import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
-
+import type { Schedule, RecurrenceEditScope } from '@/types/event';
+import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
+import { useCalendarGrid } from '@/hooks/useCalendarGrid';
+import { useCalendarWeeks } from '@/hooks/useCalendarWeeks';
+import { useTeamMonthSchedules } from '@/hooks/useTeamMonthSchedules';
+import { categoryMap, categoryColorMap } from '@/constants/category';
 import {
-  useTeamEvents,
   useCreateTeamEvent,
   useUpdateTeamEvent,
   useDeleteTeamEvent,
 } from '@/hooks/useEventQuery';
 import { useTeamDetail, useTeamMembers } from '@/hooks/useTeamQuery';
 import { useTeamVotes } from '@/hooks/useVoteQuery';
-
-import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
 import { getDday } from '@/utils/date/getDday';
-
 import { useTeamNotices } from '@/hooks/useNoticeQuery';
 import {
   Check,
@@ -33,27 +32,13 @@ import {
   Plus,
   Search,
   Users,
-  MoveHorizontal,
-  Repeat,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import ScheduleListItem from '@/components/calendar/ScheduleListItem';
+import MonthGridWithEvents from '@/components/calendar/MonthGridWithEvents';
 
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
+const days = ['일', '월', '화', '수', '목', '금', '토'];
 
 const users = [
   { studentNumber: '202312345', name: '홍길동' },
@@ -61,127 +46,6 @@ const users = [
   { studentNumber: '202312145', name: '홍길동1' },
   { studentNumber: '202212512', name: '김철수2' },
 ];
-
-const days = ['일', '월', '화', '수', '목', '금', '토'];
-
-type CalendarDate = {
-  date: number;
-  type: 'prev' | 'current' | 'next';
-};
-
-type SlottedSchedule = Schedule & { slot: number };
-
-const formatDateKey = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-
-  return `${y}-${m}-${d}`;
-};
-
-const formatTime = (dateString: string) => {
-  return dateString.slice(11, 16);
-};
-
-const darkenColor = (hex: string, amount: number) => {
-  const color = hex.replace('#', '');
-
-  const r = Math.max(0, parseInt(color.substring(0, 2), 16) - amount);
-  const g = Math.max(0, parseInt(color.substring(2, 4), 16) - amount);
-  const b = Math.max(0, parseInt(color.substring(4, 6), 16) - amount);
-
-  return `rgb(${r}, ${g}, ${b})`;
-};
-
-const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
-  if (!schedule.isSingle && schedule.occurrenceAt) {
-    return schedule.occurrenceAt.slice(0, 10) === dateKey;
-  }
-  const startDate = schedule.startAt.slice(0, 10);
-  const endDate = schedule.endAt.slice(0, 10);
-  return dateKey >= startDate && dateKey <= endDate;
-};
-
-function assignWeekSlots(
-  weekDateKeys: string[],
-  schedules: Schedule[]
-): Map<string, SlottedSchedule[]> {
-  const seen = new Set<string>();
-  const weekSchedules: Schedule[] = [];
-
-  for (const dk of weekDateKeys) {
-    for (const s of schedules) {
-      const key = `${s.eventId}-${s.occurrenceAt ?? s.startAt}`;
-      if (!seen.has(key) && isScheduleOnDate(s, dk)) {
-        seen.add(key);
-        weekSchedules.push(s);
-      }
-    }
-  }
-
-  const periodSchedules = weekSchedules.filter((s) => {
-    const start = s.startAt.slice(0, 10);
-    const end = s.endAt.slice(0, 10);
-
-    return start !== end && s.isSingle;
-  });
-
-  const singleSchedules = weekSchedules.filter((s) => {
-    const start = s.startAt.slice(0, 10);
-    const end = s.endAt.slice(0, 10);
-
-    return !(start !== end && s.isSingle);
-  });
-
-  const weekStart = weekDateKeys[0];
-  const weekEnd = weekDateKeys[weekDateKeys.length - 1];
-
-  const clampToWeek = (start: string, end: string) => ({
-    cs: start < weekStart ? weekStart : start,
-    ce: end > weekEnd ? weekEnd : end,
-  });
-
-  const slotMap: SlottedSchedule[] = [];
-  const usedSlots: { cs: string; ce: string; slot: number }[] = [];
-
-  for (const s of periodSchedules) {
-    const { cs, ce } = clampToWeek(
-      s.startAt.slice(0, 10),
-      s.endAt.slice(0, 10)
-    );
-
-    let slot = 0;
-
-    while (usedSlots.some((u) => u.slot === slot && cs <= u.ce && ce >= u.cs)) {
-      slot++;
-    }
-
-    usedSlots.push({ cs, ce, slot });
-    slotMap.push({ ...s, slot });
-  }
-
-  for (const s of singleSchedules) {
-    slotMap.push({ ...s, slot: -1 });
-  }
-
-  const result = new Map<string, SlottedSchedule[]>();
-
-  for (const dk of weekDateKeys) {
-    const forDate = slotMap
-      .filter((s) => isScheduleOnDate(s, dk))
-      .sort((a, b) => {
-        if (a.slot !== -1 && b.slot === -1) return -1;
-        if (a.slot === -1 && b.slot !== -1) return 1;
-        if (a.slot !== -1 && b.slot !== -1) return a.slot - b.slot;
-
-        return a.startAt.localeCompare(b.startAt);
-      });
-
-    result.set(dk, forDate);
-  }
-
-  return result;
-}
 
 export default function TeamDetail() {
   const router = useRouter();
@@ -191,59 +55,29 @@ export default function TeamDetail() {
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
-
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-
   const teamId = Number(params.id);
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const { data: teamMembers = [] } = useTeamMembers(teamId);
-
+  const { data: teamNoticesAll = [] } = useTeamNotices(teamId);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
-
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
   const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
   const { mutateAsync: deleteEvent } = useDeleteTeamEvent(teamId);
   const { mutateAsync: createVote } = useCreateVote(teamId);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
-
   const [selectedDate, setSelectedDate] = useState(today);
   const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isVoteAddOpen, setIsVoteAddOpen] = useState(false);
-
   const [isMd, setIsMd] = useState(false);
-
   const { data: allVotes = [] } = useTeamVotes(teamId);
-
-  const { data: prevSchedules = [] } = useTeamEvents(
-    teamId,
-    month === 0 ? year - 1 : year,
-    month === 0 ? 12 : month
-  );
-  const { data: currentSchedules = [] } = useTeamEvents(
-    teamId,
-    year,
-    month + 1
-  );
-  const { data: nextSchedules = [] } = useTeamEvents(
-    teamId,
-    month === 11 ? year + 1 : year,
-    month === 11 ? 1 : month + 2
-  );
-
-  const { data: teamNoticesAll = [] } = useTeamNotices(teamId);
-
-  const schedules = Array.from(
-    new Map(
-      [...prevSchedules, ...currentSchedules, ...nextSchedules].map((s) => [
-        `${s.eventId}-${s.occurrenceAt ?? s.startAt}`,
-        s,
-      ])
-    ).values()
-  );
+  const schedules = useTeamMonthSchedules(teamId, year, month);
+  const calendarDates = useCalendarGrid(year, month);
+  const weeks = useCalendarWeeks(calendarDates);
 
   useEffect(() => {
     const checkScreen = () => {
@@ -266,48 +100,6 @@ export default function TeamDetail() {
       </main>
     );
   }
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-  const prevLastDate = new Date(year, month, 0).getDate();
-
-  const prevMonthDates: CalendarDate[] = Array.from(
-    { length: firstDay },
-    (_, i) => ({
-      date: prevLastDate - firstDay + i + 1,
-      type: 'prev',
-    })
-  );
-
-  const currentMonthDates: CalendarDate[] = Array.from(
-    { length: lastDate },
-    (_, i) => ({
-      date: i + 1,
-      type: 'current',
-    })
-  );
-
-  const totalDateCount = prevMonthDates.length + currentMonthDates.length;
-  const nextMonthCount = (7 - (totalDateCount % 7)) % 7;
-
-  const nextMonthDates: CalendarDate[] = Array.from(
-    { length: nextMonthCount },
-    (_, i) => ({
-      date: i + 1,
-      type: 'next',
-    })
-  );
-
-  const calendarDates = [
-    ...prevMonthDates,
-    ...currentMonthDates,
-    ...nextMonthDates,
-  ];
-
-  const weeks = Array.from(
-    { length: calendarDates.length / 7 },
-    (_, weekIndex) => calendarDates.slice(weekIndex * 7, weekIndex * 7 + 7)
-  );
 
   const selectedDateKey = formatDateKey(selectedDate);
 
@@ -437,10 +229,6 @@ export default function TeamDetail() {
     }
     setIsVoteAddOpen(false);
   };
-
-  const DATE_HEADER_H = 28;
-  const EVENT_H = 20;
-  const EVENT_GAP = 4;
 
   const teamNotices = teamNoticesAll.slice(0, displayCount);
 
@@ -675,195 +463,21 @@ export default function TeamDetail() {
                 className="thin-scrollbar min-h-0 flex-1 overflow-y-auto"
                 style={{ scrollbarGutter: 'stable' }}
               >
-                <div
-                  className="grid grid-cols-7 pl-2 text-center text-sm text-[#2C2C2C]"
-                  style={{
-                    gridTemplateRows: `repeat(${weeks.length}, minmax(86px, auto))`,
+                <MonthGridWithEvents
+                  year={year}
+                  month={month}
+                  weeks={weeks}
+                  schedules={schedules}
+                  selectedDate={selectedDate}
+                  onSelectDate={(date) => {
+                    setSelectedDate(date);
+                    setIsMobileDetailOpen(true);
                   }}
-                >
-                  {weeks.map((week, weekIndex) => {
-                    const weekDateKeys = week.map((item) => {
-                      const cellDate =
-                        item.type === 'prev'
-                          ? new Date(year, month - 1, item.date)
-                          : item.type === 'next'
-                            ? new Date(year, month + 1, item.date)
-                            : new Date(year, month, item.date);
-
-                      return formatDateKey(cellDate);
-                    });
-
-                    const slottedByDate = assignWeekSlots(
-                      weekDateKeys,
-                      schedules
-                    );
-
-                    const maxSlot = Math.max(
-                      0,
-                      ...Array.from(slottedByDate.values()).flatMap((list) =>
-                        list.map((s) => (s.slot === -1 ? 0 : s.slot + 1))
-                      )
-                    );
-
-                    const maxSingle = Math.max(
-                      0,
-                      ...Array.from(slottedByDate.values()).map(
-                        (list) => list.filter((s) => s.slot === -1).length
-                      )
-                    );
-
-                    const cellMinH =
-                      DATE_HEADER_H +
-                      maxSlot * (EVENT_H + EVENT_GAP) +
-                      maxSingle * (EVENT_H + EVENT_GAP) +
-                      8;
-
-                    return week.map((item, i) => {
-                      const isCurrentMonth = item.type === 'current';
-
-                      const cellDate =
-                        item.type === 'prev'
-                          ? new Date(year, month - 1, item.date)
-                          : item.type === 'next'
-                            ? new Date(year, month + 1, item.date)
-                            : new Date(year, month, item.date);
-
-                      const dateKey = formatDateKey(cellDate);
-                      const dateSchedules = slottedByDate.get(dateKey) ?? [];
-
-                      const isSunday = cellDate.getDay() === 0;
-                      const isSaturday = cellDate.getDay() === 6;
-
-                      const isToday =
-                        today.getFullYear() === cellDate.getFullYear() &&
-                        today.getMonth() === cellDate.getMonth() &&
-                        today.getDate() === cellDate.getDate();
-
-                      const isSelected =
-                        selectedDate.getFullYear() === cellDate.getFullYear() &&
-                        selectedDate.getMonth() === cellDate.getMonth() &&
-                        selectedDate.getDate() === cellDate.getDate();
-
-                      let singleIdx = 0;
-
-                      return (
-                        <button
-                          type="button"
-                          key={`${item.type}-${weekIndex}-${i}`}
-                          onClick={() => {
-                            setSelectedDate(cellDate);
-                            setIsMobileDetailOpen(true);
-                          }}
-                          className={`relative flex flex-col items-center pt-1 pb-2 text-[13px] transition-all duration-150 outline-none active:scale-95 ${
-                            isSelected ? 'rounded-xl bg-white' : ''
-                          }`}
-                          style={{ minHeight: `${cellMinH}px` }}
-                        >
-                          <span
-                            className={`flex shrink-0 items-center justify-center rounded-full text-[14px] ${
-                              !isCurrentMonth
-                                ? 'h-6 w-6 text-[#D6DDE5]'
-                                : isToday
-                                  ? 'h-5 w-5 bg-[#5E92F0] font-semibold text-white'
-                                  : isSunday
-                                    ? 'h-6 w-6 text-red-500'
-                                    : isSaturday
-                                      ? 'h-6 w-6 text-blue-500'
-                                      : 'h-6 w-6 text-[#5C5C5C]'
-                            }`}
-                          >
-                            {item.date}
-                          </span>
-
-                          {dateSchedules.map((schedule) => {
-                            const isDone = schedule.isFinished;
-                            const startDate = schedule.startAt.slice(0, 10);
-                            const endDate = schedule.endAt.slice(0, 10);
-
-                            const isPeriod =
-                              startDate !== endDate && schedule.isSingle;
-
-                            const isPeriodStart =
-                              isPeriod && dateKey === startDate;
-                            const isPeriodEnd = isPeriod && dateKey === endDate;
-                            const isPeriodMiddle =
-                              isPeriod &&
-                              dateKey > startDate &&
-                              dateKey < endDate;
-
-                            let topOffset: number;
-
-                            if (schedule.slot !== -1) {
-                              topOffset =
-                                DATE_HEADER_H +
-                                schedule.slot * (EVENT_H + EVENT_GAP);
-                            } else {
-                              const maxSlotOnThisDate = dateSchedules
-                                .filter((s) => s.slot !== -1)
-                                .reduce(
-                                  (max, s) => Math.max(max, s.slot + 1),
-                                  0
-                                );
-
-                              topOffset =
-                                DATE_HEADER_H +
-                                maxSlotOnThisDate * (EVENT_H + EVENT_GAP) +
-                                singleIdx * (EVENT_H + EVENT_GAP);
-
-                              singleIdx++;
-                            }
-
-                            return (
-                              <div
-                                key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
-                                className={`absolute h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold transition-all duration-150 ${
-                                  isDone ? 'border-l-transparent' : 'pl-1'
-                                } ${
-                                  isPeriod
-                                    ? isPeriodStart
-                                      ? 'mr-0 ml-1 rounded-l rounded-r-none'
-                                      : isPeriodEnd
-                                        ? 'mr-1 ml-0 rounded-l-none rounded-r'
-                                        : isPeriodMiddle
-                                          ? 'mx-0 rounded-none'
-                                          : 'mx-1 rounded'
-                                    : 'mx-1 rounded'
-                                }`}
-                                style={{
-                                  top: `${topOffset}px`,
-                                  left: 0,
-                                  right: 0,
-                                  backgroundColor:
-                                    EVENT_COLOR_MAP[schedule.color],
-                                  borderLeftColor:
-                                    isDone || (isPeriod && !isPeriodStart)
-                                      ? 'transparent'
-                                      : darkenColor(
-                                          EVENT_COLOR_MAP[schedule.color],
-                                          25
-                                        ),
-                                  color: isDone
-                                    ? darkenColor(
-                                        EVENT_COLOR_MAP[schedule.color],
-                                        70
-                                      )
-                                    : darkenColor(
-                                        EVENT_COLOR_MAP[schedule.color],
-                                        100
-                                      ),
-                                }}
-                              >
-                                {!isPeriodMiddle &&
-                                  !isPeriodEnd &&
-                                  schedule.title}
-                              </div>
-                            );
-                          })}
-                        </button>
-                      );
-                    });
-                  })}
-                </div>
+                  rowMinHeight={86}
+                  selectedCellClassName="rounded-xl bg-white"
+                  cellTextSize="text-[13px]"
+                  otherCircleSize="h-6 w-6"
+                />
               </div>
             </section>
             <section className="gap-6 md:flex md:grid md:grid-cols-10">
@@ -965,7 +579,7 @@ export default function TeamDetail() {
 
                   {teamNotices.length === 0 && (
                     <div className="flex h-[100px] items-center justify-center text-sm text-[#989898]">
-                      등록된 공지사항이 없습니다.
+                      아직 등록된 공지사항이 없어요
                     </div>
                   )}
                 </div>
@@ -1056,93 +670,18 @@ export default function TeamDetail() {
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-              {selectedSchedules.map((schedule) => {
-                const isDone = schedule.isFinished;
-
-                return (
-                  <div
-                    key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
-                    onClick={() => {
-                      if (!isAdmin) return;
-                      setEditSchedule(schedule);
-                    }}
-                    className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
-                      isDone ? 'border-l-transparent pl-2' : ''
-                    }`}
-                    style={{
-                      backgroundColor: EVENT_COLOR_MAP[schedule.color],
-                      borderLeftColor: isDone
-                        ? 'transparent'
-                        : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
-                    }}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-[#5C5C5C]">
-                        {schedule.title}
-                      </p>
-
-                      <p className="text-[11px] text-[#9D9D9D]">
-                        {schedule.teamName ?? '개인 일정'}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#9D9D9D]">
-                        {schedule.isAllDay
-                          ? '하루 종일'
-                          : `${formatTime(schedule.startAt)}~${formatTime(
-                              schedule.endAt
-                            )}`}
-                      </span>
-
-                      {!schedule.isSingle && (
-                        <Repeat size={14} className="shrink-0 text-[#9D9D9D]" />
-                      )}
-                      {schedule.startAt.slice(0, 10) !==
-                        schedule.endAt.slice(0, 10) &&
-                        schedule.isSingle && (
-                          <MoveHorizontal
-                            size={16}
-                            className="shrink-0 text-[#9D9D9D]"
-                          />
-                        )}
-
-                      {isAdmin && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleSchedule(schedule);
-                          }}
-                          className="flex h-5 w-5 cursor-pointer items-center justify-center"
-                        >
-                          {isDone ? (
-                            <Check
-                              size={16}
-                              style={{
-                                color: darkenColor(
-                                  EVENT_COLOR_MAP[schedule.color],
-                                  80
-                                ),
-                              }}
-                            />
-                          ) : (
-                            <span
-                              className="h-4 w-4 rounded-full border"
-                              style={{
-                                borderColor: darkenColor(
-                                  EVENT_COLOR_MAP[schedule.color],
-                                  80
-                                ),
-                              }}
-                            />
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              {selectedSchedules.map((schedule) => (
+                <ScheduleListItem
+                  key={`${schedule.eventId}-${schedule.occurrenceAt ?? schedule.startAt}`}
+                  schedule={schedule}
+                  showToggle={isAdmin}
+                  onClickItem={(s) => {
+                    if (!isAdmin) return;
+                    setEditSchedule(s);
+                  }}
+                  onToggle={handleToggleSchedule}
+                />
+              ))}
             </div>
           </aside>
         </div>

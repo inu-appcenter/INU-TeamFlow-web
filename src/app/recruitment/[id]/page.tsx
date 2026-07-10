@@ -3,27 +3,13 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Ellipsis } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
 import Card from '@/components/main/Card';
 import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { formatDate } from '@/utils/date/formatDate';
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
+import { getDday } from '@/utils/date/getDday';
+import { categoryMap, categoryColorMap } from '@/constants/category';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function RecruitmentDetail() {
   const router = useRouter();
@@ -35,15 +21,12 @@ export default function RecruitmentDetail() {
   const { data: recruitment, isLoading } = useRecruitmentDetail(recruitmentId);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const [errorMessage, setErrorMessage] = useState(() =>
+  const { errorMessage, showErrorMessage, setErrorMessage } = useErrorToast(
+    1800,
     searchParams.get('error') === 'school-verification-required'
       ? '학교 인증 후 이용 가능합니다'
       : ''
   );
-  const showErrorMessage = (message: string) => {
-    setErrorMessage(message);
-    setTimeout(() => setErrorMessage(''), 1800);
-  };
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   useEffect(() => {
@@ -71,22 +54,6 @@ export default function RecruitmentDetail() {
     recruitment.announcementId !== null &&
     recruitment.announcementId !== undefined &&
     recruitment.announcementTitle;
-
-  const getDDay = (endAt: string) => {
-    const today = new Date();
-    const endDate = new Date(endAt);
-
-    today.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const diff = endDate.getTime() - today.getTime();
-    const day = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-    if (day > 0) return `D-${day}`;
-    if (day === 0) return 'D-Day';
-
-    return `D+${Math.abs(day)}`;
-  };
 
   const isClosed =
     new Date(recruitment.endAt) < new Date() || recruitment.status === 'CLOSED';
@@ -209,7 +176,7 @@ export default function RecruitmentDetail() {
                 </p>
 
                 <span className="font-medium text-[#5E92F0]">
-                  {getDDay(recruitment.endAt)}
+                  {getDday(recruitment.endAt)}
                 </span>
               </div>
 

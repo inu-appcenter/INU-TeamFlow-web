@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { getTeamRoleLabel } from '@/utils/teamRole';
+import { categoryColorMap } from '@/constants/category';
 
 import {
   ChevronLeft,
@@ -13,25 +13,8 @@ import {
   Search,
   ChevronDown,
   Mail,
-  Pin,
 } from 'lucide-react';
 import { formatDate } from '@/utils/date/formatDate';
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
 
 const ITEMS_PER_PAGE = 8;
 

@@ -10,12 +10,14 @@ type ScheduleListItemProps = {
   schedule: Schedule;
   onClickItem: (schedule: Schedule) => void;
   onToggle: (schedule: Schedule) => void;
+  showToggle?: boolean;
 };
 
 export default function ScheduleListItem({
   schedule,
   onClickItem,
   onToggle,
+  showToggle = true,
 }: ScheduleListItemProps) {
   const isDone = schedule.isFinished;
   const isPeriod =
@@ -57,30 +59,32 @@ export default function ScheduleListItem({
           <MoveHorizontal size={16} className="shrink-0 text-[#9D9D9D]" />
         )}
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(schedule);
-          }}
-          className="flex h-5 w-5 cursor-pointer items-center justify-center"
-        >
-          {isDone ? (
-            <Check
-              size={16}
-              style={{
-                color: darkenColor(EVENT_COLOR_MAP[schedule.color], 80),
-              }}
-            />
-          ) : (
-            <span
-              className="h-4 w-4 rounded-full border"
-              style={{
-                borderColor: darkenColor(EVENT_COLOR_MAP[schedule.color], 80),
-              }}
-            />
-          )}
-        </button>
+        {showToggle && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(schedule);
+            }}
+            className="flex h-5 w-5 cursor-pointer items-center justify-center"
+          >
+            {isDone ? (
+              <Check
+                size={16}
+                style={{
+                  color: darkenColor(EVENT_COLOR_MAP[schedule.color], 80),
+                }}
+              />
+            ) : (
+              <span
+                className="h-4 w-4 rounded-full border"
+                style={{
+                  borderColor: darkenColor(EVENT_COLOR_MAP[schedule.color], 80),
+                }}
+              />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

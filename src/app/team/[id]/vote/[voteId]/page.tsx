@@ -1,7 +1,7 @@
 'use client';
 
 import Card from '@/components/main/Card';
-
+import { categoryMap, categoryColorMap } from '@/constants/category';
 import { useTeamDetail } from '@/hooks/useTeamQuery';
 import {
   useVoteDetail,
@@ -9,29 +9,12 @@ import {
   useSelectVoteSlots,
   useConfirmVoteResult,
 } from '@/hooks/useVoteQuery';
-
 import VoteForm from '@/components/vote/VoteForm';
 import VoteResult from '@/components/vote/VoteResult';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
 
 export default function VoteDetailPage() {
   const router = useRouter();

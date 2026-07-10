@@ -4,36 +4,25 @@ import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
 import { BannerCarousel } from '@/components/main/banner/Banner';
-
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
-
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
-
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
 import Image from 'next/image';
 import { motion } from 'motion/react';
-
 import { useCalendarGrid } from '@/hooks/useCalendarGrid';
 import { useMonthSchedules } from '@/hooks/useMonthSchedules';
 import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
-
 import NoticeListItem from '@/components/main/notice/NoticeListItem';
 import RecruitmentListItem from '@/components/main/recruitment/RecruitmentListItem';
-
 import MonthCalendar from '@/components/main/calendar/MonthCalendar';
 import DaySchedulePanel from '@/components/main/calendar/DaySchedulePanel';
-
-const categories = [
-  { label: '전체', value: 'ALL' },
-  { label: '공모전', value: 'CONTEST' },
-  { label: '스터디', value: 'STUDY' },
-  { label: '프로젝트', value: 'PROJECT' },
-  { label: '동아리', value: 'CLUB' },
-  { label: '기타', value: 'ETC' },
-];
+import {
+  categoryMap,
+  categoryColorMap,
+  categoryFilterOptions,
+} from '@/constants/category';
 
 export default function Main() {
   const router = useRouter();
@@ -208,7 +197,7 @@ export default function Main() {
               </div>
 
               <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
-                {categories.map((category) => (
+                {categoryFilterOptions.map((category) => (
                   <button
                     key={category.value}
                     type="button"

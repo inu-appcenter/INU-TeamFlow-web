@@ -4,9 +4,14 @@ import Card from '@/components/main/Card';
 import { ChevronLeft, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { getPresignedUrl } from '@/api/team';
-
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import {
+  categoryMap,
+  categoryColorMap,
+  categoryBorderColorMap,
+  DEFAULT_CATEGORY_COLOR,
+} from '@/constants/category';
 
 export type TeamFormData = {
   name: string;
@@ -102,30 +107,6 @@ const TextAreaField = ({
   </div>
 );
 
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
-const categoryBorderColorMap: Record<string, string> = {
-  CONTEST: '#E7A8DF',
-  STUDY: '#95D695',
-  PROJECT: '#9FC4F7',
-  CLUB: '#E8C46A',
-  ETC: '#BDBDBD',
-};
-const DEFAULT_COLOR = '#E9E9E9';
-
 export default function TeamForm({
   mode,
   initialData,
@@ -138,7 +119,7 @@ export default function TeamForm({
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialData?.imageUrl ?? null
   );
-  const [errorMessage, setErrorMessage] = useState('');
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [form, setForm] = useState<TeamFormData>(
     initialData ?? {
@@ -150,14 +131,6 @@ export default function TeamForm({
       imageUrl: '',
     }
   );
-
-  const showErrorMessage = (message: string) => {
-    setErrorMessage(message);
-
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 1800);
-  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -195,7 +168,8 @@ export default function TeamForm({
     }));
   };
 
-  const currentColor = categoryColorMap[form.category] ?? DEFAULT_COLOR;
+  const currentColor =
+    categoryColorMap[form.category] ?? DEFAULT_CATEGORY_COLOR;
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">

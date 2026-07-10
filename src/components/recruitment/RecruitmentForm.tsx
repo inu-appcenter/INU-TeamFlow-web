@@ -4,7 +4,13 @@ import Card from '@/components/main/Card';
 import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 import { useMyTeams } from '@/hooks/useTeamQuery';
-
+import {
+  categoryMap,
+  categoryColorMap,
+  categoryBorderColorMap,
+  DEFAULT_CATEGORY_COLOR,
+} from '@/constants/category';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useRouter } from 'next/navigation';
 
 export type RecruitmentFormData = {
@@ -24,38 +30,14 @@ type RecruitmentFormProps = {
   onDelete?: () => void;
 };
 
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
-const categoryBorderColorMap: Record<string, string> = {
-  CONTEST: '#E7A8DF',
-  STUDY: '#95D695',
-  PROJECT: '#9FC4F7',
-  CLUB: '#E8C46A',
-  ETC: '#BDBDBD',
-};
-const DEFAULT_COLOR = '#E9E9E9';
-
-export default function TeamForm({
+export default function RecruitmentForm({
   mode,
   initialData,
   onSubmit,
   onDelete,
 }: RecruitmentFormProps) {
   const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState('');
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [form, setForm] = useState<RecruitmentFormData>(
     initialData ?? {
@@ -70,13 +52,6 @@ export default function TeamForm({
   );
 
   const { data: myTeams = [] } = useMyTeams();
-  const showErrorMessage = (message: string) => {
-    setErrorMessage(message);
-
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 1800);
-  };
 
   const onChange = (key: keyof RecruitmentFormData, value: string) => {
     setForm((prev) => ({
@@ -85,7 +60,8 @@ export default function TeamForm({
     }));
   };
 
-  const currentColor = categoryColorMap[form.category] ?? DEFAULT_COLOR;
+  const currentColor =
+    categoryColorMap[form.category] ?? DEFAULT_CATEGORY_COLOR;
   const [isTeamSelectOpen, setIsTeamSelectOpen] = useState(false);
   const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
 
