@@ -3,6 +3,7 @@
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
+import { BannerCarousel } from '@/components/main/banner/Banner';
 
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 
@@ -17,6 +18,8 @@ import { useState } from 'react';
 
 import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
+import Image from 'next/image';
+import { motion } from 'motion/react';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -184,8 +187,10 @@ export default function Main() {
       <div className="mx-auto max-w-[1180px]">
         {/* 상단 */}
         <section className="relative mb-10 pt-4 md:min-h-[160px]">
-          <div className="h-12 w-40 rounded-full bg-white" />
-          <div className="absolute top-4 left-1/2 hidden h-36 w-[50%] max-w-3xl -translate-x-1/2 rounded-2xl bg-white md:block" />
+          <div className="h-12 w-40 rounded-full bg-white"></div>
+          <div className="absolute top-4 left-1/2 hidden h-40 w-[50%] max-w-3xl -translate-x-1/2 rounded-3xl md:block">
+            <BannerCarousel />
+          </div>
           <NotificationButton />
         </section>
 
@@ -429,7 +434,7 @@ export default function Main() {
         </section>
 
         {/* 모집 게시판 + 정보 게시판 */}
-        <section className="mb-28 grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <section className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
           {/* 모집 게시판 */}
           <div className="xl:col-span-6">
             <Card className="h-[345px] overflow-hidden p-6 sm:h-[350px]">
@@ -542,6 +547,21 @@ export default function Main() {
             </Card>
           </div>
         </section>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="mx-auto mb-40 w-fit"
+        >
+          <Image
+            src="/images/app-center-black.png"
+            alt="App Center 로고"
+            width={150}
+            height={150}
+            className="h-auto w-auto shrink-0 opacity-20"
+          />
+        </motion.div>
       </div>
 
       <BottomNav />

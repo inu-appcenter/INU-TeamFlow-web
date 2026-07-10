@@ -1,9 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
+import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { getDday } from '@/utils/date/getDday';
 
 import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
@@ -36,10 +37,32 @@ const categoryColorMap = {
 
 export default function Recruitment() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [keyword, setKeyword] = useState('');
   const [searchType, setSearchType] = useState('title');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+
+  const [errorMessage, setErrorMessage] = useState(() =>
+    searchParams.get('error') === 'school-verification-required'
+      ? '학교 인증 후 이용 가능합니다'
+      : ''
+  );
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 1800);
+  };
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
+  useEffect(() => {
+    if (!errorMessage) return;
+
+    router.replace('/recruitment');
+
+    const timer = setTimeout(() => setErrorMessage(''), 1800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const normalizedKeyword = keyword.replace(/\s/g, '');
 
@@ -66,6 +89,12 @@ export default function Recruitment() {
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
+      {errorMessage && (
+        <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+          {errorMessage}
+        </div>
+      )}
+
       <div className="mx-auto max-w-[1180px]">
         {/* 헤더 */}
         <header className="mt-12 mb-4 flex items-center justify-between">
@@ -130,7 +159,10 @@ export default function Recruitment() {
 
           <button
             type="button"
-            onClick={() => router.push('/recruitment/create')}
+            onClick={() => {
+              if (!checkVerified()) return;
+              router.push('/recruitment/create');
+            }}
             className="flex h-10 w-10 cursor-pointer items-center justify-center gap-1 rounded-full bg-[#5E92F0] text-white transition-all duration-150 active:scale-95 sm:w-auto sm:rounded-lg sm:px-4"
           >
             <Plus size={16} strokeWidth={2.5} />
