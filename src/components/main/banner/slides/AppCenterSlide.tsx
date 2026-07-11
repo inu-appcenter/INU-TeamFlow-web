@@ -32,7 +32,7 @@ export function AppCenterCreditSlide() {
               alt="APP CENTER 이름"
               width={200}
               height={80}
-              className="h-[50%] lg:h-auto lg:w-auto"
+              className="h-[50%] w-auto lg:h-auto lg:w-auto"
             />
             <span className="truncate text-base font-semibold text-white">
               에서 제작되었습니다

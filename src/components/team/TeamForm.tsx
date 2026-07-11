@@ -198,7 +198,7 @@ export default function TeamForm({
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6">
-            <div className="mx-auto max-w-[500px]">
+            <div className="mx-auto max-w-[600px]">
               <section>
                 <div className="mb-2 text-sm font-bold tracking-wide text-[#B0B0B0]">
                   팀 이미지
@@ -317,7 +317,7 @@ export default function TeamForm({
                   onChange={(e) => onChange('sns', e.target.value)}
                 />
                 <div className="mt-6 flex justify-center">
-                  <div className="flex gap-2">
+                  <div className="flex gap-4">
                     {mode === 'edit' && onDelete && (
                       <button
                         onClick={onDelete}

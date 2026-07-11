@@ -4,7 +4,10 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Ellipsis } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Card from '@/components/main/Card';
-import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
+import {
+  useRecruitmentDetail,
+  useDeleteRecruitment,
+} from '@/hooks/useRecruitmentQuery';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { formatDate } from '@/utils/date/formatDate';
 import { getDday } from '@/utils/date/getDday';
@@ -19,7 +22,10 @@ export default function RecruitmentDetail() {
   const recruitmentId = Number(params.id);
 
   const { data: recruitment, isLoading } = useRecruitmentDetail(recruitmentId);
+  const { mutate: deleteRecruitmentMutate, isPending: isDeleting } =
+    useDeleteRecruitment();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const { errorMessage, showErrorMessage, setErrorMessage } = useErrorToast(
     1800,
@@ -62,8 +68,13 @@ export default function RecruitmentDetail() {
 
   const isDisabled = isRecruiter || recruitment.hasApplied || isClosed;
 
-  const handleDeleteRecruitment = async () => {
-    // 삭제 api 되면할거임
+  const handleDeleteRecruitment = () => {
+    if (isDeleting) return;
+    deleteRecruitmentMutate(recruitmentId, {
+      onSuccess: () => {
+        router.push('/recruitment');
+      },
+    });
   };
 
   return (
@@ -121,8 +132,12 @@ export default function RecruitmentDetail() {
                       </button>
                     )}
                     <button
-                      onClick={handleDeleteRecruitment}
-                      className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsDeleteConfirmOpen(true);
+                      }}
+                      disabled={isDeleting}
+                      className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA] disabled:opacity-50"
                     >
                       삭제하기
                     </button>
@@ -229,6 +244,44 @@ export default function RecruitmentDetail() {
             </div>
           </div>
         </Card>
+        {isDeleteConfirmOpen && (
+          <div
+            onClick={() => setIsDeleteConfirmOpen(false)}
+            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+            >
+              <h2 className="text-center text-xl font-bold">
+                모집글을 삭제할까요?
+              </h2>
+
+              <p className="mt-2 text-center text-sm text-[#989898]">
+                삭제한 모집글은 복구할 수 없어요
+              </p>
+
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => setIsDeleteConfirmOpen(false)}
+                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
+                >
+                  취소
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    handleDeleteRecruitment();
+                  }}
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white"
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );
