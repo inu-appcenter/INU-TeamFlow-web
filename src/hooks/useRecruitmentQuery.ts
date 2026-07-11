@@ -5,6 +5,7 @@ import {
   getRecruitmentDetail,
   createRecruitment,
   updateRecruitment,
+  deleteRecruitment,
   applyRecruitment,
   getRecruitmentApplications,
   getMyApplications,
@@ -87,6 +88,16 @@ export const useUpdateRecruitment = () => {
       recruitmentId: number;
       body: RecruitmentUpdateRequest;
     }) => updateRecruitment(recruitmentId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recruitments'] });
+    },
+  });
+};
+
+export const useDeleteRecruitment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (recruitmentId: number) => deleteRecruitment(recruitmentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recruitments'] });
     },

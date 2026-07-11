@@ -52,6 +52,12 @@ export const updateRecruitment = (
     .put(`/recruitments/${recruitmentId}`, body)
     .then((res) => res.data);
 
+/** DELETE /recruitments/{recruitmentId} */
+export const deleteRecruitment = async (recruitmentId: number) => {
+  const { data } = await axiosInstance.delete(`/recruitments/${recruitmentId}`);
+  return data;
+};
+
 /** POST /recruitments/{recruitmentId}/applications */
 export const applyRecruitment = (
   recruitmentId: number,

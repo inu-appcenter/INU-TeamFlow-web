@@ -157,7 +157,7 @@ export default function Notice() {
                 </div>
 
                 <p className="mt-2 truncate px-1 text-xs text-[#989898]">
-                  {notice.authorName} ·{getTeamRoleLabel(notice.teamRole)} ·{' '}
+                  {notice.authorName} · {getTeamRoleLabel(notice.teamRole)} ·{' '}
                   {formatDate(notice.createdAt)}
                 </p>
               </div>

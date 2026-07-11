@@ -22,15 +22,21 @@ const getRandomIndex = (excludeIndex: number) => {
 };
 
 export function TeamFlowLaunchSlide() {
-  const [index, setIndex] = useState(() =>
-    Math.floor(Math.random() * TIPS.length)
-  );
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      setIndex(Math.floor(Math.random() * TIPS.length));
+    }, 0);
+
     const timer = setInterval(() => {
       setIndex((prev) => getRandomIndex(prev));
-    }, 4000);
-    return () => clearInterval(timer);
+    }, 5000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(timer);
+    };
   }, []);
 
   return (
