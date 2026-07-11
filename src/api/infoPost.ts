@@ -11,6 +11,24 @@ import type {
   InfoPostUpdateRequest,
 } from '@/types/infoPost';
 
+interface GetMyInfoPostsParams {
+  page?: number;
+  size?: number;
+  sort?: string[];
+}
+
+const getList = <T>(data: T[] | { content?: T[] } | T): T[] => {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (typeof data === 'object' && data !== null && 'content' in data) {
+    return data.content ?? [];
+  }
+
+  return [data as T];
+};
+
 /** GET /info-posts */
 export const getInfoPosts = ({
   category,
@@ -35,6 +53,26 @@ export const getInfoPosts = ({
       },
     })
     .then((res) => res.data);
+
+/** GET /info-posts/me */
+export const getMyInfoPosts = async ({
+  page = 0,
+  size = 20,
+  sort = ['createdAt,DESC'],
+}: GetMyInfoPostsParams = {}): Promise<InfoPostSummaryResponse[]> => {
+  const res = await axiosInstance.get('/info-posts/me', {
+    params: {
+      page,
+      size,
+      sort,
+    },
+    paramsSerializer: {
+      indexes: null,
+    },
+  });
+
+  return getList<InfoPostSummaryResponse>(res.data);
+};
 
 /** GET /info-posts/{infoPostId} */
 export const getInfoPostDetail = (

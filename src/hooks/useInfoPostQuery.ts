@@ -11,6 +11,7 @@ import {
   getInfoPostDetail,
   getInfoPostImagePresignedUrls,
   getInfoPosts,
+  getMyInfoPosts,
   updateInfoPost,
   uploadInfoPostImage,
 } from '@/api/infoPost';
@@ -23,6 +24,7 @@ import type {
 
 export const infoPostKeys = {
   all: () => ['infoPosts'] as const,
+  mine: () => ['infoPosts', 'me'] as const,
   detail: (id: number) => ['infoPosts', id] as const,
 };
 
@@ -31,6 +33,18 @@ export const useInfoPosts = (params: GetInfoPostsParams = {}) =>
     queryKey: [...infoPostKeys.all(), params],
     queryFn: () => getInfoPosts(params),
     placeholderData: keepPreviousData,
+    staleTime: 30 * 1000,
+  });
+
+export const useMyInfoPosts = () =>
+  useQuery({
+    queryKey: infoPostKeys.mine(),
+    queryFn: () =>
+      getMyInfoPosts({
+        page: 0,
+        size: 20,
+        sort: ['createdAt,DESC'],
+      }),
     staleTime: 30 * 1000,
   });
 
@@ -69,6 +83,7 @@ export const useUpdateInfoPost = () => {
       queryClient.invalidateQueries({
         queryKey: infoPostKeys.all(),
       });
+
       queryClient.invalidateQueries({
         queryKey: infoPostKeys.detail(variables.infoPostId),
       });

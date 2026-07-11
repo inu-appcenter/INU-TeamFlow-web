@@ -1,16 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
+import { useState } from 'react';
 
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
+import { useMyInfoPosts } from '@/hooks/useInfoPostQuery';
 import {
   useMyApplications,
   useMyRecruitments,
   useMyTeamNotices,
 } from '@/hooks/useMypagePostQuery';
+import type { InfoPostSummaryResponse } from '@/types/infoPost';
 import type {
   MyApplicationResponse,
   MyPost,
@@ -33,6 +36,8 @@ const getCategoryLabel = (category: string) => {
   if (category === 'PROJECT') return '프로젝트';
   if (category === 'STUDY') return '스터디';
   if (category === 'CLUB') return '동아리';
+  if (category === 'ETC') return '기타';
+
   return category;
 };
 
@@ -40,6 +45,7 @@ const getApplicationStatusLabel = (status: string) => {
   if (status === 'WAITING') return '대기';
   if (status === 'ACCEPTED') return '수락';
   if (status === 'REJECTED') return '거절';
+
   return status;
 };
 
@@ -54,6 +60,12 @@ export default function MyPostPage() {
   } = useMyRecruitments();
 
   const {
+    data: infoPosts = [],
+    isLoading: isInfoPostsLoading,
+    isError: isInfoPostsError,
+  } = useMyInfoPosts();
+
+  const {
     data: applications = [],
     isLoading: isApplicationsLoading,
     isError: isApplicationsError,
@@ -65,7 +77,7 @@ export default function MyPostPage() {
     isError: isNoticesError,
   } = useMyTeamNotices();
 
-  const myPosts: MyPost[] = [
+  const datedPosts = [
     ...recruitments.map((recruitment) => ({
       ...recruitment,
       type: 'RECRUIT' as const,
@@ -82,15 +94,33 @@ export default function MyPostPage() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
+  const infoPostItems = infoPosts.map((infoPost) => ({
+    ...infoPost,
+    type: 'INFO' as const,
+  }));
+
+  /*
+   * 모집글, 신청서, 공지는 작성일 기준으로 정렬한다.
+   * 정보글은 createdAt이 없으므로 API에서 받은 순서를 유지한 채 뒤에 붙인다.
+   */
+  const myPosts: MyPost[] = [...datedPosts, ...infoPostItems];
+
   const filteredPosts =
     activeTab === 'ALL'
       ? myPosts
       : myPosts.filter((post) => post.type === activeTab);
 
   const isLoading =
-    isRecruitmentsLoading || isApplicationsLoading || isNoticesLoading;
+    isRecruitmentsLoading ||
+    isInfoPostsLoading ||
+    isApplicationsLoading ||
+    isNoticesLoading;
 
-  const isError = isRecruitmentsError || isApplicationsError || isNoticesError;
+  const isError =
+    isRecruitmentsError ||
+    isInfoPostsError ||
+    isApplicationsError ||
+    isNoticesError;
 
   return (
     <main className="min-h-screen px-3 py-6 pb-28 sm:px-6 sm:pt-10">
@@ -98,7 +128,9 @@ export default function MyPostPage() {
 
       <header className="mx-auto mt-10 mb-5 flex max-w-[1180px] items-center gap-3 px-1">
         <button
+          type="button"
           onClick={() => router.push('/mypage')}
+          aria-label="마이페이지로 돌아가기"
           className="cursor-pointer text-[#2C2C2C] transition-all duration-150 active:scale-90"
         >
           <ChevronLeft size={28} strokeWidth={2.5} />
@@ -114,8 +146,9 @@ export default function MyPostPage() {
               {tabs.map((tab) => (
                 <button
                   key={tab.value}
+                  type="button"
                   onClick={() => setActiveTab(tab.value)}
-                  className={`rounded-2xl px-4 py-2 transition-all duration-150 active:scale-95 ${
+                  className={`cursor-pointer rounded-2xl px-4 py-2 transition-all duration-150 active:scale-95 ${
                     activeTab === tab.value
                       ? 'bg-[#5E92F0] text-white shadow-sm'
                       : 'border border-[#D6DDE5] bg-white text-[#2C2C2C]'
@@ -142,6 +175,18 @@ export default function MyPostPage() {
               </div>
             ) : (
               filteredPosts.map((post) => {
+                if (post.type === 'INFO') {
+                  return (
+                    <InfoPostCard
+                      key={`info-${post.infoPostId}`}
+                      infoPost={post}
+                      onClick={() =>
+                        router.push(`/infoPost/${post.infoPostId}`)
+                      }
+                    />
+                  );
+                }
+
                 if (post.type === 'APPLY') {
                   return (
                     <ApplicationCard
@@ -199,7 +244,7 @@ function RecruitmentCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[180px] flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
+      className="flex min-h-[180px] cursor-pointer flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
     >
       <div>
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -232,6 +277,54 @@ function RecruitmentCard({
   );
 }
 
+function InfoPostCard({
+  infoPost,
+  onClick,
+}: {
+  infoPost: InfoPostSummaryResponse;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-[180px] cursor-pointer justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
+    >
+      <div className="flex min-w-0 flex-1 flex-col justify-between">
+        <div>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="line-clamp-1 min-w-0 text-[19px] font-bold text-[#2C2C2C]">
+              [ {getCategoryLabel(infoPost.category)} ] {infoPost.title}
+            </h2>
+
+            <span className="shrink-0 rounded-full bg-[#EAF2FF] px-4 py-1.5 text-[12px] font-semibold text-[#5E92F0]">
+              정보
+            </span>
+          </div>
+
+          <p className="text-[14px] text-[#5C5C5C]">
+            연결된 모집글 {infoPost.recruitmentCount}개
+          </p>
+        </div>
+
+        <div className="mt-8 text-[13px] text-[#989898]">정보 게시글</div>
+      </div>
+
+      {infoPost.thumbnailUrl && (
+        <div className="relative ml-4 h-20 w-20 shrink-0 overflow-hidden rounded-2xl sm:h-24 sm:w-28">
+          <Image
+            src={infoPost.thumbnailUrl}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 80px, 112px"
+            className="object-cover"
+          />
+        </div>
+      )}
+    </button>
+  );
+}
+
 function ApplicationCard({
   application,
   onClick,
@@ -243,7 +336,7 @@ function ApplicationCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[180px] flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
+      className="flex min-h-[180px] cursor-pointer flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
     >
       <div>
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -284,7 +377,7 @@ function NoticeCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[180px] flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
+      className="flex min-h-[180px] cursor-pointer flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
     >
       <div>
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -310,6 +403,7 @@ function NoticeCard({
 
       <div className="mt-8 flex items-center gap-2 text-[13px] text-[#989898]">
         <span>{formatDate(notice.createdAt)}</span>
+
         {notice.isPinned && (
           <>
             <span>·</span>
