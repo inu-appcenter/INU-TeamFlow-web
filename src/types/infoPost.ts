@@ -55,3 +55,13 @@ export interface GetInfoPostsParams {
   size?: number;
   sort?: string[];
 }
+
+export interface InfoPostImagePresignedUrlRequest {
+  fileName: string;
+  contentType: string;
+}
+
+export interface InfoPostImagePresignedUrlResponse {
+  uploadUrl: string;
+  imageKey: string;
+}

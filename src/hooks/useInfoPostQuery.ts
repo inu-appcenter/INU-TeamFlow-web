@@ -9,8 +9,10 @@ import {
   createInfoPost,
   deleteInfoPost,
   getInfoPostDetail,
+  getInfoPostImagePresignedUrls,
   getInfoPosts,
   updateInfoPost,
+  uploadInfoPostImage,
 } from '@/api/infoPost';
 
 import type {
@@ -29,6 +31,7 @@ export const useInfoPosts = (params: GetInfoPostsParams = {}) =>
     queryKey: [...infoPostKeys.all(), params],
     queryFn: () => getInfoPosts(params),
     placeholderData: keepPreviousData,
+    staleTime: 30 * 1000,
   });
 
 export const useInfoPostDetail = (infoPostId: number) =>
@@ -85,3 +88,31 @@ export const useDeleteInfoPost = () => {
     },
   });
 };
+
+export const useUploadInfoPostImages = () =>
+  useMutation({
+    mutationFn: async (files: File[]): Promise<string[]> => {
+      if (files.length === 0) {
+        return [];
+      }
+
+      const presignedUrls = await getInfoPostImagePresignedUrls(
+        files.map((file) => ({
+          fileName: file.name,
+          contentType: file.type,
+        }))
+      );
+
+      if (presignedUrls.length !== files.length) {
+        throw new Error('이미지 업로드 URL 개수가 일치하지 않습니다.');
+      }
+
+      await Promise.all(
+        presignedUrls.map((presignedUrl, index) =>
+          uploadInfoPostImage(presignedUrl.uploadUrl, files[index])
+        )
+      );
+
+      return presignedUrls.map((presignedUrl) => presignedUrl.imageKey);
+    },
+  });

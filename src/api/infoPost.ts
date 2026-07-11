@@ -5,6 +5,8 @@ import type {
   GetInfoPostsParams,
   InfoPostCreateRequest,
   InfoPostDetailResponse,
+  InfoPostImagePresignedUrlRequest,
+  InfoPostImagePresignedUrlResponse,
   InfoPostSummaryResponse,
   InfoPostUpdateRequest,
 } from '@/types/infoPost';
@@ -56,3 +58,28 @@ export const updateInfoPost = (
 /** DELETE /info-posts/{infoPostId} */
 export const deleteInfoPost = (infoPostId: number): Promise<void> =>
   axiosInstance.delete(`/info-posts/${infoPostId}`).then((res) => res.data);
+
+/** POST /info-posts/images/presigned-url */
+export const getInfoPostImagePresignedUrls = (
+  body: InfoPostImagePresignedUrlRequest[]
+): Promise<InfoPostImagePresignedUrlResponse[]> =>
+  axiosInstance
+    .post('/info-posts/images/presigned-url', body)
+    .then((res) => res.data);
+
+export const uploadInfoPostImage = async (
+  uploadUrl: string,
+  file: File
+): Promise<void> => {
+  const response = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': file.type,
+    },
+    body: file,
+  });
+
+  if (!response.ok) {
+    throw new Error(`이미지 업로드 실패: ${response.status}`);
+  }
+};

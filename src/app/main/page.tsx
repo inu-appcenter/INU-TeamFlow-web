@@ -75,7 +75,11 @@ export default function Main() {
   const mobileRecruitments = filteredRecruitments.slice(0, 4);
   const desktopRecruitments = filteredRecruitments.slice(0, 3);
 
-  const { data: infoPostData } = useInfoPosts(0, 100);
+  const { data: infoPostData } = useInfoPosts({
+    page: 0,
+    size: 100,
+    sort: ['createdAt,DESC'],
+  });
   const infoPosts = infoPostData?.content ?? [];
   const filteredInfoPosts = infoPosts.filter((infoPost) => {
     if (selectedInfoPostCategory === 'ALL') return true;

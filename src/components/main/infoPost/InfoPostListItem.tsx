@@ -26,7 +26,7 @@ export default function InfoPostListItem({
   return (
     <button
       type="button"
-      onClick={() => router.push(`/info-post/${infoPost.infoPostId}`)}
+      onClick={() => router.push(`/infoPost/${infoPost.infoPostId}`)}
       className={`flex w-full cursor-pointer items-center justify-between border-b-[0.5px] border-[#D6DDE5] text-left transition-all duration-150 hover:bg-[#F8F9FA] active:scale-[0.99] ${
         size === 'sm' ? 'px-1 py-2.5' : 'px-1 py-3'
       }`}

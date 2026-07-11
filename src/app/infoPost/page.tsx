@@ -3,47 +3,40 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
+import { useQueryClient } from '@tanstack/react-query';
+import { getInfoPosts } from '@/api/infoPost';
 import {
   categoryColorMap,
   categoryFilterOptions,
   categoryMap,
 } from '@/constants/category';
-import { useInfoPosts } from '@/hooks/useInfoPostQuery';
-import type { InfoPostCategory } from '@/types/infoPost';
+import { infoPostKeys, useInfoPosts } from '@/hooks/useInfoPostQuery';
+import type { GetInfoPostsParams, InfoPostCategory } from '@/types/infoPost';
 
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Search,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 6;
 
 export default function InfoPost() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [keyword, setKeyword] = useState('');
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [isComposing, setIsComposing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<
     'ALL' | InfoPostCategory
   >('ALL');
   const [page, setPage] = useState(1);
 
-  const {
-    data: infoPostData,
-    isLoading,
-    isFetching,
-  } = useInfoPosts({
+  const queryParams: GetInfoPostsParams = {
     category: selectedCategory === 'ALL' ? undefined : selectedCategory,
     keyword: searchKeyword || undefined,
     page: page - 1,
     size: ITEMS_PER_PAGE,
     sort: ['createdAt,DESC'],
-  });
+  };
+
+  const { data: infoPostData, isLoading } = useInfoPosts(queryParams);
 
   const infoPosts = infoPostData?.content ?? [];
   const totalPages = infoPostData?.totalPages ?? 0;
@@ -55,20 +48,37 @@ export default function InfoPost() {
     setPage(1);
   };
 
-  const handleKeywordChange = (value: string) => {
-    setKeyword(value);
-    setPage(1);
-  };
   useEffect(() => {
-    if (isComposing) return;
+    if (!infoPostData) {
+      return;
+    }
 
+    const hasNextPage = page < infoPostData.totalPages;
+
+    if (!hasNextPage) {
+      return;
+    }
+
+    const nextPageParams: GetInfoPostsParams = {
+      ...queryParams,
+      page,
+    };
+
+    void queryClient.prefetchQuery({
+      queryKey: [...infoPostKeys.all(), nextPageParams],
+      queryFn: () => getInfoPosts(nextPageParams),
+      staleTime: 30 * 1000,
+    });
+  }, [infoPostData, page, queryClient, selectedCategory, searchKeyword]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       setSearchKeyword(keyword.trim());
       setPage(1);
     }, 300);
 
     return () => window.clearTimeout(timer);
-  }, [keyword, isComposing]);
+  }, [keyword]);
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
@@ -112,35 +122,15 @@ export default function InfoPost() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
-              <div className="relative h-full">
-                <select
-                  className="h-full appearance-none border-r-[0.5px] border-[#D6DDE5] bg-white px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
-                  defaultValue="title"
-                >
-                  <option value="title">제목</option>
-                </select>
+            <div className="flex h-10 flex-1 items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-3 md:w-[400px] md:flex-none">
+              <Search size={18} className="shrink-0 text-[#989898]" />
 
-                <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#2C2C2C]">
-                  <ChevronDown size={14} />
-                </span>
-              </div>
-
-              <div className="flex flex-1 items-center gap-3 px-3">
-                <Search size={18} className="shrink-0 text-[#989898]" />
-
-                <input
-                  value={keyword}
-                  onChange={(event) => setKeyword(event.target.value)}
-                  onCompositionStart={() => setIsComposing(true)}
-                  onCompositionEnd={(event) => {
-                    setIsComposing(false);
-                    setKeyword(event.currentTarget.value);
-                  }}
-                  placeholder="검색어를 입력하세요"
-                  className="w-full bg-transparent text-sm text-[#2C2C2C] outline-none placeholder:text-[#989898]"
-                />
-              </div>
+              <input
+                value={keyword}
+                onChange={(event) => setKeyword(event.target.value)}
+                placeholder="검색어를 입력하세요"
+                className="w-full bg-transparent text-sm text-[#2C2C2C] outline-none placeholder:text-[#989898]"
+              />
             </div>
 
             <button
@@ -197,7 +187,7 @@ export default function InfoPost() {
                       <img
                         src={infoPost.thumbnailUrl}
                         alt=""
-                        className="h-16 w-20 shrink-0 rounded-lg object-cover"
+                        className="h-16 w-12 shrink-0 rounded-lg bg-[#F6F8FA] object-contain"
                       />
                     )}
                   </div>
@@ -206,8 +196,10 @@ export default function InfoPost() {
             ))}
 
           {!isLoading && infoPosts.length === 0 && (
-            <div className="flex h-[250px] items-center justify-center rounded-xl bg-white text-sm text-[#989898]">
-              등록된 정보글이 없습니다.
+            <div className="flex h-[60vh] items-center justify-center rounded-xl bg-white text-sm text-[#989898]">
+              {searchKeyword || selectedCategory !== 'ALL'
+                ? '검색 조건에 맞는 정보글이 없습니다.'
+                : '등록된 정보글이 없습니다.'}
             </div>
           )}
         </section>
