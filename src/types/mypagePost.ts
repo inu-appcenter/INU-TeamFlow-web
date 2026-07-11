@@ -1,3 +1,5 @@
+import type { InfoPostSummaryResponse } from '@/types/infoPost';
+
 export type MyPostType = 'ALL' | 'RECRUIT' | 'INFO' | 'APPLY' | 'NOTICE';
 
 export interface MyRecruitmentResponse {
@@ -34,5 +36,6 @@ export interface MyTeamNoticeResponse {
 
 export type MyPost =
   | (MyRecruitmentResponse & { type: 'RECRUIT' })
+  | (InfoPostSummaryResponse & { type: 'INFO' })
   | (MyApplicationResponse & { type: 'APPLY' })
   | (MyTeamNoticeResponse & { type: 'NOTICE' });
