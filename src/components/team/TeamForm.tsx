@@ -230,7 +230,7 @@ export default function TeamForm({
 
                           setForm((prev) => ({
                             ...prev,
-                            imageKey: '',
+                            imageUrl: '',
                           }));
 
                           if (fileInputRef.current) {

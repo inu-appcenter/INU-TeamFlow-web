@@ -66,7 +66,7 @@ export default function RecruitmentDetail() {
 
   const isRecruiter = recruitment.isRecruiter;
 
-  const isDisabled = isRecruiter || recruitment.hasApplied || isClosed;
+  const isDisabled = recruitment.hasApplied || isClosed;
 
   const handleDeleteRecruitment = () => {
     if (isDeleting) return;
@@ -220,21 +220,27 @@ export default function RecruitmentDetail() {
 
             <div className="mt-14 border-b-[0.5px] border-[#D6DDE5] sm:mt-20" />
 
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 mb-30 flex justify-center">
               <button
-                disabled={isDisabled}
+                disabled={isRecruiter ? false : isDisabled}
                 onClick={() => {
+                  if (isRecruiter) {
+                    router.push(
+                      `/recruitment/${recruitmentId}/apply/applications`
+                    );
+                    return;
+                  }
                   if (!checkVerified()) return;
                   router.push(`/recruitment/${recruitmentId}/apply`);
                 }}
                 className={`rounded-xl px-5 py-2 text-[14px] transition sm:px-6 sm:text-base ${
-                  isDisabled
+                  !isRecruiter && isDisabled
                     ? 'cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
                     : 'cursor-pointer bg-[#5E92F0] text-white hover:bg-[#5C86EB]'
                 }`}
               >
                 {isRecruiter
-                  ? '내가 쓴 글'
+                  ? '지원자 보기'
                   : recruitment.hasApplied
                     ? '지원 완료'
                     : isClosed
