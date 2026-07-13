@@ -8,6 +8,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
+import { TeamListSkeleton } from '@/components/skeleton';
 import {
   categoryMap,
   categoryColorMap,
@@ -27,8 +28,6 @@ export default function Team() {
 
     return team.category === selectedCategory;
   });
-
-  if (isLoading) return null;
 
   return (
     <main className="h-screen overflow-hidden bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
@@ -79,44 +78,50 @@ export default function Team() {
           </div>
 
           <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 gap-4 pb-32 sm:grid-cols-2">
-              {filteredTeams.map((team) => (
-                <button
-                  key={team.teamId}
-                  onClick={() => router.push(`/team/${team.teamId}`)}
-                  className="z-50 cursor-pointer overflow-hidden rounded-2xl bg-[#F8F9FB] text-left"
-                >
-                  <div
-                    className="h-12"
-                    style={{ backgroundColor: categoryColorMap[team.category] }}
-                  />
+            {isLoading ? (
+              <TeamListSkeleton />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 pb-32 sm:grid-cols-2">
+                {filteredTeams.map((team) => (
+                  <button
+                    key={team.teamId}
+                    onClick={() => router.push(`/team/${team.teamId}`)}
+                    className="z-50 cursor-pointer overflow-hidden rounded-2xl bg-[#F8F9FB] text-left"
+                  >
+                    <div
+                      className="h-12"
+                      style={{
+                        backgroundColor: categoryColorMap[team.category],
+                      }}
+                    />
 
-                  <div className="p-5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h2 className="text-lg font-bold text-[#2C2C2C]">
-                        {team.name}
-                      </h2>
+                    <div className="p-5">
+                      <div className="mb-2 flex items-center justify-between">
+                        <h2 className="text-lg font-bold text-[#2C2C2C]">
+                          {team.name}
+                        </h2>
 
-                      <ChevronRight size={22} strokeWidth={2.5} />
+                        <ChevronRight size={22} strokeWidth={2.5} />
+                      </div>
+
+                      <p className="mb-6 truncate text-sm text-[#9C9C9C]">
+                        {team.description}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <span className="rounded-full bg-[#D6DDE5] px-3 py-1 text-xs font-semibold text-[#3F4852]">
+                          {categoryMap[team.category]}
+                        </span>
+
+                        <span className="text-xs text-[#D4D4D4]">
+                          {team.memberCount}명
+                        </span>
+                      </div>
                     </div>
-
-                    <p className="mb-6 truncate text-sm text-[#9C9C9C]">
-                      {team.description}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-[#D6DDE5] px-3 py-1 text-xs font-semibold text-[#3F4852]">
-                        {categoryMap[team.category]}
-                      </span>
-
-                      <span className="text-xs text-[#D4D4D4]">
-                        {team.memberCount}명
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </Card>
       </section>

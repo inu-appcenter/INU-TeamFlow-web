@@ -37,6 +37,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ScheduleListItem from '@/components/calendar/ScheduleListItem';
 import MonthGridWithEvents from '@/components/calendar/MonthGridWithEvents';
+import { TeamDetailSkeleton } from '@/components/skeleton';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -91,7 +92,7 @@ export default function TeamDetail() {
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
 
-  if (isTeamLoading) return null;
+  if (isTeamLoading) return <TeamDetailSkeleton />;
 
   if (!team) {
     return (

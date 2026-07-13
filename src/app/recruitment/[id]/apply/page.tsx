@@ -83,24 +83,22 @@ export default function RecruitmentApplyPage() {
             </button>
           </div>
 
-          <div className="px-14 py-10 sm:px-16 sm:py-12">
+          <div className="px-8 py-7 sm:px-10 sm:py-12">
             <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">
               {recruitment.title}
             </h1>
-            <div className="mt-8 grid grid-cols-[70px_1fr] gap-y-6 text-[15px]">
+            <div className="mt-7 grid grid-cols-[72px_1fr] items-center gap-y-4 text-[13px] sm:mt-8 sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-[15px]">
               <span className="text-[#989898]">이름</span>
-              <span className="font-semibold">{myInfo?.name ?? '-'}</span>
+              <span className="">{myInfo?.name ?? '-'}</span>
               <span className="text-[#989898]">학과</span>
-              <span className="font-semibold">
+              <span className="">
                 {myInfo ? getDepartmentName(myInfo.department) : '-'}
               </span>
               <span className="text-[#989898]">학번</span>
-              <span className="font-semibold">
-                {myInfo?.studentNumber ?? '-'}
-              </span>
+              <span className="">{myInfo?.studentNumber ?? '-'}</span>
             </div>
             <div className="mt-7 border-b-[0.5px] border-[#D6DDE5] sm:mt-8" />
-            <div className="mt-8">
+            <div className="mt-7">
               <div className="flex flex-col gap-1">
                 <span className="text-[18px] font-semibold text-[#2c2c2c]">
                   지원서를 작성해주세요
@@ -118,7 +116,7 @@ export default function RecruitmentApplyPage() {
                 className="thin-scrollbar mt-4 h-[220px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] p-4 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
               />
             </div>
-            <div className="mt-7 border-b-[0.5px] border-[#D6DDE5] sm:mt-8" />
+
             <div className="mt-8 mb-8 flex justify-center">
               <button
                 onClick={handleSubmit}
