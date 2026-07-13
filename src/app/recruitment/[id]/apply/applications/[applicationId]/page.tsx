@@ -20,7 +20,7 @@ const statusLabelMap: Record<ApplicationStatus, string> = {
 };
 
 const statusColorMap: Record<ApplicationStatus, string> = {
-  WAITING: 'bg-[#EEF1F5] text-[#989898]',
+  WAITING: 'bg-[#EEF1F5] text-[#5E92F0]',
   ACCEPTED: 'bg-[#A7ECA7] text-[#1F4D1A]',
   DECLINED: 'bg-[#FFD3D3] text-[#B32424]',
   CANCELLED: 'bg-[#EEF1F5] text-[#989898]',
@@ -49,7 +49,7 @@ export default function ApplicationDetail() {
     );
   }
 
-  const isWaiting = application.status === 'WAITING';
+  const isWaiting = application.applicationStatus === 'WAITING';
 
   const handleUpdateStatus = (status: 'ACCEPTED' | 'DECLINED') => {
     if (isPending) return;
@@ -85,24 +85,26 @@ export default function ApplicationDetail() {
             </button>
           </div>
 
-          <div className="px-8 py-7 sm:px-10 sm:py-12">
-            <div className="flex items-center justify-between">
-              <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">
-                {application.applicantName}님의 지원서
-              </h1>
-
+          <div className="px-8 py-7 sm:px-10 sm:py-10">
+            <div className="flex-1 items-center">
               <span
-                className={`rounded-xl px-3 py-1 text-[11px] font-medium sm:text-sm ${statusColorMap[application.status]}`}
+                className={`rounded-xl px-3 py-1 text-[12px] font-medium sm:text-[16px] ${statusColorMap[application.applicationStatus]}`}
               >
-                {statusLabelMap[application.status]}
+                {statusLabelMap[application.applicationStatus]}
               </span>
             </div>
 
-            <p className="mt-2 text-[13px] text-[#989898] sm:text-[15px]">
+            <p className="mt-4 text-xl font-semibold text-[#2c2c2c]">
               {application.recruitmentTitle}
             </p>
 
-            <div className="mt-7 grid grid-cols-[72px_1fr] items-center gap-y-4 text-[13px] sm:mt-8 sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-[15px]">
+            <div className="mt-7 grid grid-cols-[72px_1fr] items-center gap-y-4 text-[13px] sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-[15px]">
+              <span className="text-[#989898]">이름</span>
+              <span>{application.applicantName}</span>
+              <span className="text-[#989898]">학과</span>
+              <span>학과</span>
+              <span className="text-[#989898]">학번</span>
+              <span>학번</span>
               <span className="text-[#989898]">지원일</span>
               <span className="">{formatDate(application.createdAt)}</span>
 
@@ -116,7 +118,7 @@ export default function ApplicationDetail() {
               )}
             </div>
 
-            <div className="mt-7 border-b-[0.5px] border-[#D6DDE5] sm:mt-8" />
+            <div className="mt-7 border-b-[0.5px] border-[#D6DDE5]" />
 
             <div className="mt-7">
               <p className="thin-scrollbar mt-4 w-full text-[#2C2C2C]">
@@ -124,12 +126,14 @@ export default function ApplicationDetail() {
               </p>
             </div>
 
+            <div className="mt-7 border-b-[0.5px] border-[#D6DDE5]" />
+
             {application.isRecruiter && isWaiting && (
               <div className="mt-8 mb-8 flex justify-center gap-3">
                 <button
                   onClick={() => handleUpdateStatus('DECLINED')}
                   disabled={isPending}
-                  className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-6 py-2 text-base font-semibold text-[#E22222] transition disabled:cursor-not-allowed disabled:opacity-50"
+                  className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-6 py-2 text-base font-semibold text-[#E22222] transition disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
@@ -144,7 +148,7 @@ export default function ApplicationDetail() {
                 <button
                   onClick={() => handleUpdateStatus('ACCEPTED')}
                   disabled={isPending}
-                  className="rounded-xl bg-[#5E92F0] px-6 py-2 text-base text-white transition hover:bg-[#4F84E8] disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
+                  className="cursor-pointer rounded-xl bg-[#5E92F0] px-6 py-2 text-base text-white disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">

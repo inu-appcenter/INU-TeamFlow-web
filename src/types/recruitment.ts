@@ -67,7 +67,7 @@ export interface ApplicationCreateRequest {
 export interface ApplicationSummaryResponse {
   applicationId: number;
   introduction: string;
-  status: ApplicationStatus;
+  applicationStatus: ApplicationStatus;
   applicantName: string;
   createdAt: string;
   respondedAt: string | null;
@@ -75,7 +75,7 @@ export interface ApplicationSummaryResponse {
 
 export interface MyApplicationSummaryResponse {
   applicationId: number;
-  status: ApplicationStatus;
+  applicationStatus: ApplicationStatus;
   recruitmentTitle: string;
   category: RecruitmentCategory;
   announcementTitle: string | null;
@@ -86,7 +86,7 @@ export interface MyApplicationSummaryResponse {
 
 export interface ApplicationDetailResponse {
   applicationId: number;
-  status: ApplicationStatus;
+  applicationStatus: ApplicationStatus;
   introduction: string;
   recruitmentTitle: string;
   category: RecruitmentCategory;
@@ -104,7 +104,7 @@ export interface ApplicationStatusUpdateRequest {
 
 export interface ApplicationStatusResponse {
   applicationId: number;
-  status: ApplicationStatus;
+  applicationStatus: ApplicationStatus;
   respondedAt: string | null;
 }
 
