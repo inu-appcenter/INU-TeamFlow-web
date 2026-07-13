@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ChevronLeft, Ellipsis, Pin, X } from 'lucide-react';
 import { useState } from 'react';
-
+import NoticeDetailSkeleton from '@/components/skeleton/NoticeDetailSkeleton';
 import Card from '@/components/main/Card';
 import { useTeamDetail } from '@/hooks/useTeamQuery';
 import {
@@ -45,7 +45,17 @@ export default function TeamNoticeDetail() {
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <NoticeDetailSkeleton
+        onBack={() =>
+          from === 'home'
+            ? router.push('/notice')
+            : router.push(`/team/${teamId}/notice`)
+        }
+      />
+    );
+  }
 
   if (!notice) {
     return (
