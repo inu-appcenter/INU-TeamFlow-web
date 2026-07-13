@@ -20,7 +20,7 @@ const statusLabelMap: Record<ApplicationStatus, string> = {
 };
 
 const statusColorMap: Record<ApplicationStatus, string> = {
-  WAITING: 'bg-[#EEF1F5] text-[#989898]',
+  WAITING: 'bg-[#EEF1F5] text-[#5E92F0]',
   ACCEPTED: 'bg-[#A7ECA7] text-[#1F4D1A]',
   DECLINED: 'bg-[#FFD3D3] text-[#B32424]',
   CANCELLED: 'bg-[#EEF1F5] text-[#989898]',
@@ -66,13 +66,7 @@ export default function RecruitmentApplications() {
             </h1>
           </div>
 
-          <div className="px-8 py-7 sm:px-10 sm:py-10">
-            {recruitment && (
-              <p className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">
-                {recruitment.title}
-              </p>
-            )}
-
+          <div className="px-6 py-4 sm:py-4">
             <div className="mt-2 flex items-center gap-2 text-[13px] text-[#989898]">
               <span>총 지원자 수 :</span>{' '}
               {data && <span>{data.totalElements}</span>}
@@ -87,7 +81,7 @@ export default function RecruitmentApplications() {
                 아직 지원자가 없습니다
               </p>
             ) : (
-              <ul className="mt-4 flex flex-col gap-2">
+              <ul className="mt-3 flex flex-col gap-2">
                 {applications.map((application) => (
                   <li key={application.applicationId}>
                     <button
@@ -96,27 +90,27 @@ export default function RecruitmentApplications() {
                           `/recruitment/${recruitmentId}/apply/applications/${application.applicationId}`
                         )
                       }
-                      className="w-full cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-4 text-left"
+                      className="w-full cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]/60 px-5 py-4 text-left"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`rounded-xl px-3 py-1 text-[11px] font-medium sm:text-sm ${statusColorMap[application.applicationStatus]}`}
+                        >
+                          {statusLabelMap[application.applicationStatus]}
+                        </span>
                         <span className="font-semibold text-[#2C2C2C]">
                           {application.applicantName}
                         </span>
-
-                        <span
-                          className={`rounded-xl px-3 py-1 text-[11px] font-medium sm:text-sm ${statusColorMap[application.status]}`}
-                        >
-                          {statusLabelMap[application.status]}
-                        </span>
                       </div>
+                      <span className="flex items-center justify-between">
+                        <p className="mt-1 line-clamp-1 text-[13px] text-[#989898] sm:text-sm">
+                          {application.introduction}
+                        </p>
 
-                      <p className="mt-1 line-clamp-1 text-[13px] text-[#666] sm:text-sm">
-                        {application.introduction}
-                      </p>
-
-                      <p className="mt-1 text-[11px] text-[#B0B0B0] sm:text-xs">
-                        {formatDate(application.createdAt)}
-                      </p>
+                        <p className="mt-1 text-[11px] text-[#B0B0B0] sm:text-xs">
+                          {formatDate(application.createdAt)}
+                        </p>
+                      </span>
                     </button>
                   </li>
                 ))}
