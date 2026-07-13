@@ -1,26 +1,25 @@
 'use client';
 
-import {
-  SCHEDULE_COLORS,
-  EVENT_COLOR_MAP,
-  type ScheduleColor,
-} from '@/constants/scheduleColor';
+import type { ScheduleColor } from '@/constants/scheduleColor';
 import type { Schedule, RecurrenceEditScope } from '@/types/event';
-import { Repeat, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 
 import CalendarDatePicker from './CalendarDatePicker';
+import ColorPicker from './ColorPicker';
+import ScheduleTypeToggle from './ScheduleTypeToggle';
+import AllDayToggle from './AllDayToggle';
+import RepeatSettings from './RepeatSettings';
+import TimeRangeInputs from './TimeRangeInputs';
+import {
+  DAY_NUMBER_TO_BY_DAY,
+  BY_DAY_TO_DAY_NUMBER,
+  type ByDay,
+} from '@/utils/date/byDay';
+import { createDateTime } from '@/utils/date/createDateTime';
 
 type RepeatType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
-type ByDay =
-  | 'MONDAY'
-  | 'TUESDAY'
-  | 'WEDNESDAY'
-  | 'THURSDAY'
-  | 'FRIDAY'
-  | 'SATURDAY'
-  | 'SUNDAY';
 
 interface CalendarEditModalProps {
   open: boolean;
@@ -30,27 +29,6 @@ interface CalendarEditModalProps {
   onDelete: (eventId: number, scope: RecurrenceEditScope) => void;
 }
 
-const days = ['일', '월', '화', '수', '목', '금', '토'];
-
-const dayNumberToByDay: Record<number, ByDay> = {
-  0: 'SUNDAY',
-  1: 'MONDAY',
-  2: 'TUESDAY',
-  3: 'WEDNESDAY',
-  4: 'THURSDAY',
-  5: 'FRIDAY',
-  6: 'SATURDAY',
-};
-
-const byDayToDayNumber: Record<ByDay, number> = {
-  SUNDAY: 0,
-  MONDAY: 1,
-  TUESDAY: 2,
-  WEDNESDAY: 3,
-  THURSDAY: 4,
-  FRIDAY: 5,
-  SATURDAY: 6,
-};
 const defaultColor: ScheduleColor = 'SUN';
 
 const getInitialScheduleType = (schedule: Schedule | null): ScheduleType => {
@@ -82,7 +60,7 @@ const getInitialForm = (schedule: Schedule | null) => ({
 const getInitialRepeatDays = (schedule: Schedule | null) => {
   if (schedule?.recurrence?.byDay) {
     return schedule.recurrence.byDay.map(
-      (day) => byDayToDayNumber[day as ByDay]
+      (day) => BY_DAY_TO_DAY_NUMBER[day as ByDay]
     );
   }
 
@@ -91,10 +69,6 @@ const getInitialRepeatDays = (schedule: Schedule | null) => {
   }
 
   return [];
-};
-
-const createDateTime = (date: string, time: string) => {
-  return `${date}T${time}`;
 };
 
 // 반복 일정인지 여부 (범위 선택 팝업이 필요한지 판단)
@@ -110,7 +84,6 @@ export default function CalendarEditModal({
   onDelete,
 }: CalendarEditModalProps) {
   const [isClosing, setIsClosing] = useState(false);
-  const [isColorOpen, setIsColorOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   // 반복 일정 수정/삭제 시 범위(이 일정만 / 이후 전체 / 전체) 선택 팝업
@@ -138,7 +111,6 @@ export default function CalendarEditModal({
 
     setTimeout(() => {
       setIsClosing(false);
-      setIsColorOpen(false);
       setIsDeleteConfirmOpen(false);
       setIsScopeModalOpen(false);
       setScopeAction(null);
@@ -185,7 +157,7 @@ export default function CalendarEditModal({
             intervalValue: 1,
             byDay:
               repeatType === 'WEEKLY'
-                ? repeatDays.map((day) => dayNumberToByDay[day] as string)
+                ? repeatDays.map((day) => DAY_NUMBER_TO_BY_DAY[day] as string)
                 : null,
             byMonthDay:
               repeatType === 'MONTHLY'
@@ -304,147 +276,34 @@ export default function CalendarEditModal({
               className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50 active:scale-95"
             />
 
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsColorOpen((prev) => !prev)}
-                className="flex h-[55px] w-[100px] items-center justify-center gap-2 rounded-2xl bg-[#F6F8FA] text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-90"
-              >
-                <span
-                  className="h-6 w-6 rounded-full"
-                  style={{ backgroundColor: EVENT_COLOR_MAP[form.color] }}
-                />
-                색
-              </button>
-
-              {isColorOpen && (
-                <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
-                  {SCHEDULE_COLORS.map((color) => {
-                    const isSelected = form.color === color;
-
-                    return (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => {
-                          setForm((prev) => ({
-                            ...prev,
-                            color,
-                          }));
-                          setIsColorOpen(false);
-                        }}
-                        className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA] ${
-                          isSelected ? 'bg-[#F6F8FA]' : ''
-                        }`}
-                      >
-                        <span
-                          className="h-7 w-full rounded-full"
-                          style={{ backgroundColor: EVENT_COLOR_MAP[color] }}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <ColorPicker
+              value={form.color}
+              onChange={(color) => setForm((prev) => ({ ...prev, color }))}
+            />
           </div>
 
-          <div className="mb-5 flex gap-2">
-            {(['NORMAL', 'PERIOD', 'REPEAT'] as ScheduleType[]).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => handleScheduleTypeChange(type)}
-                className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                  scheduleType === type
-                    ? 'border-[0.5px] border-[#5E92F0] bg-[#5E92F0] text-white'
-                    : 'border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C]'
-                }`}
-              >
-                {type === 'NORMAL'
-                  ? '일반'
-                  : type === 'PERIOD'
-                    ? '기간'
-                    : '반복'}
-              </button>
-            ))}
-          </div>
-
+          <ScheduleTypeToggle
+            value={scheduleType}
+            onChange={handleScheduleTypeChange}
+            disabled
+          />
           {scheduleType !== 'PERIOD' && (
-            <label className="mb-3 flex items-center gap-2">
-              <span className="text-[14px] font-medium text-[#2C2C2C]">
-                하루종일
-              </span>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    isAllDay: !prev.isAllDay,
-                  }))
-                }
-                className={`relative h-7 w-12 rounded-full transition-colors duration-300 ease-in-out ${
-                  form.isAllDay ? 'bg-[#5E92F0]' : 'bg-[#D6DDE5]'
-                }`}
-              >
-                <span
-                  className={`absolute top-1 left-0 h-5 w-5 rounded-full bg-white transition-all duration-300 ease-in-out ${
-                    form.isAllDay ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </label>
+            <AllDayToggle
+              checked={form.isAllDay}
+              onChange={(checked) =>
+                setForm((prev) => ({ ...prev, isAllDay: checked }))
+              }
+            />
           )}
 
           {scheduleType === 'REPEAT' && (
-            <>
-              <div className="mb-3 flex h-[55px] items-center justify-between rounded-2xl bg-[#F6F8FA] px-6 transition-all duration-150 outline-none active:scale-95">
-                <span className="flex items-center gap-3 text-[16px] font-semibold text-[#2C2C2C]">
-                  <Repeat size={18} /> 반복 유형
-                </span>
-
-                <select
-                  value={repeatType}
-                  onChange={(e) => setRepeatType(e.target.value as RepeatType)}
-                  className="bg-transparent text-[16px] font-semibold text-[#2C2C2C] transition-all duration-150 outline-none active:scale-95"
-                >
-                  <option value="DAILY">매일</option>
-                  <option value="WEEKLY">매주</option>
-                  <option value="MONTHLY">매월</option>
-                  <option value="YEARLY">매년</option>
-                </select>
-              </div>
-
-              {repeatType === 'WEEKLY' && (
-                <div className="mb-3 flex justify-between gap-2">
-                  {days.map((day, index) => {
-                    const isSelected = repeatDays.includes(index);
-
-                    return (
-                      <button
-                        key={day}
-                        type="button"
-                        onClick={() =>
-                          setRepeatDays((prev) =>
-                            prev.includes(index)
-                              ? prev.filter((d) => d !== index)
-                              : [...prev, index]
-                          )
-                        }
-                        className={`flex h-12 w-12 items-center justify-center rounded-full text-[16px] font-semibold transition-all duration-150 outline-none active:scale-90 sm:h-15 sm:w-15 ${
-                          isSelected
-                            ? 'bg-[#5E92F0] text-white'
-                            : 'bg-[#F6F8FA] text-[#2C2C2C]'
-                        }`}
-                      >
-                        {day}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </>
+            <RepeatSettings
+              repeatType={repeatType}
+              onRepeatTypeChange={setRepeatType}
+              repeatDays={repeatDays}
+              onRepeatDaysChange={setRepeatDays}
+              includeDailyOption
+            />
           )}
 
           <CalendarDatePicker
@@ -483,31 +342,16 @@ export default function CalendarEditModal({
           )}
 
           {!form.isAllDay && scheduleType !== 'PERIOD' && (
-            <div className="mb-3 flex gap-3">
-              <input
-                type="time"
-                value={form.startTime}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    startTime: e.target.value,
-                  }))
-                }
-                className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
-              />
-
-              <input
-                type="time"
-                value={form.endTime}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    endTime: e.target.value,
-                  }))
-                }
-                className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
-              />
-            </div>
+            <TimeRangeInputs
+              startTime={form.startTime}
+              endTime={form.endTime}
+              onStartTimeChange={(time) =>
+                setForm((prev) => ({ ...prev, startTime: time }))
+              }
+              onEndTimeChange={(time) =>
+                setForm((prev) => ({ ...prev, endTime: time }))
+              }
+            />
           )}
 
           <textarea
