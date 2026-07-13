@@ -50,9 +50,9 @@ export default function ScheduleDetailPanel({
 
       <button
         onClick={onAddClick}
-        className="mt-3 flex h-[58px] shrink-0 items-center gap-2 rounded-[10px] bg-[#EEF1F5] px-5 text-[14px] font-semibold text-[#2C2C2C]/60 transition-all duration-150 outline-none active:scale-90"
+        className="mt-3 flex h-[58px] shrink-0 items-center gap-2 rounded-[10px] bg-[#EEF1F5] px-5 text-[16px] font-semibold text-[#2C2C2C]/60 transition-all duration-150 outline-none active:scale-90"
       >
-        <Plus size={16} />
+        <Plus size={18} strokeWidth={2.5} />
         일정 추가
       </button>
     </>

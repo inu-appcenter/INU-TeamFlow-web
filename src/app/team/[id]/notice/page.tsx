@@ -186,7 +186,7 @@ export default function TeamNotice() {
                   href={`/team/${teamId}/notice/${notice.noticeId}?from=team`}
                 >
                   <div
-                    className={`h-[85px] items-center rounded-xl border-[0.5px] bg-[#F6F8FA] py-4 ${
+                    className={`h-[85px] items-center rounded-xl border-[0.5px] bg-[#F6F8FA]/60 py-4 ${
                       notice.isRead
                         ? 'border-[#D6DDE5] px-5'
                         : 'border-l-10 border-[#D6DDE5] border-l-[#5E92F0] px-4'
@@ -225,7 +225,7 @@ export default function TeamNotice() {
               )}
             </section>
 
-            {totalPages > 1 && (
+            {totalPages > 0 && (
               <div className="mt-8 flex items-center justify-center gap-2 pb-6">
                 <button
                   type="button"
