@@ -226,7 +226,7 @@ export default function TeamNotice() {
             </section>
 
             {totalPages > 0 && (
-              <div className="mt-8 flex items-center justify-center gap-2 pb-6">
+              <div className="mt-8 mb-6 flex items-center justify-center gap-2 pb-6">
                 <button
                   type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}

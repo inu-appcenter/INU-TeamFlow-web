@@ -119,7 +119,7 @@ export default function RecruitmentApplications() {
 
             {/* 페이지네이션 */}
             {data && data.totalPages > 0 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
+              <div className="mt-8 mb-6 flex items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}

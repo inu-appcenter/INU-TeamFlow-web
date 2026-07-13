@@ -4,6 +4,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Ellipsis } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Card from '@/components/main/Card';
+import RecruitmentDetailSkeleton from '@/components/skeleton/RecruitmentDetailSkeleton';
 import {
   useRecruitmentDetail,
   useDeleteRecruitment,
@@ -45,7 +46,11 @@ export default function RecruitmentDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <RecruitmentDetailSkeleton onBack={() => router.push('/recruitment')} />
+    );
+  }
   if (!recruitment) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">

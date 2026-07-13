@@ -16,6 +16,7 @@ import { useCalendarGrid } from '@/hooks/useCalendarGrid';
 import { useCalendarWeeks } from '@/hooks/useCalendarWeeks';
 import { useTeamMonthSchedules } from '@/hooks/useTeamMonthSchedules';
 import { categoryMap, categoryColorMap } from '@/constants/category';
+import { useCreateInvitation } from '@/hooks/useTeamInvitationQuery';
 import {
   useCreateTeamEvent,
   useUpdateTeamEvent,
@@ -69,6 +70,8 @@ export default function TeamDetail() {
   const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
   const { mutateAsync: deleteEvent } = useDeleteTeamEvent(teamId);
   const { mutateAsync: createVote } = useCreateVote(teamId);
+  const { mutateAsync: createInvitation, isPending: isInviting } =
+    useCreateInvitation(teamId);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
   const [selectedDate, setSelectedDate] = useState(today);
   const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
@@ -128,15 +131,14 @@ export default function TeamDetail() {
     setSelectedDate(next);
   };
 
-  const handleInvite = (studentNumber: string) => {
-    const request = {
-      studentNumber,
-    };
-
-    console.log('초대 요청', request);
-
-    setIsInviteOpen(false);
-    setKeyword('');
+  const handleInvite = async (studentNumber: string) => {
+    try {
+      await createInvitation({ studentNumber });
+      setIsInviteOpen(false);
+      setKeyword('');
+    } catch (err) {
+      console.error('초대 요청 실패', err);
+    }
   };
 
   const handleToggleSchedule = async (target: Schedule) => {
@@ -405,7 +407,8 @@ export default function TeamDetail() {
 
                             <button
                               onClick={() => handleInvite(user.studentNumber)}
-                              className="cursor-pointer rounded-full bg-[#5E92F0] px-2.5 py-1 text-[10px] text-white"
+                              disabled={isInviting}
+                              className="cursor-pointer rounded-full bg-[#5E92F0] px-2.5 py-1 text-[10px] text-white disabled:opacity-50"
                             >
                               추가
                             </button>
