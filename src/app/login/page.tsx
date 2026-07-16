@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import type { ComponentProps } from 'react';
 
 import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
-import { LOGIN_TEXT, MESSAGES } from '@/constants/messages';
+import { LOGIN_TEXT } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { useLogin } from '@/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
@@ -53,8 +54,11 @@ export default function Login() {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit: ComponentProps<'form'>['onSubmit'] = (e) => {
     e.preventDefault();
+
+    if (isLoginPending) return;
+
     login();
   };
   const handleCapsLock = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -103,6 +107,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={handleCapsLock}
               onKeyUp={handleCapsLock}
+              onBlur={() => setIsCapsLockOn(false)}
               fieldName={LOGIN_TEXT.PASSWORD_LABEL}
               typeOption={isPasswordVisible ? 'text' : 'password'}
               placeHolder={LOGIN_TEXT.PASSWORD_PLACEHOLDER}
@@ -124,6 +129,7 @@ export default function Login() {
                 </button>
               }
             />
+
             {isCapsLockOn && (
               <div className="mx-7.5 -mt-3 mb-4 flex items-center gap-2 text-sm text-[#EF4444]">
                 <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#FDECEC] text-xs font-bold">
