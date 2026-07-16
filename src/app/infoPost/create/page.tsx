@@ -34,7 +34,6 @@ export default function InfoPostCreatePage() {
 
       router.push(`/infoPost/${createdInfoPost.infoPostId}`);
     } catch (error) {
-      console.error('정보글 생성 실패', error);
       throw error;
     }
   };

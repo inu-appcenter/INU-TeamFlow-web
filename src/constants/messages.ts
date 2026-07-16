@@ -1,5 +1,5 @@
 export const MESSAGES = {
-  SIGN_IN: {
+  LOGIN: {
     ERROR: '입력하신 정보가 틀렸습니다',
     SUCCESS: '로그인 성공',
   },
@@ -37,10 +37,10 @@ export const REGISTER_TEXT = {
   DEPARTMENT_LABEL: '학과',
   REGISTER_BUTTON: '가입하기',
 };
-export const SIGN_IN_TEXT = {
+export const LOGIN_TEXT = {
   TITLE: '로그인',
   USERNAME_LABEL: '아이디',
-  USERNAME_PLACEHOLDER: 'example123',
+  USERNAME_PLACEHOLDER: '아이디를 입력해주세요',
   PASSWORD_LABEL: '비밀번호',
   PASSWORD_PLACEHOLDER: '비밀번호를 입력해주세요',
   NO_ACCOUNT: '계정이 없으신가요? ',
