@@ -3,7 +3,7 @@ import axios, {
   type AxiosResponse,
   type AxiosError,
 } from 'axios';
-
+import { ROUTES } from '@/constants/routes';
 const axiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1`,
   headers: {
@@ -20,12 +20,21 @@ axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 });
 
 axiosInstance.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const requestUrl = error.config?.url;
+
+    const isLoginRequest = requestUrl?.includes('/auth/login');
+
+    if (status === 401 && !isLoginRequest) {
       localStorage.removeItem('accessToken');
-      window.location.href = '/signin';
+
+      if (window.location.pathname !== ROUTES.LOGIN) {
+        window.location.href = ROUTES.LOGIN;
+      }
     }
+
     return Promise.reject(error);
   }
 );

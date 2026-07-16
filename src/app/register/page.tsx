@@ -85,25 +85,25 @@ export default function Register() {
       return;
     }
 
-signupMutate(
-  {
-    username: userName,
-    password,
-    email,
-    name,
-    department,
-    imageKey: null,
-  },
-  {
-    onSuccess: () => {
-      alert('회원가입이 완료되었습니다.');
-      router.push(ROUTES.SIGNIN);
-    },
-    onError: () => {
-      alert('회원가입에 실패했습니다.');
-    },
-  }
-);
+    signupMutate(
+      {
+        username: userName,
+        password,
+        email,
+        name,
+        department,
+        imageKey: null,
+      },
+      {
+        onSuccess: () => {
+          alert('회원가입이 완료되었습니다.');
+          router.push(ROUTES.LOGIN);
+        },
+        onError: () => {
+          alert('회원가입에 실패했습니다.');
+        },
+      }
+    );
   };
 
   return (
@@ -111,7 +111,7 @@ signupMutate(
       <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5">
         <Card className="animate-modal-pop flex flex-col overflow-hidden p-0 transition-all duration-200">
           <button
-            onClick={() => router.push('/signin')}
+            onClick={() => router.push(ROUTES.LOGIN)}
             className="mt-4 ml-2 w-7 cursor-pointer text-[#2C2C2C] transition-all duration-150 active:scale-90"
           >
             <ChevronLeft

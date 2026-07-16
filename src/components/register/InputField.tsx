@@ -18,12 +18,15 @@ interface InputFieldProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
   onClick?: () => void;
-  fieldName: string; //Field 명칭을 알기 위해 필요
-  typeOption?: string; //isSelect : true일때만 사용
-  placeHolder?: string; //isSelect : true일때만 사용
-  check?: boolean; //isSelect : true일때만 사용
-  isSelect?: boolean; //list 제시 후 선택하는 칸
-  isInput?: boolean; //input 형태로 사용자가 입력하는 칸
+  fieldName: string;
+  typeOption?: string;
+  placeHolder?: string;
+  check?: boolean;
+  isSelect?: boolean;
+  isInput?: boolean;
+  rightElement?: React.ReactNode;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeyUp?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export default function InputField({
@@ -34,8 +37,11 @@ export default function InputField({
   isSelect,
   isInput,
   value,
+  rightElement,
   onChange,
   onClick,
+  onKeyDown,
+  onKeyUp,
 }: InputFieldProps) {
   const [selectedCollege, setSelectedCollege] = useState('');
   const currentCollege = colleges.find(
@@ -49,25 +55,28 @@ export default function InputField({
       </label>
 
       {isInput ? (
-        <div className="relative w-full">
-          <input
-            value={value}
-            onChange={onChange}
-            type={typeOption}
-            placeholder={placeHolder}
-            className="mx-7.5 mb-6 h-13.25 w-[calc(100%-60px)] rounded-full bg-[#F6F8FA] px-6 text-[15px] text-[#2c2c2c] outline-none placeholder:text-[#2c2c2c] max-[640px]:p-2 max-[640px]:text-[13px]"
-          />
-          {check ? (
-            <button
-              onClick={onClick}
-              type="button"
-              className="absolute top-[26.5px] right-12 -translate-y-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2 text-sm text-[14px] text-white transition hover:bg-[#5C86EB] max-[640px]:px-3 max-[640px]:py-1 max-[640px]:text-[12px]"
-            >
-              {INPUT_FIELD_TEXT.DUPLICATION_BUTTON}
-            </button>
-          ) : undefined}
+        <div className="mx-7.5 mb-6">
+          <div className="relative">
+            <input
+              value={value}
+              onChange={onChange}
+              onKeyDown={onKeyDown}
+              onKeyUp={onKeyUp}
+              type={typeOption}
+              placeholder={placeHolder}
+              className={`h-13.25 w-full rounded-full bg-[#F6F8FA] px-6 text-[15px] text-[#2c2c2c] outline-none placeholder:text-[#2c2c2c] max-[640px]:p-2 max-[640px]:text-[13px] ${
+                rightElement ? 'pr-12' : ''
+              }`}
+            />
+
+            {rightElement ? (
+              <div className="absolute top-1/2 right-5 -translate-y-1/2">
+                {rightElement}
+              </div>
+            ) : null}
+          </div>
         </div>
-      ) : undefined}
+      ) : null}
 
       {isSelect ? (
         <div className="relative mx-7.5 mb-6 w-full">

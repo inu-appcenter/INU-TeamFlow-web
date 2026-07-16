@@ -165,7 +165,7 @@ export default function MyPage() {
 
   const logout = () => {
     localStorage.removeItem('accessToken');
-    router.push('/signin');
+    router.push('/login');
   };
 
   if (isLoading) {
@@ -206,7 +206,6 @@ export default function MyPage() {
           >
             <ChevronLeft size={28} strokeWidth={2.5} />
           </button>
-
 
           <h1 className="text-[26px] font-bold text-[#2C2C2C]">마이페이지</h1>
         </div>
