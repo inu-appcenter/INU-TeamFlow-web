@@ -11,6 +11,7 @@ import {
 import { formatDate } from '@/utils/date/formatDate';
 import { categoryColorMap } from '@/constants/category';
 import type { ApplicationStatus } from '@/types/recruitment';
+import { ApplicationDetailSkeleton } from '@/components/skeleton';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',
@@ -37,7 +38,7 @@ export default function ApplicationDetail() {
   const { data: application, isLoading } = useApplicationDetail(applicationId);
   const { mutate: updateStatus, isPending } = useUpdateApplicationStatus();
 
-  if (isLoading) return null;
+  if (isLoading) return <ApplicationDetailSkeleton />;
 
   if (!application) {
     return (
@@ -60,11 +61,11 @@ export default function ApplicationDetail() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
-            className="flex h-16 items-center justify-between px-6 sm:h-18"
+            className="flex h-18 items-center justify-between px-6"
             style={{
               backgroundColor: recruitment
                 ? (categoryColorMap[recruitment.category] ?? '#E9E9E9')
@@ -77,11 +78,7 @@ export default function ApplicationDetail() {
               }
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft
-                size={24}
-                strokeWidth={2.5}
-                className="sm:h-7 sm:w-7"
-              />
+              <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
             </button>
           </div>
 

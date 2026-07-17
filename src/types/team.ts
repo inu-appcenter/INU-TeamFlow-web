@@ -29,6 +29,7 @@ export interface TeamMemberResponse {
   userId: number;
   username: string;
   teamRole: TeamRole;
+  department: string;
 }
 
 export interface TeamCreateRequest {

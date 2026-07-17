@@ -9,7 +9,7 @@ import type {
   TeamInvitationStatusUpdateRequest,
   InvitationDirection,
 } from '@/types/invitation';
-import { teamKeys } from '@/hooks/useTeamQuery';
+import { teamKeys } from '@/hooks/team/useTeamQuery';
 
 export const invitationKeys = {
   all: () => ['invitations'] as const,

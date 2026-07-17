@@ -28,7 +28,7 @@ const navItems = [
   {
     icon: MessagesSquare,
     label: '채팅',
-    href: '/chatting',
+    href: '/chat',
   },
 
   {

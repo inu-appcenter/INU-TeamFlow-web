@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTeamEvents } from '@/hooks/useEventQuery';
+import { useTeamEvents } from '@/hooks/calendar/useEventQuery';
 
 export function useTeamMonthSchedules(
   teamId: number,

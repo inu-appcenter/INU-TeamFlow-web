@@ -14,6 +14,7 @@ import { formatDate } from '@/utils/date/formatDate';
 import { getDday } from '@/utils/date/getDday';
 import { categoryMap, categoryColorMap } from '@/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
 
 export default function RecruitmentDetail() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export default function RecruitmentDetail() {
     useDeleteRecruitment();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
+    useCreateDirectChatRoom();
 
   const { errorMessage, showErrorMessage, setErrorMessage } = useErrorToast(
     1800,
@@ -61,6 +64,13 @@ export default function RecruitmentDetail() {
     );
   }
 
+  const handleStartDirectChat = async () => {
+    const room = await createDirectRoom(recruitment.recruiterId);
+    router.push(
+      `/chat/${room.chatRoomId}?roomName=${encodeURIComponent(room.roomName)}&roomType=${room.chatRoomType}`
+    );
+  };
+
   const hasAnnouncement =
     recruitment.announcementId !== null &&
     recruitment.announcementId !== undefined &&
@@ -83,17 +93,17 @@ export default function RecruitmentDetail() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
       {errorMessage && (
         <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
           {errorMessage}
         </div>
       )}
 
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
-            className="flex h-16 items-center justify-between px-6 sm:h-18"
+            className="flex h-18 items-center justify-between px-6"
             style={{
               backgroundColor:
                 categoryColorMap[recruitment.category] ?? '#E9E9E9',
@@ -103,11 +113,7 @@ export default function RecruitmentDetail() {
               onClick={() => router.push('/recruitment')}
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft
-                size={24}
-                strokeWidth={2.5}
-                className="sm:h-7 sm:w-7"
-              />
+              <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
             </button>
 
             <div className="relative">
@@ -206,9 +212,20 @@ export default function RecruitmentDetail() {
               </span>
 
               <span className="text-[#989898]">작성자</span>
-              <span className="text-[#2C2C2C]">
-                {recruitment.recruiterName}
-              </span>
+              <div className="flex items-center gap-4">
+                <span className="text-[#2C2C2C]">
+                  {recruitment.recruiterName}
+                </span>
+                {!isRecruiter && (
+                  <button
+                    onClick={handleStartDirectChat}
+                    disabled={isCreatingRoom}
+                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-3 py-0.5 text-[11px] text-[#2c2c2c] transition hover:text-[#5E92F0] disabled:opacity-50 sm:text-sm"
+                  >
+                    1:1 채팅
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mt-7 border-b-[0.5px] border-[#D6DDE5] sm:mt-8" />

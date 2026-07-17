@@ -100,12 +100,12 @@ export default function VoteForm({
           </div>
 
           {/* 슬롯 */}
-          {voteDates.map((date, dateIndex) => (
+          {voteDates.map((date) => (
             <div key={date} className="flex flex-col gap-1">
-              {voteHours.map((hour, hourIndex) => {
+              {voteHours.map((hour) => {
                 const minutes = isAllDay ? ['00'] : ['00', '30'];
 
-                return minutes.map((minute, minuteIndex) => {
+                return minutes.map((minute) => {
                   const slot = getSlot(date, hour, minute);
 
                   const isSelected = slot

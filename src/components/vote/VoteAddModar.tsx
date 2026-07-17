@@ -7,7 +7,7 @@ import {
 } from '@/constants/scheduleColor';
 import { useEffect, useState, useRef } from 'react';
 import { X, ChevronDown } from 'lucide-react';
-
+import { getDepartmentName } from '@/utils/getDepartmentName';
 import Checkbox from '../common/Checkbox';
 import VoteDatePicker from '@/components/vote/VoteDatePicker';
 
@@ -34,6 +34,7 @@ interface TeamMember {
   userId: number;
   username: string;
   teamRole: string;
+  department: string;
 }
 
 interface VoteScheduleForm {
@@ -155,8 +156,6 @@ export default function VoteAddModal({
 
     setStep(2);
   };
-
-  const isAllDay = form.isAllDay;
 
   const allSelected =
     members.length > 0 &&
@@ -382,8 +381,8 @@ export default function VoteAddModal({
 
             <div className="grid grid-cols-10 gap-3">
               <div className="col-span-6">
-                <div className="thin-scrollbar h-[400px] overflow-y-auto rounded-2xl bg-[#F6F8FA] px-6 py-4">
-                  <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="thin-scrollbar h-[400px] overflow-y-auto rounded-2xl bg-[#F6F8FA] py-4">
+                  <div className="mb-3 flex items-center justify-between gap-3 px-6">
                     <Checkbox
                       checked={allSelected}
                       onChange={handleToggleAll}
@@ -402,7 +401,7 @@ export default function VoteAddModal({
                   {filteredMembers.map((member) => (
                     <label
                       key={member.teamMemberId}
-                      className="flex cursor-pointer items-center gap-4 rounded-lg py-2 hover:bg-gray-100"
+                      className="flex cursor-pointer items-center gap-4 rounded-lg px-6 py-2 hover:bg-gray-100"
                     >
                       <Checkbox
                         checked={form.participants.includes(
@@ -427,8 +426,8 @@ export default function VoteAddModal({
                         </span>
                       </div>
 
-                      <span className="ml-auto truncate text-sm text-[#989898]">
-                        이름이엄청긴학과입니다
+                      <span className="ml-auto truncate pr-2 text-sm text-[#989898]">
+                        {getDepartmentName(member.department)}
                       </span>
                     </label>
                   ))}

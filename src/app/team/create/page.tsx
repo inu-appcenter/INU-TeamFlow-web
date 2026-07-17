@@ -1,7 +1,7 @@
 'use client';
 
 import TeamForm, { type TeamFormData } from '@/components/team/TeamForm';
-import { useCreateTeam } from '@/hooks/useTeamQuery';
+import { useCreateTeam } from '@/hooks/team/useTeamQuery';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';

@@ -12,17 +12,17 @@ import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
 import type { Schedule, RecurrenceEditScope } from '@/types/event';
 import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
-import { useCalendarGrid } from '@/hooks/useCalendarGrid';
-import { useCalendarWeeks } from '@/hooks/useCalendarWeeks';
-import { useTeamMonthSchedules } from '@/hooks/useTeamMonthSchedules';
+import { useCalendarGrid } from '@/hooks/calendar/useCalendarGrid';
+import { useCalendarWeeks } from '@/hooks/calendar/useCalendarWeeks';
+import { useTeamMonthSchedules } from '@/hooks/team/useTeamMonthSchedules';
 import { categoryMap, categoryColorMap } from '@/constants/category';
-import { useCreateInvitation } from '@/hooks/useTeamInvitationQuery';
+import { useCreateInvitation } from '@/hooks/team/useTeamInvitationQuery';
 import {
   useCreateTeamEvent,
   useUpdateTeamEvent,
   useDeleteTeamEvent,
-} from '@/hooks/useEventQuery';
-import { useTeamDetail, useTeamMembers } from '@/hooks/useTeamQuery';
+} from '@/hooks/calendar/useEventQuery';
+import { useTeamDetail, useTeamMembers } from '@/hooks/team/useTeamQuery';
 import { useTeamVotes } from '@/hooks/useVoteQuery';
 import { getDday } from '@/utils/date/getDday';
 import { useTeamNotices } from '@/hooks/useNoticeQuery';
@@ -31,9 +31,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Search,
+  Menu,
   Users,
 } from 'lucide-react';
+import TeamMemberDrawer from '@/components/team/TeamMemberDrawer';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ScheduleListItem from '@/components/calendar/ScheduleListItem';
@@ -63,7 +64,6 @@ export default function TeamDetail() {
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const { data: teamMembers = [] } = useTeamMembers(teamId);
   const { data: teamNoticesAll = [] } = useTeamNotices(teamId);
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
@@ -82,6 +82,7 @@ export default function TeamDetail() {
   const schedules = useTeamMonthSchedules(teamId, year, month);
   const calendarDates = useCalendarGrid(year, month);
   const weeks = useCalendarWeeks(calendarDates);
+  const [isMemberDrawerOpen, setIsMemberDrawerOpen] = useState(false);
 
   useEffect(() => {
     const checkScreen = () => {
@@ -94,6 +95,18 @@ export default function TeamDetail() {
 
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
+
+  useEffect(() => {
+    if (isMemberDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMemberDrawerOpen]);
 
   if (isTeamLoading) return <TeamDetailSkeleton />;
 
@@ -134,7 +147,6 @@ export default function TeamDetail() {
   const handleInvite = async (studentNumber: string) => {
     try {
       await createInvitation({ studentNumber });
-      setIsInviteOpen(false);
       setKeyword('');
     } catch (err) {
       console.error('초대 요청 실패', err);
@@ -236,8 +248,8 @@ export default function TeamDetail() {
   const teamNotices = teamNoticesAll.slice(0, displayCount);
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
             className="flex h-[72px] items-center justify-between px-6"
@@ -247,11 +259,7 @@ export default function TeamDetail() {
               onClick={() => router.push('/team')}
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft
-                size={24}
-                strokeWidth={2.5}
-                className="sm:h-7 sm:w-7"
-              />
+              <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
             </button>
 
             <span className="rounded-full bg-white/80 px-5 py-2 text-sm font-semibold text-[#2C2C2C]">
@@ -260,33 +268,43 @@ export default function TeamDetail() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-            <section className="grid grid-cols-[140px_1fr] gap-6 sm:grid-cols-[150px_1fr_200px] md:grid-cols-[150px_1fr_300px]">
-              <div className="relative h-[140px] w-[140px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] sm:h-[150px] sm:w-[150px]">
-                {team.imageUrl && (
-                  <img
-                    src={team.imageUrl}
-                    alt={team.name}
-                    className="h-full w-full rounded-2xl object-cover"
-                  />
-                )}
+            <section className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+              <div className="flex items-start justify-between">
+                <div className="relative h-[150px] w-[150px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]">
+                  {team.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={team.imageUrl}
+                      alt={team.name}
+                      className="h-full w-full rounded-2xl object-cover"
+                    />
+                  )}
 
-                {/* 수정 버튼 */}
-                {isAdmin && (
-                  <button
-                    onClick={() => router.push(`/team/${teamId}/edit`)}
-                    className="absolute top-2 right-2 rounded-full bg-[#989898]/60 px-3 py-1 text-[11px] text-white backdrop-blur hover:bg-[#989898]/70 active:scale-95"
-                  >
-                    수정
-                  </button>
-                )}
+                  {/* 수정 버튼 */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => router.push(`/team/${teamId}/edit`)}
+                      className="absolute top-2 right-2 rounded-full bg-[#989898]/60 px-3 py-1 text-[11px] text-white backdrop-blur hover:bg-[#989898]/70 active:scale-95"
+                    >
+                      수정
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMemberDrawerOpen(true)}
+                  className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border-[0.5px] border-[#D6DDE5] bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:hidden"
+                >
+                  <Menu size={18} className="text-[#2C2C2C]" />
+                </button>
               </div>
 
-              <div className="flex flex-col justify-center">
-                <h1 className="text-2xl font-bold text-[#2C2C2C] sm:text-3xl">
+              <div className="flex flex-col justify-center px-1 sm:px-0">
+                <h1 className="text-3xl font-bold text-[#2C2C2C]">
                   {team.name}
                 </h1>
 
-                <div className="mt-2 h-[38px]">
+                <div className="mt-2 h-[38px] sm:w-[300px] md:w-[400px]">
                   <p
                     className="text-sm text-[#989898]"
                     style={{
@@ -331,94 +349,13 @@ export default function TeamDetail() {
                   )}
                 </p>
               </div>
-
-              <div className="relative hidden flex-col gap-3 sm:block">
-                <div className="h-[150px] w-[200px] rounded-2xl border-[0.8px] border-[#D6DDE5] bg-white pt-3 md:w-[300px]">
-                  <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5]">
-                    <div className="flex items-center gap-1.5 px-4 pb-2">
-                      <Users size={15} />
-                      <h2 className="text-xs font-bold text-[#2C2C2C] md:text-[13px]">
-                        멤버 목록
-                      </h2>
-                    </div>
-
-                    {isAdmin && (
-                      <button
-                        onClick={() => setIsInviteOpen((prev) => !prev)}
-                        className="cursor-pointer px-3 pb-2 text-[9px] text-[#989898] md:text-[12px]"
-                      >
-                        <span className="flex items-center gap-1">
-                          <Plus size={10} />
-                          초대하기
-                        </span>
-                      </button>
-                    )}
-                  </div>
-
-                  <div
-                    className="thin-scrollbar flex max-h-[105px] flex-wrap gap-1.5 overflow-y-auto px-2 pt-2"
-                    style={{ scrollbarGutter: 'stable' }}
-                  >
-                    {teamMembers.map((member) => (
-                      <span
-                        key={member.teamMemberId}
-                        className="rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[11px] text-[#6E7780] md:text-[12px]"
-                      >
-                        {member.username}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {isAdmin && isInviteOpen && (
-                  <>
-                    <div
-                      onClick={() => setIsInviteOpen(false)}
-                      className="fixed inset-0 z-40"
-                    />
-
-                    <div className="absolute top-[160px] left-0 z-50 max-h-[250px] w-[200px] rounded-2xl border-[0.8px] border-[#D6DDE5] bg-white py-3 md:w-[300px]">
-                      <div className="mx-3 mb-3 flex items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-2 py-1.5">
-                        <Search size={13} className="text-[#989898]" />
-
-                        <input
-                          value={keyword}
-                          onChange={(e) => setKeyword(e.target.value)}
-                          placeholder="이름 검색"
-                          className="w-full bg-transparent text-[11px] outline-none placeholder:text-[#989898]"
-                        />
-                      </div>
-
-                      <div className="thin-scrollbar flex max-h-[150px] flex-col overflow-y-auto">
-                        {filteredUsers.map((user) => (
-                          <div
-                            key={user.studentNumber}
-                            className="flex items-center justify-between py-1 pr-2 pl-4 hover:bg-[#F6F8FA]"
-                          >
-                            <div>
-                              <p className="truncate text-[13px] font-medium text-[#2C2C2C]">
-                                {user.name}
-                              </p>
-
-                              <p className="text-[11px] text-[#989898]">
-                                {user.studentNumber}
-                              </p>
-                            </div>
-
-                            <button
-                              onClick={() => handleInvite(user.studentNumber)}
-                              disabled={isInviting}
-                              className="cursor-pointer rounded-full bg-[#5E92F0] px-2.5 py-1 text-[10px] text-white disabled:opacity-50"
-                            >
-                              추가
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsMemberDrawerOpen(true)}
+                className="ml-auto hidden h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border-[0.5px] border-[#D6DDE5] bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:flex"
+              >
+                <Menu size={18} className="text-[#2C2C2C]" />
+              </button>
             </section>
 
             <section className="mt-4 flex max-h-[535px] flex-col rounded-2xl bg-[#F8F9FB] py-2 md:mt-6">
@@ -719,6 +656,17 @@ export default function TeamDetail() {
           members={teamMembers}
         />
       )}
+      <TeamMemberDrawer
+        open={isMemberDrawerOpen}
+        onClose={() => setIsMemberDrawerOpen(false)}
+        teamMembers={teamMembers}
+        isAdmin={isAdmin}
+        keyword={keyword}
+        onKeywordChange={setKeyword}
+        filteredUsers={filteredUsers}
+        onInvite={handleInvite}
+        isInviting={isInviting}
+      />
     </main>
   );
 }

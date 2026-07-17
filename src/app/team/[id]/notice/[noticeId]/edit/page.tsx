@@ -5,7 +5,7 @@ import { ChevronLeft, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
-import { useTeamDetail } from '@/hooks/useTeamQuery';
+import { useTeamDetail } from '@/hooks/team/useTeamQuery';
 import {
   useTeamNoticeDetail,
   useUpdateTeamNotice,
@@ -247,8 +247,8 @@ function NoticeEditForm({
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="relative flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           {errorMessage && (
             <div className="animate-modal-pop absolute top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">

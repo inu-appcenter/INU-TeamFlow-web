@@ -45,14 +45,6 @@ export default function VoteResult({
     ...voteSlots.map((slot) => slot.participantCount)
   );
 
-  const getSlot = (date: string, hour: number | string) => {
-    return voteSlots.find((slot) =>
-      isAllDay
-        ? slot.date === date
-        : slot.date === date && Number(slot.startAt.slice(0, 2)) === hour
-    );
-  };
-
   const getSlotColor = (participantCount: number) => {
     const ratio = participantCount / maxParticipantCount;
 

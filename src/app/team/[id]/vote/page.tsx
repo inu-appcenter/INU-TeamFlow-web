@@ -1,7 +1,7 @@
 'use client';
 
 import Card from '@/components/main/Card';
-import { useTeamDetail } from '@/hooks/useTeamQuery';
+import { useTeamDetail } from '@/hooks/team/useTeamQuery';
 import { useTeamVotes } from '@/hooks/useVoteQuery';
 import { categoryMap, categoryColorMap } from '@/constants/category';
 import { ChevronLeft } from 'lucide-react';
@@ -28,8 +28,8 @@ export default function TeamVotePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh)]">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
             className="flex h-[72px] items-center justify-between px-6"
@@ -40,11 +40,7 @@ export default function TeamVotePage() {
                 onClick={() => router.back()}
                 className="cursor-pointer text-[#2C2C2C]"
               >
-                <ChevronLeft
-                  size={24}
-                  strokeWidth={2.5}
-                  className="sm:h-7 sm:w-7"
-                />
+                <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
               </button>
 
               <h1 className="text-[22px] font-bold text-[#2C2C2C]">투표</h1>

@@ -6,6 +6,8 @@ import {
   createTeam,
   updateTeam,
   deleteTeam,
+  kickMember,
+  leaveTeam,
 } from '@/api/team';
 import type { TeamCreateRequest, TeamUpdateRequest } from '@/types/team';
 
@@ -63,6 +65,27 @@ export const useDeleteTeam = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (teamId: number) => deleteTeam(teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    },
+  });
+};
+
+export const useKickMember = (teamId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (memberId: number) => kickMember(teamId, memberId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: teamKeys.teamMembers(teamId) });
+      queryClient.invalidateQueries({ queryKey: teamKeys.teamDetail(teamId) });
+    },
+  });
+};
+
+export const useLeaveTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (teamId: number) => leaveTeam(teamId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     },
