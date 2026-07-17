@@ -6,7 +6,7 @@ import { useState } from 'react';
 import Card from '@/components/main/Card';
 
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
-import { useTeamDetail } from '@/hooks/useTeamQuery';
+import { useTeamDetail } from '@/hooks/team/useTeamQuery';
 import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
 
@@ -91,8 +91,8 @@ export default function TeamNotice() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
             className="flex h-[72px] items-center justify-between px-6"
@@ -105,11 +105,7 @@ export default function TeamNotice() {
                 onClick={() => router.push(`/team/${teamId}`)}
                 className="cursor-pointer text-[#2C2C2C]"
               >
-                <ChevronLeft
-                  size={24}
-                  strokeWidth={2.5}
-                  className="sm:h-7 sm:w-7"
-                />
+                <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
               </button>
 
               <h1 className="text-[22px] font-bold text-[#2C2C2C]">

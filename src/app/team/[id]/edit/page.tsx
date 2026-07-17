@@ -1,11 +1,12 @@
 'use client';
 
 import TeamForm, { type TeamFormData } from '@/components/team/TeamForm';
+import { isDefaultTeamImage } from '@/utils/image/isDefaultTeamImage';
 import {
   useTeamDetail,
   useUpdateTeam,
   useDeleteTeam,
-} from '@/hooks/useTeamQuery';
+} from '@/hooks/team/useTeamQuery';
 import { useRouter, useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
@@ -47,7 +48,8 @@ export default function TeamEditPage() {
     description: team.description,
     link: team.link ?? '',
     sns: team.sns ?? '',
-    imageUrl: team.imageUrl ?? '',
+    imageUrl:
+      team.imageUrl && !isDefaultTeamImage(team.imageUrl) ? team.imageUrl : '',
   };
 
   const handleSubmit = async (form: TeamFormData) => {

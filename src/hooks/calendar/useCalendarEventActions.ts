@@ -2,7 +2,7 @@ import {
   useCreateMyEvent,
   useUpdateMyEvent,
   useDeleteMyEvent,
-} from '@/hooks/useEventQuery';
+} from '@/hooks/calendar/useEventQuery';
 import type { Schedule, RecurrenceEditScope } from '@/types/event';
 import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
 

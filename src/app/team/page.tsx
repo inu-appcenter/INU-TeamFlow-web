@@ -3,12 +3,13 @@
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
-import { useMyTeams } from '@/hooks/useTeamQuery';
+import { useMyTeams } from '@/hooks/team/useTeamQuery';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { TeamListSkeleton } from '@/components/skeleton';
+import { motion } from 'motion/react';
 import {
   categoryMap,
   categoryColorMap,
@@ -57,7 +58,7 @@ export default function Team() {
         </div>
 
         <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-none p-6">
-          <div className="mb-4 flex border-b-[0.5px] border-[#D6DDE5]">
+          <div className="relative mb-4 flex border-b-[0.5px] border-[#D6DDE5]">
             {categoryFilterOptions.map((category) => {
               const isActive = selectedCategory === category.value;
 
@@ -65,13 +66,24 @@ export default function Team() {
                 <button
                   key={category.value}
                   onClick={() => setSelectedCategory(category.value)}
-                  className={`z-50 cursor-pointer px-4 pb-4 text-lg font-bold whitespace-nowrap transition sm:text-xl md:px-6 md:pb-4 ${
+                  className={`relative z-50 cursor-pointer px-4 pb-4 text-lg font-bold whitespace-nowrap transition sm:text-xl md:px-6 md:pb-4 ${
                     isActive
-                      ? 'border-b-2 border-[#5E92F0] text-[#5E92F0]'
+                      ? 'text-[#5E92F0]'
                       : 'text-[#CBD2DA] hover:text-[#5E92F0]'
                   }`}
                 >
                   {category.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="teamCategoryIndicator"
+                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 600,
+                        damping: 50,
+                      }}
+                    />
+                  )}
                 </button>
               );
             })}

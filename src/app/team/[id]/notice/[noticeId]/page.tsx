@@ -5,7 +5,7 @@ import { ChevronLeft, Ellipsis, Pin, X } from 'lucide-react';
 import { useState } from 'react';
 import NoticeDetailSkeleton from '@/components/skeleton/NoticeDetailSkeleton';
 import Card from '@/components/main/Card';
-import { useTeamDetail } from '@/hooks/useTeamQuery';
+import { useTeamDetail } from '@/hooks/team/useTeamQuery';
 import {
   useTeamNoticeDetail,
   useDeleteTeamNotice,
@@ -81,11 +81,11 @@ export default function TeamNoticeDetail() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
-            className="flex h-16 items-center justify-between px-6 sm:h-18"
+            className="flex h-18 items-center justify-between px-6"
             style={{
               backgroundColor: team
                 ? (categoryColorMap[team.category] ?? '#E9E9E9')
@@ -102,11 +102,7 @@ export default function TeamNoticeDetail() {
               }}
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft
-                size={24}
-                strokeWidth={2.5}
-                className="sm:h-7 sm:w-7"
-              />
+              <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
             </button>
 
             {notice.isEditable && (
@@ -169,6 +165,7 @@ export default function TeamNoticeDetail() {
               <div className="flex items-center gap-2">
                 <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5]">
                   {notice.author.profileUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={notice.author.profileUrl}
                       alt={notice.author.name}
@@ -198,6 +195,7 @@ export default function TeamNoticeDetail() {
                   onClick={() => setPreviewImageUrl(image.imageUrl)}
                   className="cursor-zoom-in overflow-hidden rounded-xl"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={image.imageUrl}
                     alt=""
@@ -227,7 +225,7 @@ export default function TeamNoticeDetail() {
           >
             <X size={22} />
           </button>
-
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={previewImageUrl}
             alt=""

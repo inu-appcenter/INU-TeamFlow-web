@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useMyEvents } from '@/hooks/useEventQuery';
+import { useMyEvents } from '@/hooks/calendar/useEventQuery';
 
 export function useMonthSchedules(year: number, month: number) {
   const { data: prevSchedules = [] } = useMyEvents(

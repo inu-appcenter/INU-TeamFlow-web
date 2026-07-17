@@ -14,18 +14,14 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
-import { useCalendarGrid } from '@/hooks/useCalendarGrid';
-import { useMonthSchedules } from '@/hooks/useMonthSchedules';
+import { useCalendarGrid } from '@/hooks/calendar/useCalendarGrid';
+import { useMonthSchedules } from '@/hooks/calendar/useMonthSchedules';
 import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
 import NoticeListItem from '@/components/main/notice/NoticeListItem';
 import RecruitmentListItem from '@/components/main/recruitment/RecruitmentListItem';
 import MonthCalendar from '@/components/main/calendar/MonthCalendar';
 import DaySchedulePanel from '@/components/main/calendar/DaySchedulePanel';
-import {
-  categoryMap,
-  categoryColorMap,
-  categoryFilterOptions,
-} from '@/constants/category';
+import { categoryFilterOptions } from '@/constants/category';
 
 export default function Main() {
   const router = useRouter();

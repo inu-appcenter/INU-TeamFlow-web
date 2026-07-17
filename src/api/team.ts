@@ -45,3 +45,13 @@ export const getPresignedUrl = (
   axiosInstance
     .post('/teams/banner/presigned-url', body)
     .then((res) => res.data);
+
+/** DELETE /teams/{teamId}/members/{memberId} */
+export const kickMember = (teamId: number, memberId: number): Promise<void> =>
+  axiosInstance
+    .delete(`/teams/${teamId}/members/${memberId}`)
+    .then((res) => res.data);
+
+/** DELETE /teams/{teamId}/members/me */
+export const leaveTeam = (teamId: number): Promise<void> =>
+  axiosInstance.delete(`/teams/${teamId}/members/me`).then((res) => res.data);

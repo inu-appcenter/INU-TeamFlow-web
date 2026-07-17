@@ -1,4 +1,5 @@
 import type { TeamCategory } from '@/constants/teamEnum';
+import type { PresignedUrlRequest, PresignedUrlResponse } from './image';
 
 export interface TeamNoticeSummary {
   noticeId: number;
@@ -45,15 +46,8 @@ export interface TeamNoticeUpdateRequest {
   imageKeys: string[];
 }
 
-export interface PresignedUrlRequestItem {
-  fileName: string;
-  contentType: string;
-}
-
-export interface PresignedUrlResponseItem {
-  uploadUrl: string;
-  imageKey: string;
-}
+export type PresignedUrlRequestItem = PresignedUrlRequest;
+export type PresignedUrlResponseItem = PresignedUrlResponse;
 
 export interface TeamNoticeCreateRequest {
   title: string;

@@ -2,7 +2,7 @@
 
 import Card from '@/components/main/Card';
 import { categoryMap, categoryColorMap } from '@/constants/category';
-import { useTeamDetail } from '@/hooks/useTeamQuery';
+import { useTeamDetail } from '@/hooks/team/useTeamQuery';
 import {
   useVoteDetail,
   useVoteSlots,
@@ -84,8 +84,8 @@ export default function VoteDetailPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
+    <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           {/* 헤더 */}
           <div
