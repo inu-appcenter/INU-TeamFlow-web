@@ -1,6 +1,6 @@
 export const TEAM_ROLE_MAP: Record<string, string> = {
   LEADER: '팀장',
-  MANAGER: '관리자',
+  MANAGER: '매니저',
   MEMBER: '팀원',
 };
 

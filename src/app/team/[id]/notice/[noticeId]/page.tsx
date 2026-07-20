@@ -23,7 +23,7 @@ const categoryColorMap: Record<string, string> = {
 
 const teamRoleMap: Record<string, string> = {
   LEADER: '팀장',
-  MANAGER: '관리자',
+  MANAGER: '매니저',
   MEMBER: '팀원',
 };
 

@@ -7,6 +7,7 @@ import type {
   UpdateMyProfileRequest,
   UpdateMyProfileResponse,
   UserMeResponse,
+  UserSearchResponse,
 } from '@/types/user';
 
 /** GET /users/me */
@@ -33,3 +34,12 @@ export const uploadProfileImage = (uploadUrl: string, file: File) =>
       'Content-Type': file.type,
     },
   });
+
+export const searchUsers = async (
+  name: string
+): Promise<UserSearchResponse[]> => {
+  const { data } = await axiosInstance.get<UserSearchResponse[]>('/users', {
+    params: { name },
+  });
+  return data;
+};

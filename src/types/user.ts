@@ -29,3 +29,10 @@ export interface ProfilePresignedUrlResponse {
   uploadUrl: string;
   imageKey: string;
 }
+
+export type UserSearchResponse = {
+  userId: number;
+  name: string;
+  studentNumber: string;
+  department: string;
+};

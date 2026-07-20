@@ -34,6 +34,6 @@ export function useChatMessageSubscribe(roomId: number) {
       );
     });
 
-    return () => sub.unsubscribe();
+    return () => sub?.unsubscribe();
   }, [isConnected, roomId, queryClient]);
 }

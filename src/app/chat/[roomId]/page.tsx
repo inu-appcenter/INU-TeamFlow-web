@@ -135,6 +135,7 @@ export default function ChatRoomPage() {
   const roomName = searchParams.get('roomName') ?? '';
   const roomType =
     (searchParams.get('roomType') as 'TEAM' | 'DIRECT') ?? 'TEAM';
+  const roomImageUrl = searchParams.get('roomImageUrl') || null;
   const currentUserId = me?.userId;
 
   return (
@@ -148,7 +149,24 @@ export default function ChatRoomPage() {
           <button onClick={() => router.back()} className="cursor-pointer">
             <ChevronLeft size={20} strokeWidth={2} className="sm:h-7 sm:w-7" />
           </button>
-          <div className="h-10 w-10 rounded-xl bg-[#b0b0b0]"></div>
+          <div
+            className={`relative h-10 w-10 shrink-0 overflow-hidden bg-[#D6DDE5] ${
+              roomType === 'TEAM' ? 'rounded-xl' : 'rounded-full'
+            }`}
+          >
+            {roomImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={roomImageUrl}
+                alt={roomName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#3F4852]">
+                {roomName.slice(0, 1)}
+              </div>
+            )}
+          </div>
           <h1 className="truncate text-[20px] font-semibold text-[#2C2C2C]">
             {roomName}
           </h1>
@@ -214,6 +232,7 @@ export default function ChatRoomPage() {
                         !isSameSenderAsPrev && (
                           <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#D6DDE5]">
                             {message.senderProfileUrl && (
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={message.senderProfileUrl}
                                 alt={message.senderName}
