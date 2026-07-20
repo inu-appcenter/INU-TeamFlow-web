@@ -11,6 +11,14 @@ import { formatChatTime } from '@/utils/date/formatChatTime';
 import { useMyInfo } from '@/hooks/useAuthQuery';
 import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
 import { useTeamChatRoom } from '@/hooks/chat/useTeamChatRoom';
+import {
+  useKickMember,
+  useLeaveTeam,
+  useUpdateMemberRole,
+} from '@/hooks/team/useTeamQuery';
+import { useErrorToast } from '@/hooks/useErrorToast';
+import type { AxiosError } from 'axios';
+import { useUserSearch } from '@/hooks/useUserSearch';
 
 type InviteUser = {
   studentNumber: string;
@@ -23,10 +31,7 @@ type TeamMemberDrawerProps = {
   teamId: number;
   teamMembers: TeamMemberResponse[];
   isAdmin: boolean;
-  keyword: string;
-  onKeywordChange: (value: string) => void;
-  filteredUsers: InviteUser[];
-  onInvite: (studentNumber: string) => void;
+  onInvite: (studentNumber: string) => Promise<void>;
   isInviting: boolean;
 };
 
@@ -43,9 +48,6 @@ export default function TeamMemberDrawer({
   teamId,
   teamMembers,
   isAdmin,
-  keyword,
-  onKeywordChange,
-  filteredUsers,
   onInvite,
   isInviting,
 }: TeamMemberDrawerProps) {
@@ -53,6 +55,9 @@ export default function TeamMemberDrawer({
   const [activeTab, setActiveTab] = useState<TabKey>('members');
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
+  const [keyword, setKeyword] = useState('');
+  const { data: searchedUsers = [] } = useUserSearch(keyword);
+  const [invitedNumbers, setInvitedNumbers] = useState<Set<string>>(new Set());
   const { data: me } = useMyInfo();
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
@@ -60,19 +65,63 @@ export default function TeamMemberDrawer({
   const { data: teamChatRooms, isLoading: isChatRoomsLoading } =
     useTeamChatRoom(teamId);
 
-  const handleAssignManager = (member: TeamMemberResponse) => {
-    console.log('매니저 지정', member);
-    setOpenMenuId(null);
+  const { mutate: kickMember, isPending: isKicking } = useKickMember(teamId);
+  const { mutate: leaveTeamMutate, isPending: isLeaving } = useLeaveTeam();
+
+  const [confirmTarget, setConfirmTarget] = useState<
+    | { type: 'kick'; member: TeamMemberResponse }
+    | { type: 'leave' }
+    | { type: 'transferLeader'; member: TeamMemberResponse }
+    | null
+  >(null);
+
+  // 본인 + 이미 팀원인 사람 제외
+  const filteredUsers = searchedUsers
+    .filter((u) => u.userId !== me?.userId)
+    .filter((u) => !teamMembers.some((m) => m.userId === u.userId))
+    .map((u) => ({ studentNumber: u.studentNumber, name: u.name }));
+
+  const { mutate: updateMemberRole, isPending: isAssigning } =
+    useUpdateMemberRole(teamId);
+
+  const { errorMessage, showErrorMessage } = useErrorToast();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const roleOrder: Record<TeamMemberResponse['teamRole'], number> = {
+    LEADER: 0,
+    MANAGER: 1,
+    MEMBER: 2,
   };
 
-  const handleTransferLeader = (member: TeamMemberResponse) => {
-    console.log('팀장 권한 넘기기', member);
+  const sortedTeamMembers = [...teamMembers].sort(
+    (a, b) => roleOrder[a.teamRole] - roleOrder[b.teamRole]
+  );
+
+  const handleToggleManager = (member: TeamMemberResponse) => {
     setOpenMenuId(null);
+    const nextRole = member.teamRole === 'MANAGER' ? 'MEMBER' : 'MANAGER';
+    updateMemberRole(
+      { memberId: member.teamMemberId, teamRole: nextRole },
+      {
+        onError: () => {
+          showErrorMessage(
+            nextRole === 'MANAGER'
+              ? '매니저 지정에 실패했어요'
+              : '매니저 해제에 실패했어요'
+          );
+        },
+      }
+    );
   };
 
-  const handleKick = (member: TeamMemberResponse) => {
-    console.log('추방', member);
-    setOpenMenuId(null);
+  const handleInvite = async (studentNumber: string) => {
+    try {
+      await onInvite(studentNumber);
+      setInvitedNumbers((prev) => new Set(prev).add(studentNumber));
+      setSuccessMessage('초대 요청을 보냈어요');
+      setTimeout(() => setSuccessMessage(null), 2000);
+      // setKeyword('') 제거 — 검색 결과 유지해서 "초대 대기" 상태 보이게
+    } catch {}
   };
 
   const handleDirectMessage = async (member: TeamMemberResponse) => {
@@ -103,6 +152,16 @@ export default function TeamMemberDrawer({
             transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
             className="fixed top-0 right-0 z-[260] flex h-full w-full max-w-[360px] flex-col bg-white px-6 py-6 shadow-xl"
           >
+            {errorMessage && (
+              <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+                {errorMessage}
+              </div>
+            )}
+            {successMessage && (
+              <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#5E92F0] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+                {successMessage}
+              </div>
+            )}
             {/* 탭 */}
             <div className="mt-4 flex shrink-0 border-b-[0.5px] border-[#D6DDE5]">
               {TABS.map((tab) => (
@@ -139,7 +198,7 @@ export default function TeamMemberDrawer({
                     <Search size={14} className="text-[#989898]" />
                     <input
                       value={keyword}
-                      onChange={(e) => onKeywordChange(e.target.value)}
+                      onChange={(e) => setKeyword(e.target.value)}
                       placeholder="이름 검색 후 초대"
                       className="w-full bg-transparent text-sm outline-none placeholder:text-[#989898]"
                     />
@@ -148,53 +207,56 @@ export default function TeamMemberDrawer({
 
                 {isAdmin && keyword && (
                   <div className="thin-scrollbar mt-2 flex max-h-[180px] shrink-0 flex-col overflow-y-auto rounded-xl border-[0.5px] border-[#D6DDE5]">
-                    {filteredUsers.map((user) => (
-                      <div
-                        key={user.studentNumber}
-                        className="flex items-center justify-between px-3 py-2 hover:bg-[#F6F8FA]"
-                      >
-                        <div className="">
-                          <p className="text-sm font-medium text-[#2C2C2C]">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-[#989898]">
-                            {user.studentNumber}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => onInvite(user.studentNumber)}
-                          disabled={isInviting}
-                          className="cursor-pointer rounded-full bg-[#5E92F0] px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                    {filteredUsers.map((user) => {
+                      const isInvited = invitedNumbers.has(user.studentNumber);
+                      return (
+                        <div
+                          key={user.studentNumber}
+                          className="flex items-center justify-between px-3 py-2 hover:bg-[#F6F8FA]"
                         >
-                          추가
-                        </button>
-                      </div>
-                    ))}
+                          <div>
+                            <p className="text-sm font-medium text-[#2C2C2C]">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-[#989898]">
+                              {user.studentNumber}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleInvite(user.studentNumber)}
+                            disabled={isInviting || isInvited}
+                            className="cursor-pointer rounded-full bg-[#5E92F0] px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                          >
+                            {isInvited ? '초대 대기' : '추가'}
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 
                 <p className="mt-4 shrink-0 text-xs font-medium text-[#989898]">
-                  멤버 ({teamMembers.length})
+                  멤버 ({sortedTeamMembers.length})
                 </p>
 
                 <div className="thin-scrollbar mt-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-                  {teamMembers.map((member) => (
+                  {sortedTeamMembers.map((member) => (
                     <div
                       key={member.teamMemberId}
                       className="relative flex items-center justify-between rounded-xl bg-[#F8F9FB] py-2 pr-3 pl-4 text-sm text-[#2C2C2C]"
                     >
-                      <div className="flex items-center">
+                      <div className="flex w-full items-center">
                         <span className="w-20">{member.username}</span>
 
-                        <span className="w-32 truncate text-xs text-[#989898]">
+                        <span className="w-31 truncate text-xs text-[#989898]">
                           {getDepartmentName(member.department)}
                         </span>
                         <span
-                          className={`rounded-xl px-3 py-1 text-xs font-semibold ${
+                          className={`ml-auto rounded-xl px-3 py-1 text-xs font-semibold ${
                             member.teamRole === 'LEADER'
                               ? 'bg-[#5E92F0] text-white'
                               : member.teamRole === 'MANAGER'
-                                ? 'bg-[#EEF1F5] text-[#5E92F0]'
+                                ? 'bg-[#EEF1F5] px-2 text-[#5E92F0]'
                                 : 'bg-[#EEF1F5] text-[#989898]'
                           }`}
                         >
@@ -202,19 +264,24 @@ export default function TeamMemberDrawer({
                         </span>
                       </div>
 
-                      <div className="relative">
-                        <button
-                          onClick={() =>
-                            setOpenMenuId((prev) =>
-                              prev === member.teamMemberId
-                                ? null
-                                : member.teamMemberId
-                            )
-                          }
-                          className="cursor-pointer rounded-full p-1 hover:bg-[#EEF1F5]"
-                        >
-                          <MoreVertical size={16} className="text-[#989898]" />
-                        </button>
+                      <div className="relative w-6 shrink-0">
+                        {member.userId !== me?.userId && (
+                          <button
+                            onClick={() =>
+                              setOpenMenuId((prev) =>
+                                prev === member.teamMemberId
+                                  ? null
+                                  : member.teamMemberId
+                              )
+                            }
+                            className="cursor-pointer rounded-full p-1"
+                          >
+                            <MoreVertical
+                              size={16}
+                              className="text-[#989898]"
+                            />
+                          </button>
+                        )}
 
                         {openMenuId === member.teamMemberId && (
                           <>
@@ -236,19 +303,34 @@ export default function TeamMemberDrawer({
                               {isAdmin && (
                                 <>
                                   <button
-                                    onClick={() => handleAssignManager(member)}
-                                    className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#2C2C2C] hover:bg-[#F6F8FA]"
+                                    onClick={() => handleToggleManager(member)}
+                                    disabled={isAssigning}
+                                    className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#2C2C2C] hover:bg-[#F6F8FA] disabled:opacity-50"
                                   >
-                                    매니저 지정
+                                    {member.teamRole === 'MANAGER'
+                                      ? '매니저 해제'
+                                      : '매니저 지정'}
                                   </button>
                                   <button
-                                    onClick={() => handleTransferLeader(member)}
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      setConfirmTarget({
+                                        type: 'transferLeader',
+                                        member,
+                                      });
+                                    }}
                                     className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#2C2C2C] hover:bg-[#F6F8FA]"
                                   >
                                     팀장 권한 넘기기
                                   </button>
                                   <button
-                                    onClick={() => handleKick(member)}
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      setConfirmTarget({
+                                        type: 'kick',
+                                        member,
+                                      });
+                                    }}
                                     className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#E22222] hover:bg-[#FDEEEE]"
                                   >
                                     제거
@@ -330,13 +412,94 @@ export default function TeamMemberDrawer({
 
             <div className="mt-3 shrink-0 border-t-[0.5px] border-[#D6DDE5] pt-3">
               <button
-                // onClick={handleLeaveTeam}
+                onClick={() => setConfirmTarget({ type: 'leave' })}
                 className="w-full cursor-pointer rounded-xl py-2 text-center text-sm font-semibold text-[#E22222] transition duration-300 hover:bg-[#FDEEEE]"
               >
                 팀 나가기
               </button>
             </div>
           </motion.aside>
+          {confirmTarget && (
+            <div
+              onClick={() => setConfirmTarget(null)}
+              className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+              >
+                <h2 className="text-center text-xl font-bold">
+                  {confirmTarget.type === 'kick'
+                    ? `${confirmTarget.member.username}님을 팀에서 내보낼까요?`
+                    : confirmTarget.type === 'transferLeader'
+                      ? `${confirmTarget.member.username}님에게 팀장 권한을 넘길까요?`
+                      : '정말 팀을 나가시겠어요?'}
+                </h2>
+
+                <div className="mt-4 flex gap-3">
+                  <button
+                    onClick={() => setConfirmTarget(null)}
+                    className="flex-1 rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
+                  >
+                    취소
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (confirmTarget.type === 'kick') {
+                        kickMember(confirmTarget.member.teamMemberId, {
+                          onSuccess: () => setConfirmTarget(null),
+                          onError: (err) => {
+                            const message =
+                              (err as AxiosError<{ message?: string }>).response
+                                ?.data?.message ?? '멤버 제거에 실패했어요';
+                            showErrorMessage(message);
+                            setConfirmTarget(null);
+                          },
+                        });
+                      } else if (confirmTarget.type === 'transferLeader') {
+                        updateMemberRole(
+                          {
+                            memberId: confirmTarget.member.teamMemberId,
+                            teamRole: 'LEADER',
+                          },
+                          {
+                            onSuccess: () => {
+                              setConfirmTarget(null);
+                              onClose();
+                            },
+                            onError: () => {
+                              showErrorMessage('팀장 권한 이전에 실패했어요');
+                              setConfirmTarget(null);
+                            },
+                          }
+                        );
+                      } else {
+                        leaveTeamMutate(teamId, {
+                          onSuccess: () => {
+                            setConfirmTarget(null);
+                            onClose();
+                          },
+                          onError: () => {
+                            showErrorMessage('팀장은 팀을 나갈 수 없어요');
+                            setConfirmTarget(null);
+                          },
+                        });
+                      }
+                    }}
+                    disabled={isKicking || isLeaving || isAssigning}
+                    className="flex-1 rounded-xl bg-[#E22222] py-3 font-semibold text-white disabled:opacity-50"
+                  >
+                    {confirmTarget.type === 'kick'
+                      ? '제거'
+                      : confirmTarget.type === 'transferLeader'
+                        ? '넘기기'
+                        : '나가기'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

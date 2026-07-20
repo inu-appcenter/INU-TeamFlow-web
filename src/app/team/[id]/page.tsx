@@ -43,13 +43,6 @@ import { TeamDetailSkeleton } from '@/components/skeleton';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
-const users = [
-  { studentNumber: '202312345', name: '홍길동' },
-  { studentNumber: '202212312', name: '김철수' },
-  { studentNumber: '202312145', name: '홍길동1' },
-  { studentNumber: '202212512', name: '김철수2' },
-];
-
 export default function TeamDetail() {
   const router = useRouter();
   const params = useParams();
@@ -64,7 +57,6 @@ export default function TeamDetail() {
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const { data: teamMembers = [] } = useTeamMembers(teamId);
   const { data: teamNoticesAll = [] } = useTeamNotices(teamId);
-  const [keyword, setKeyword] = useState('');
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
   const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
@@ -125,7 +117,6 @@ export default function TeamDetail() {
   );
 
   const dayLabel = days[selectedDate.getDay()];
-  const filteredUsers = users.filter((user) => user.name.includes(keyword));
   const isAdmin = team.role === 'LEADER' || team.role === 'MANAGER';
 
   const displayCount = isMd ? 4 : 3;
@@ -147,9 +138,9 @@ export default function TeamDetail() {
   const handleInvite = async (studentNumber: string) => {
     try {
       await createInvitation({ studentNumber });
-      setKeyword('');
     } catch (err) {
       console.error('초대 요청 실패', err);
+      throw err; // 아래 드로어에서 성공/실패 구분하려면 던져주는 게 편함
     }
   };
 
@@ -659,11 +650,9 @@ export default function TeamDetail() {
       <TeamMemberDrawer
         open={isMemberDrawerOpen}
         onClose={() => setIsMemberDrawerOpen(false)}
+        teamId={teamId}
         teamMembers={teamMembers}
         isAdmin={isAdmin}
-        keyword={keyword}
-        onKeywordChange={setKeyword}
-        filteredUsers={filteredUsers}
         onInvite={handleInvite}
         isInviting={isInviting}
       />

@@ -85,7 +85,7 @@ export default function ChatListPage() {
                     <button
                       onClick={() =>
                         router.push(
-                          `/chat/${room.chatRoomId}?roomName=${encodeURIComponent(room.roomName)}&roomType=${room.chatRoomType}`
+                          `/chat/${room.chatRoomId}?roomName=${encodeURIComponent(room.roomName)}&roomType=${room.chatRoomType}&roomImageUrl=${encodeURIComponent(room.imageUrl ?? '')}`
                         )
                       }
                       className="z-50 flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-[#F6F8Fb] p-4 text-left transition hover:bg-[#F0F2F5]"

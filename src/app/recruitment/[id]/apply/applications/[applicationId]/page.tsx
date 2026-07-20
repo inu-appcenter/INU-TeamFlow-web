@@ -15,9 +15,9 @@ import { ApplicationDetailSkeleton } from '@/components/skeleton';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',
-  ACCEPTED: '수락됨',
-  DECLINED: '거절됨',
-  CANCELLED: '취소됨',
+  ACCEPTED: '수락',
+  DECLINED: '거절',
+  CANCELLED: '취소',
 };
 
 const statusColorMap: Record<ApplicationStatus, string> = {
@@ -85,13 +85,13 @@ export default function ApplicationDetail() {
           <div className="px-8 py-7 sm:px-10 sm:py-10">
             <div className="flex-1 items-center">
               <span
-                className={`rounded-xl px-3 py-1 text-[12px] font-medium sm:text-[16px] ${statusColorMap[application.applicationStatus]}`}
+                className={`rounded-xl px-3 py-1 text-[13px] font-semibold sm:text-sm ${statusColorMap[application.applicationStatus]}`}
               >
                 {statusLabelMap[application.applicationStatus]}
               </span>
             </div>
 
-            <p className="mt-4 text-xl font-semibold text-[#2c2c2c]">
+            <p className="mt-3 text-xl font-semibold text-[#2c2c2c]">
               {application.recruitmentTitle}
             </p>
 

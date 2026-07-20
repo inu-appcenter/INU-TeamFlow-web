@@ -16,7 +16,7 @@ const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',
   ACCEPTED: '수락',
   DECLINED: '거절',
-  CANCELLED: '취소됨',
+  CANCELLED: '취소',
 };
 
 const statusColorMap: Record<ApplicationStatus, string> = {
@@ -90,7 +90,7 @@ export default function RecruitmentApplications() {
                     >
                       <div className="flex items-center gap-2">
                         <span
-                          className={`rounded-xl px-3 py-1 text-[11px] font-medium sm:text-sm ${statusColorMap[application.applicationStatus]}`}
+                          className={`rounded-xl px-3 py-0.5 text-[13px] font-semibold sm:text-sm ${statusColorMap[application.applicationStatus]}`}
                         >
                           {statusLabelMap[application.applicationStatus]}
                         </span>

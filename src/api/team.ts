@@ -55,3 +55,13 @@ export const kickMember = (teamId: number, memberId: number): Promise<void> =>
 /** DELETE /teams/{teamId}/members/me */
 export const leaveTeam = (teamId: number): Promise<void> =>
   axiosInstance.delete(`/teams/${teamId}/members/me`).then((res) => res.data);
+
+/** PATCH /teams/{teamId}/members/{memberId}/role */
+export const updateMemberRole = (
+  teamId: number,
+  memberId: number,
+  teamRole: 'LEADER' | 'MANAGER' | 'MEMBER'
+): Promise<void> =>
+  axiosInstance
+    .patch(`/teams/${teamId}/members/${memberId}/role`, { teamRole })
+    .then((res) => res.data);

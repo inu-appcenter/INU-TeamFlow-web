@@ -94,11 +94,11 @@ export const getApplicationDetail = (
 ): Promise<ApplicationDetailResponse> =>
   axiosInstance.get(`/applications/${applicationId}`).then((res) => res.data);
 
-/** PUT /applications/{applicationId}/status */
+/** PATCH /applications/{applicationId}/status */
 export const updateApplicationStatus = (
   applicationId: number,
   body: ApplicationStatusUpdateRequest
 ): Promise<ApplicationStatusResponse> =>
   axiosInstance
-    .put(`/applications/${applicationId}/status`, body)
+    .patch(`/applications/${applicationId}/status`, body)
     .then((res) => res.data);

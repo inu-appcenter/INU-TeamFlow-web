@@ -17,6 +17,7 @@ import {
   type ByDay,
 } from '@/utils/date/byDay';
 import { createDateTime } from '@/utils/date/createDateTime';
+import { formatDateKey } from '@/utils/date/calendar';
 
 type RepeatType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
@@ -58,6 +59,11 @@ const getInitialForm = (schedule: Schedule | null) => ({
 });
 
 const getInitialRepeatDays = (schedule: Schedule | null) => {
+  // THIS_INSTANCE로 예외 처리된 occurrence는 실제 startAt 요일을 우선 사용
+  if (schedule?.occurrenceAt && schedule.occurrenceAt !== schedule.startAt) {
+    return [new Date(schedule.startAt.slice(0, 10)).getDay()];
+  }
+
   if (schedule?.recurrence?.byDay) {
     return schedule.recurrence.byDay.map(
       (day) => BY_DAY_TO_DAY_NUMBER[day as ByDay]
@@ -129,6 +135,25 @@ export default function CalendarEditModal({
 
     if (type === 'REPEAT' && repeatDays.length === 0) {
       setRepeatDays([new Date(form.startDate).getDay()]);
+    }
+  };
+
+  // 요일 토글 시 단일 occurrence의 날짜도 같은 주의 해당 요일로 이동
+  const handleRepeatDaysChange = (days: number[]) => {
+    setRepeatDays(days);
+
+    if (days.length === 1 && form.startDate) {
+      const newDay = days[0];
+      const current = new Date(form.startDate);
+      const diff = newDay - current.getDay();
+
+      const newDate = new Date(current);
+      newDate.setDate(current.getDate() + diff);
+
+      setForm((prev) => ({
+        ...prev,
+        startDate: formatDateKey(newDate),
+      }));
     }
   };
 
@@ -301,7 +326,7 @@ export default function CalendarEditModal({
               repeatType={repeatType}
               onRepeatTypeChange={setRepeatType}
               repeatDays={repeatDays}
-              onRepeatDaysChange={setRepeatDays}
+              onRepeatDaysChange={handleRepeatDaysChange}
               includeDailyOption
             />
           )}
