@@ -8,7 +8,6 @@ import type {
 interface PageableParams {
   page?: number;
   size?: number;
-  sort?: string[];
 }
 
 const getList = <T>(data: T[] | { content?: T[] } | T): T[] => {
@@ -42,3 +41,7 @@ export const getMyTeamNotices = async (
   const res = await axiosInstance.get('/team-notices/me', { params });
   return getList<MyTeamNoticeResponse>(res.data);
 };
+
+/** DELETE /applications/{applicationId} */
+export const cancelApplication = (applicationId: number): Promise<void> =>
+  axiosInstance.delete(`/applications/${applicationId}`).then(() => undefined);

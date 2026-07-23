@@ -53,7 +53,6 @@ export interface GetInfoPostsParams {
   linkable?: boolean;
   page?: number;
   size?: number;
-  sort?: string[];
 }
 
 export interface InfoPostImagePresignedUrlRequest {

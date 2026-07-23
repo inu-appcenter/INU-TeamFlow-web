@@ -9,6 +9,7 @@ import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import { useMyInfoPosts } from '@/hooks/useInfoPostQuery';
 import {
+  useCancelApplication,
   useMyApplications,
   useMyRecruitments,
   useMyTeamNotices,
@@ -42,9 +43,10 @@ const getCategoryLabel = (category: string) => {
 };
 
 const getApplicationStatusLabel = (status: string) => {
-  if (status === 'WAITING') return '대기';
-  if (status === 'ACCEPTED') return '수락';
-  if (status === 'REJECTED') return '거절';
+  if (status === 'WAITING') return '대기중';
+  if (status === 'ACCEPTED') return '수락됨';
+  if (status === 'DECLINED' || status === 'REJECTED') return '거절됨';
+  if (status === 'CANCELED') return '취소됨';
 
   return status;
 };
@@ -99,10 +101,12 @@ export default function MyPostPage() {
     type: 'INFO' as const,
   }));
 
-  /*
-   * 모집글, 신청서, 공지는 작성일 기준으로 정렬한다.
-   * 정보글은 createdAt이 없으므로 API에서 받은 순서를 유지한 채 뒤에 붙인다.
-   */
+  const {
+    mutate: cancelApplication,
+    variables: cancellingApplicationId,
+    isPending: isCancelling,
+  } = useCancelApplication();
+
   const myPosts: MyPost[] = [...datedPosts, ...infoPostItems];
 
   const filteredPosts =
@@ -110,17 +114,32 @@ export default function MyPostPage() {
       ? myPosts
       : myPosts.filter((post) => post.type === activeTab);
 
-  const isLoading =
-    isRecruitmentsLoading ||
-    isInfoPostsLoading ||
-    isApplicationsLoading ||
-    isNoticesLoading;
+  const loadingByTab: Record<MyPostType, boolean> = {
+    ALL:
+      isRecruitmentsLoading ||
+      isInfoPostsLoading ||
+      isApplicationsLoading ||
+      isNoticesLoading,
+    RECRUIT: isRecruitmentsLoading,
+    INFO: isInfoPostsLoading,
+    APPLY: isApplicationsLoading,
+    NOTICE: isNoticesLoading,
+  };
 
-  const isError =
-    isRecruitmentsError ||
-    isInfoPostsError ||
-    isApplicationsError ||
-    isNoticesError;
+  const errorByTab: Record<MyPostType, boolean> = {
+    ALL:
+      isRecruitmentsError &&
+      isInfoPostsError &&
+      isApplicationsError &&
+      isNoticesError,
+    RECRUIT: isRecruitmentsError,
+    INFO: isInfoPostsError,
+    APPLY: isApplicationsError,
+    NOTICE: isNoticesError,
+  };
+
+  const isLoading = loadingByTab[activeTab];
+  const isError = errorByTab[activeTab];
 
   return (
     <main className="min-h-screen px-3 py-6 pb-28 sm:px-6 sm:pt-10">
@@ -193,7 +212,12 @@ export default function MyPostPage() {
                       key={`application-${post.applicationId}`}
                       application={post}
                       onClick={() =>
-                        router.push(`/applications/${post.applicationId}`)
+                        router.push(`/application/${post.applicationId}`)
+                      }
+                      onCancel={() => cancelApplication(post.applicationId)}
+                      isCancelling={
+                        isCancelling &&
+                        cancellingApplicationId === post.applicationId
                       }
                     />
                   );
@@ -206,7 +230,7 @@ export default function MyPostPage() {
                       notice={post}
                       onClick={() =>
                         router.push(
-                          `/teams/${post.teamId}/notices/${post.noticeId}`
+                          `/team/${post.teamId}/notice/${post.noticeId}`
                         )
                       }
                     />
@@ -328,44 +352,78 @@ function InfoPostCard({
 function ApplicationCard({
   application,
   onClick,
+  onCancel,
+  isCancelling,
 }: {
   application: MyApplicationResponse;
   onClick: () => void;
+  onCancel: () => void;
+  isCancelling: boolean;
 }) {
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          onClick();
+        }
+      }}
       className="flex min-h-[180px] cursor-pointer flex-col justify-between rounded-3xl bg-[#FAFBFC] p-6 text-left transition-all duration-150 hover:bg-white hover:shadow-sm active:scale-[0.98]"
     >
       <div>
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="line-clamp-1 text-[19px] font-bold text-[#2C2C2C]">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <h2 className="line-clamp-1 min-w-0 text-[19px] font-bold text-[#2C2C2C]">
             [ {getCategoryLabel(application.recruitmentCategory)} ] 신청서
           </h2>
 
-          <span className="shrink-0 rounded-full bg-[#EEF1F5] px-4 py-1.5 text-[12px] font-semibold text-[#5E92F0]">
-            {getApplicationStatusLabel(application.applicationStatus)}
-          </span>
+          <div className="flex shrink-0 items-center gap-2">
+            {application.applicationStatus === 'WAITING' && (
+              <button
+                type="button"
+                disabled={isCancelling}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onCancel();
+                }}
+                className="cursor-pointer rounded-full border border-[#FFD3D3] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#FFF5F5] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isCancelling ? '취소 중' : '지원 취소'}
+              </button>
+            )}
+            <span className="rounded-full bg-[#EEF1F5] px-4 py-1.5 text-[12px] font-semibold text-[#5E92F0]">
+              {getApplicationStatusLabel(application.applicationStatus)}
+            </span>
+          </div>
         </div>
 
-        <p className="text-[14px] text-[#5C5C5C]">
+        {/* {application.announcementTitle && (
+          <p className="line-clamp-1 text-[14px] text-[#5C5C5C]">
+            정보글 {application.announcementTitle}
+          </p>
+        )} */}
+
+        <p className="mt-1 text-[14px] text-[#5C5C5C]">
           모집자 {application.recruiterName}
         </p>
       </div>
 
-      <div className="mt-8 flex items-center gap-2 text-[13px] text-[#989898]">
-        <span>신청일 {formatDate(application.createdAt)}</span>
-        <span>·</span>
-        <span>
-          응답일{' '}
-          {application.respondedAt ? formatDate(application.respondedAt) : '-'}
-        </span>
+      <div className="mt-8 flex items-end justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#989898]">
+          <span>신청일 {formatDate(application.createdAt)}</span>
+          <span>·</span>
+          <span>
+            응답일{' '}
+            {application.respondedAt
+              ? formatDate(application.respondedAt)
+              : '-'}
+          </span>
+        </div>
       </div>
-    </button>
+    </div>
   );
 }
-
 function NoticeCard({
   notice,
   onClick,
