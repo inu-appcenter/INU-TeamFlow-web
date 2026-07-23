@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  cancelApplication,
   getMyApplications,
   getMyRecruitments,
   getMyTeamNotices,
@@ -30,3 +30,17 @@ export const useMyTeamNotices = () =>
     queryKey: mypagePostKeys.notices(),
     queryFn: () => getMyTeamNotices(),
   });
+
+export const useCancelApplication = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => cancelApplication(applicationId),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['myApplications'],
+      });
+    },
+  });
+};

@@ -1,4 +1,8 @@
 import type { InfoPostSummaryResponse } from '@/types/infoPost';
+import type {
+  ApplicationStatus,
+  RecruitmentCategory,
+} from '@/types/recruitment';
 
 export type MyPostType = 'ALL' | 'RECRUIT' | 'INFO' | 'APPLY' | 'NOTICE';
 
@@ -14,8 +18,8 @@ export interface MyRecruitmentResponse {
 
 export interface MyApplicationResponse {
   applicationId: number;
-  applicationStatus: 'WAITING' | 'ACCEPTED' | 'REJECTED';
-  recruitmentCategory: string;
+  applicationStatus: ApplicationStatus;
+  recruitmentCategory: RecruitmentCategory;
   recruiterName: string;
   createdAt: string;
   respondedAt: string | null;

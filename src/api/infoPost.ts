@@ -36,17 +36,14 @@ export const getInfoPosts = ({
   linkable,
   page = 0,
   size = 10,
-  sort = ['createdAt,DESC'],
 }: GetInfoPostsParams = {}): Promise<PageResponse<InfoPostSummaryResponse>> =>
   axiosInstance
     .get('/info-posts', {
       params: {
         category,
         keyword: keyword?.trim() || undefined,
-        linkable,
         page,
         size,
-        sort,
       },
       paramsSerializer: {
         indexes: null,
