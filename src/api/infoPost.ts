@@ -1,49 +1,36 @@
 import axiosInstance from '@/lib/axiosInstance';
 
-import type { PageResponse } from '@/types/recruitment';
 import type {
   GetInfoPostsParams,
   InfoPostCreateRequest,
   InfoPostDetailResponse,
   InfoPostImagePresignedUrlRequest,
   InfoPostImagePresignedUrlResponse,
+  InfoPostRecruitmentSummary,
   InfoPostSummaryResponse,
   InfoPostUpdateRequest,
+  PageResponse,
+  PageableParams,
 } from '@/types/infoPost';
-
-interface GetMyInfoPostsParams {
-  page?: number;
-  size?: number;
-  sort?: string[];
-}
-
-const getList = <T>(data: T[] | { content?: T[] } | T): T[] => {
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  if (typeof data === 'object' && data !== null && 'content' in data) {
-    return data.content ?? [];
-  }
-
-  return [data as T];
-};
 
 /** GET /info-posts */
 export const getInfoPosts = ({
   category,
+  type,
   keyword,
-  linkable,
   page = 0,
   size = 10,
+  sort = ['createdAt,DESC'],
 }: GetInfoPostsParams = {}): Promise<PageResponse<InfoPostSummaryResponse>> =>
   axiosInstance
     .get('/info-posts', {
       params: {
         category,
+        type,
         keyword: keyword?.trim() || undefined,
         page,
         size,
+        sort,
       },
       paramsSerializer: {
         indexes: null,
@@ -52,30 +39,47 @@ export const getInfoPosts = ({
     .then((res) => res.data);
 
 /** GET /info-posts/me */
-export const getMyInfoPosts = async ({
+export const getMyInfoPosts = ({
   page = 0,
-  size = 20,
+  size = 10,
   sort = ['createdAt,DESC'],
-}: GetMyInfoPostsParams = {}): Promise<InfoPostSummaryResponse[]> => {
-  const res = await axiosInstance.get('/info-posts/me', {
-    params: {
-      page,
-      size,
-      sort,
-    },
-    paramsSerializer: {
-      indexes: null,
-    },
-  });
-
-  return getList<InfoPostSummaryResponse>(res.data);
-};
+}: PageableParams = {}): Promise<PageResponse<InfoPostSummaryResponse>> =>
+  axiosInstance
+    .get('/info-posts/me', {
+      params: {
+        page,
+        size,
+        sort,
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    })
+    .then((res) => res.data);
 
 /** GET /info-posts/{infoPostId} */
 export const getInfoPostDetail = (
   infoPostId: number
 ): Promise<InfoPostDetailResponse> =>
   axiosInstance.get(`/info-posts/${infoPostId}`).then((res) => res.data);
+
+/** GET /info-posts/{infoPostId}/recruitments */
+export const getRecruitmentsByInfoPost = (
+  infoPostId: number,
+  { page = 0, size = 10, sort = ['createdAt,DESC'] }: PageableParams = {}
+): Promise<PageResponse<InfoPostRecruitmentSummary>> =>
+  axiosInstance
+    .get(`/info-posts/${infoPostId}/recruitments`, {
+      params: {
+        page,
+        size,
+        sort,
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    })
+    .then((res) => res.data);
 
 /** POST /info-posts */
 export const createInfoPost = (
@@ -91,8 +95,9 @@ export const updateInfoPost = (
   axiosInstance.put(`/info-posts/${infoPostId}`, body).then((res) => res.data);
 
 /** DELETE /info-posts/{infoPostId} */
-export const deleteInfoPost = (infoPostId: number): Promise<void> =>
-  axiosInstance.delete(`/info-posts/${infoPostId}`).then((res) => res.data);
+export const deleteInfoPost = async (infoPostId: number): Promise<void> => {
+  await axiosInstance.delete(`/info-posts/${infoPostId}`);
+};
 
 /** POST /info-posts/images/presigned-url */
 export const getInfoPostImagePresignedUrls = (

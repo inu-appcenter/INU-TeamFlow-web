@@ -1,19 +1,24 @@
 'use client';
-
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getInfoPosts } from '@/api/infoPost';
 import {
-  categoryColorMap,
-  categoryFilterOptions,
-  categoryMap,
-} from '@/constants/category';
+  infoPostCategoryColorMap,
+  infoPostCategoryFilterOptions,
+  infoPostCategoryMap,
+} from '@/constants/infoPost';
 import { infoPostKeys, useInfoPosts } from '@/hooks/useInfoPostQuery';
 import type { GetInfoPostsParams, InfoPostCategory } from '@/types/infoPost';
-
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ImageIcon,
+  Plus,
+  Search,
+} from 'lucide-react';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -27,7 +32,20 @@ export default function InfoPost() {
     'ALL' | InfoPostCategory
   >('ALL');
   const [page, setPage] = useState(1);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
 
+  const handleCategoryScroll = (direction: 'left' | 'right') => {
+    const container = categoryScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    container.scrollBy({
+      left: direction === 'left' ? -240 : 240,
+      behavior: 'smooth',
+    });
+  };
   const queryParams: GetInfoPostsParams = {
     category: selectedCategory === 'ALL' ? undefined : selectedCategory,
     keyword: searchKeyword || undefined,
@@ -65,7 +83,7 @@ export default function InfoPost() {
     };
 
     void queryClient.prefetchQuery({
-      queryKey: [...infoPostKeys.all(), nextPageParams],
+      queryKey: infoPostKeys.list(nextPageParams),
       queryFn: () => getInfoPosts(nextPageParams),
       staleTime: 30 * 1000,
     });
@@ -99,48 +117,74 @@ export default function InfoPost() {
         </header>
 
         {/* 필터 */}
-        <section className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {categoryFilterOptions.map((category) => (
-              <button
-                key={category.value}
-                type="button"
-                onClick={() =>
-                  handleCategoryChange(
-                    category.value as 'ALL' | InfoPostCategory
-                  )
-                }
-                className={`cursor-pointer rounded-2xl border-[0.5px] px-3.5 py-1.5 text-sm font-normal transition-all duration-150 active:scale-95 ${
-                  selectedCategory === category.value
-                    ? 'border-[#5E92F0] bg-[#5E92F0] text-white'
-                    : 'border-[#D6DDE5] bg-white text-[#2C2C2C] hover:bg-[#F6F8FA]'
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
+        <section className="mb-4 flex flex-col gap-3">
+          {/* 카테고리 */}
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleCategoryScroll('left')}
+              aria-label="이전 카테고리 보기"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5] bg-white text-[#2C2C2C]/60 transition-all duration-150 hover:bg-[#F6F8FA] active:scale-90 sm:hidden"
+            >
+              <ChevronLeft size={18} strokeWidth={2.5} />
+            </button>
+
+            <div
+              ref={categoryScrollRef}
+              className="scrollbar-hide min-w-0 flex-1 overflow-x-auto scroll-smooth"
+            >
+              <div className="flex w-max gap-2 px-0.5">
+                {infoPostCategoryFilterOptions.map((category) => (
+                  <button
+                    key={category.value}
+                    type="button"
+                    onClick={() =>
+                      handleCategoryChange(
+                        category.value as 'ALL' | InfoPostCategory
+                      )
+                    }
+                    className={`shrink-0 cursor-pointer rounded-2xl border-[0.5px] px-3.5 py-1.5 text-sm font-normal whitespace-nowrap transition-all duration-150 active:scale-95 ${
+                      selectedCategory === category.value
+                        ? 'border-[#5E92F0] bg-[#5E92F0] text-white'
+                        : 'border-[#D6DDE5] bg-white text-[#2C2C2C] hover:bg-[#F6F8FA]'
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleCategoryScroll('right')}
+              aria-label="다음 카테고리 보기"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5] bg-white text-[#2C2C2C]/60 transition-all duration-150 hover:bg-[#F6F8FA] active:scale-90 sm:hidden"
+            >
+              <ChevronRight size={18} strokeWidth={2.5} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 flex-1 items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-3 md:w-[400px] md:flex-none">
+          {/* 검색창 + 작성 버튼 */}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+            <div className="flex h-10 min-w-0 items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-3">
               <Search size={18} className="shrink-0 text-[#989898]" />
 
               <input
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
                 placeholder="검색어를 입력하세요"
-                className="w-full bg-transparent text-sm text-[#2C2C2C] outline-none placeholder:text-[#989898]"
+                className="min-w-0 flex-1 bg-transparent text-sm text-[#2C2C2C] outline-none placeholder:text-[#989898]"
               />
             </div>
 
             <button
               type="button"
               onClick={() => router.push('/infoPost/create')}
-              className="flex h-10 w-10 cursor-pointer items-center justify-center gap-1 rounded-full bg-[#5E92F0] text-white transition-all duration-150 active:scale-95 sm:w-auto sm:rounded-lg sm:px-4"
+              className="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#5E92F0] px-3 text-sm font-medium whitespace-nowrap text-white transition-all duration-150 hover:bg-[#4F84E5] active:scale-95 sm:px-4 sm:text-base"
             >
               <Plus size={16} strokeWidth={2.5} />
-
-              <span className="hidden sm:inline">정보글 작성</span>
+              <span>정보글 작성</span>
             </button>
           </div>
         </section>
@@ -149,7 +193,7 @@ export default function InfoPost() {
         <section className="flex flex-col gap-3">
           {isLoading && (
             <div className="flex h-[250px] items-center justify-center text-sm text-[#989898]">
-              정보글을 불러오는 중입니다.
+              정보글을 불러오는 중입니다
             </div>
           )}
 
@@ -160,36 +204,52 @@ export default function InfoPost() {
                 href={`/infoPost/${infoPost.infoPostId}`}
               >
                 <div className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-4 py-4 transition-all duration-150 hover:bg-[#FAFAFA] active:scale-[0.995]">
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    {/* 고정 썸네일 영역 */}
+                    <div className="relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-lg border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] sm:w-24">
+                      {infoPost.thumbnailUrl ? (
+                        <Image
+                          src={infoPost.thumbnailUrl}
+                          alt={`${infoPost.title} 썸네일`}
+                          fill
+                          sizes="(max-width: 640px) 80px, 96px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[#B8C0CA]">
+                          <ImageIcon
+                            size={24}
+                            strokeWidth={1.7}
+                            aria-hidden="true"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 글 정보 */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         <span
                           style={{
                             backgroundColor:
-                              categoryColorMap[infoPost.category],
+                              infoPostCategoryColorMap[infoPost.category],
                           }}
                           className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-[#2C2C2C]/80"
                         >
-                          {categoryMap[infoPost.category]}
+                          {infoPostCategoryMap[infoPost.category]}
                         </span>
 
-                        <h2 className="truncate text-lg font-semibold text-[#2C2C2C]">
+                        <h2 className="truncate text-base font-semibold text-[#2C2C2C] sm:text-lg">
                           {infoPost.title}
                         </h2>
                       </div>
 
                       <p className="mt-2 truncate px-1 text-xs text-[#989898]">
-                        연결된 모집글 {infoPost.recruitmentCount}개
+                        {infoPost.recruitmentCount > 0
+                          ? `연결된 모집글 ${infoPost.recruitmentCount}개`
+                          : '연결된 모집글이 없습니다'}
                       </p>
                     </div>
-
-                    {infoPost.thumbnailUrl && (
-                      <img
-                        src={infoPost.thumbnailUrl}
-                        alt=""
-                        className="h-16 w-12 shrink-0 rounded-lg bg-[#F6F8FA] object-contain"
-                      />
-                    )}
                   </div>
                 </div>
               </Link>
@@ -198,8 +258,8 @@ export default function InfoPost() {
           {!isLoading && infoPosts.length === 0 && (
             <div className="flex h-[60vh] items-center justify-center rounded-xl bg-white text-sm text-[#989898]">
               {searchKeyword || selectedCategory !== 'ALL'
-                ? '검색 조건에 맞는 정보글이 없습니다.'
-                : '등록된 정보글이 없습니다.'}
+                ? '검색 조건에 맞는 정보글이 없습니다'
+                : '등록된 정보글이 없습니다'}
             </div>
           )}
         </section>

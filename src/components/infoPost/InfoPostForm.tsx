@@ -8,10 +8,9 @@ import { ChevronLeft, ImagePlus, LoaderCircle, X } from 'lucide-react';
 
 import Card from '@/components/main/Card';
 import {
-  categoryColorMap,
-  categoryFilterOptions,
-  DEFAULT_CATEGORY_COLOR,
-} from '@/constants/category';
+  infoPostCategoryColorMap,
+  infoPostCategoryFilterOptions,
+} from '@/constants/infoPost';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useUploadInfoPostImages } from '@/hooks/useInfoPostQuery';
 import type { InfoPostCategory } from '@/types/infoPost';
@@ -23,10 +22,15 @@ export interface InfoPostFormData {
   imageKeys: string[];
 }
 
+interface InitialImage {
+  imageUrl: string;
+  imageKey: string;
+}
+
 interface InfoPostFormProps {
   mode: 'create' | 'edit';
   initialData?: InfoPostFormData;
-  initialImageUrl?: string | null;
+  initialImages?: InitialImage[];
   onSubmit: (form: InfoPostFormData) => Promise<void>;
   onDelete?: () => void;
 }
@@ -44,19 +48,22 @@ const defaultForm: InfoPostFormData = {
   imageKeys: [],
 };
 
-const infoPostCategoryOptions = categoryFilterOptions.filter(
+const infoPostCategoryOptions = infoPostCategoryFilterOptions.filter(
   (category) => category.value !== 'ALL'
 );
+const MAX_IMAGE_COUNT = 3;
+const EMPTY_INITIAL_IMAGES: InitialImage[] = [];
 
 export default function InfoPostForm({
   mode,
   initialData,
-  initialImageUrl,
+  initialImages = EMPTY_INITIAL_IMAGES,
   onSubmit,
   onDelete,
 }: InfoPostFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectedImagesRef = useRef<SelectedImage[]>([]);
 
   const { errorMessage, showErrorMessage } = useErrorToast();
 
@@ -67,19 +74,16 @@ export default function InfoPostForm({
     initialData ?? defaultForm
   );
 
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
-    null
-  );
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
+
+  const [existingImages, setExistingImages] =
+    useState<InitialImage[]>(initialImages);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(
-    initialImageUrl ?? null
-  );
-  useEffect(() => {
-    setExistingImageUrl(initialImageUrl ?? null);
-  }, [initialImageUrl]);
+
   const isBusy = isSubmitting || isUploading;
+  const totalImageCount = existingImages.length + selectedImages.length;
 
   useEffect(() => {
     if (initialData) {
@@ -88,55 +92,75 @@ export default function InfoPostForm({
   }, [initialData]);
 
   useEffect(() => {
-    const previewUrl = selectedImage?.previewUrl;
+    if (mode === 'edit') {
+      setExistingImages(initialImages);
+    }
+  }, [initialImages, mode]);
 
+  useEffect(() => {
+    selectedImagesRef.current = selectedImages;
+  }, [selectedImages]);
+
+  useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      selectedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl);
+      });
     };
-  }, [selectedImage?.previewUrl]);
+  }, []);
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files ?? []);
 
     event.target.value = '';
 
-    if (!file) {
+    if (files.length === 0) {
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+
+    if (imageFiles.length !== files.length) {
       showErrorMessage('이미지 파일만 선택할 수 있습니다');
+    }
+
+    const availableCount = MAX_IMAGE_COUNT - totalImageCount;
+
+    if (availableCount <= 0) {
+      showErrorMessage('이미지는 최대 3장까지 등록할 수 있습니다');
       return;
     }
 
-    setSelectedImage({
+    const filesToAdd = imageFiles.slice(0, availableCount);
+
+    if (imageFiles.length > availableCount) {
+      showErrorMessage('이미지는 최대 3장까지 등록할 수 있습니다');
+    }
+
+    const newImages = filesToAdd.map((file) => ({
       file,
       previewUrl: URL.createObjectURL(file),
-    });
-
-    setSelectedImage({
-      file,
-      previewUrl: URL.createObjectURL(file),
-    });
-
-    setExistingImageUrl(null);
-
-    setForm((prev) => ({
-      ...prev,
-      imageKeys: [],
     }));
+
+    setSelectedImages((prev) => [...prev, ...newImages]);
   };
 
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    setExistingImageUrl(null);
+  const handleRemoveExistingImage = (imageKey: string) => {
+    setExistingImages((prev) =>
+      prev.filter((image) => image.imageKey !== imageKey)
+    );
+  };
 
-    setForm((prev) => ({
-      ...prev,
-      imageKeys: [],
-    }));
+  const handleRemoveSelectedImage = (index: number) => {
+    setSelectedImages((prev) => {
+      const targetImage = prev[index];
+
+      if (targetImage) {
+        URL.revokeObjectURL(targetImage.previewUrl);
+      }
+
+      return prev.filter((_, imageIndex) => imageIndex !== index);
+    });
   };
 
   const validateForm = () => {
@@ -157,32 +181,54 @@ export default function InfoPostForm({
     try {
       setIsSubmitting(true);
 
-      let imageKeys = form.imageKeys.slice(0, 1);
+      const existingImageKeys = existingImages.map((image) => image.imageKey);
 
-      if (selectedImage) {
-        let imageKey = selectedImage.imageKey;
+      let selectedImageKeys = selectedImages
+        .map((image) => image.imageKey)
+        .filter((imageKey): imageKey is string => Boolean(imageKey));
 
-        if (!imageKey) {
-          const uploadedImageKeys = await uploadImages([selectedImage.file]);
+      const imagesToUpload = selectedImages.filter((image) => !image.imageKey);
 
-          imageKey = uploadedImageKeys[0];
+      if (imagesToUpload.length > 0) {
+        const uploadedImageKeys = await uploadImages(
+          imagesToUpload.map((image) => image.file)
+        );
 
-          if (!imageKey) {
-            throw new Error('업로드된 이미지 키가 없습니다.');
+        let uploadedIndex = 0;
+
+        const updatedSelectedImages = selectedImages.map((image) => {
+          if (image.imageKey) {
+            return image;
           }
 
-          setSelectedImage((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  imageKey,
-                }
-              : null
-          );
-        }
+          const imageKey = uploadedImageKeys[uploadedIndex];
+          uploadedIndex += 1;
 
-        imageKeys = [imageKey];
+          if (!imageKey) {
+            throw new Error('업로드된 이미지가 없습니다');
+          }
+
+          return {
+            ...image,
+            imageKey,
+          };
+        });
+
+        setSelectedImages(updatedSelectedImages);
+
+        selectedImageKeys = updatedSelectedImages.map((image) => {
+          if (!image.imageKey) {
+            throw new Error('업로드된 이미지가 없습니다');
+          }
+
+          return image.imageKey;
+        });
       }
+
+      const imageKeys = [...existingImageKeys, ...selectedImageKeys].slice(
+        0,
+        MAX_IMAGE_COUNT
+      );
 
       await onSubmit({
         ...form,
@@ -223,7 +269,7 @@ export default function InfoPostForm({
     setIsConfirmOpen(false);
     await submitForm();
   };
-  const previewImageUrl = selectedImage?.previewUrl ?? existingImageUrl;
+
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
       <section className="mx-auto mt-8 max-w-[800px] sm:mt-12">
@@ -238,8 +284,7 @@ export default function InfoPostForm({
           <div
             className="flex h-[72px] items-center px-6"
             style={{
-              backgroundColor:
-                categoryColorMap[form.category] ?? DEFAULT_CATEGORY_COLOR,
+              backgroundColor: infoPostCategoryColorMap[form.category],
             }}
           >
             <button
@@ -326,56 +371,78 @@ export default function InfoPostForm({
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   hidden
                   onChange={handleImageChange}
                 />
 
-                {previewImageUrl ? (
-                  <div>
-                    <div className="relative aspect-video w-full overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {existingImages.map((image) => (
+                    <div
+                      key={image.imageKey}
+                      className="relative aspect-video overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
+                    >
                       <Image
-                        src={previewImageUrl}
-                        alt={selectedImage?.file.name ?? '기존 정보글 이미지'}
+                        src={image.imageUrl}
+                        alt="기존 정보글 이미지"
                         fill
-                        unoptimized={Boolean(selectedImage)}
                         className="object-cover"
                       />
 
                       <button
                         type="button"
-                        onClick={handleRemoveImage}
+                        onClick={() =>
+                          handleRemoveExistingImage(image.imageKey)
+                        }
                         disabled={isBusy}
-                        aria-label="선택한 이미지 삭제"
-                        className="absolute top-3 right-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-all duration-150 hover:bg-black/70 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="기존 이미지 삭제"
+                        className="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <X size={17} />
+                        <X size={15} />
                       </button>
                     </div>
+                  ))}
 
+                  {selectedImages.map((image, index) => (
+                    <div
+                      key={image.previewUrl}
+                      className="relative aspect-video overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
+                    >
+                      <Image
+                        src={image.previewUrl}
+                        alt={image.file.name}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSelectedImage(index)}
+                        disabled={isBusy}
+                        aria-label="선택한 이미지 삭제"
+                        className="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {totalImageCount < MAX_IMAGE_COUNT && (
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isBusy}
-                      className="mt-2 cursor-pointer text-sm font-semibold text-[#5E92F0] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#B8C0CA] bg-[#F6F8FA] text-[#989898] hover:bg-[#EEF1F5] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      이미지 변경
+                      <ImagePlus size={26} />
+                      <span className="text-sm font-semibold">이미지 추가</span>
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isBusy}
-                    className="flex h-36 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#B8C0CA] bg-[#F6F8FA] text-[#989898] transition-all duration-150 hover:bg-[#EEF1F5] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <ImagePlus size={28} />
-
-                    <span className="text-sm font-semibold">이미지 추가</span>
-                  </button>
-                )}
+                  )}
+                </div>
 
                 <p className="mt-2 text-xs text-[#989898]">
-                  이미지 한 장을 등록할 수 있습니다.
+                  이미지 최대 3장 · 현재 {totalImageCount}장
                 </p>
               </div>
 
@@ -416,14 +483,15 @@ export default function InfoPostForm({
 
                 <button
                   type="button"
-                  onClick={handleSubmitClick}
+                  onClick={() => {
+                    void handleSubmitClick();
+                  }}
                   disabled={isBusy}
                   className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
                 >
                   {isBusy ? (
                     <span className="flex items-center gap-2">
                       <LoaderCircle className="h-4 w-4 animate-spin" />
-
                       {isUploading ? '이미지 업로드 중' : '처리 중'}
                     </span>
                   ) : mode === 'create' ? (
