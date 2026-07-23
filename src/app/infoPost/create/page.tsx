@@ -18,24 +18,19 @@ export default function InfoPostCreatePage() {
   const { isVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   useEffect(() => {
-    if (!isVerified) {
+    if (isVerified === false) {
       router.replace('/infoPost?error=school-verification-required');
     }
   }, [isVerified, router]);
 
   const handleSubmit = async (form: InfoPostFormData) => {
-    try {
-      const createdInfoPost = await createInfoPost({
-        category: form.category,
-        title: form.title,
-        content: form.content,
-        imageKeys: form.imageKeys,
-      });
-
-      router.push(`/infoPost/${createdInfoPost.infoPostId}`);
-    } catch (error) {
-      throw error;
-    }
+    await createInfoPost({
+      category: form.category,
+      title: form.title,
+      content: form.content,
+      imageKeys: form.imageKeys,
+    });
+    router.replace('/infoPost');
   };
 
   return (

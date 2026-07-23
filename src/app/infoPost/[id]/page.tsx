@@ -5,11 +5,14 @@ import { useState } from 'react';
 
 import Card from '@/components/main/Card';
 import { useDeleteInfoPost, useInfoPostDetail } from '@/hooks/useInfoPostQuery';
-import { categoryColorMap, categoryMap } from '@/constants/category';
+import {
+  infoPostCategoryColorMap,
+  infoPostCategoryMap,
+} from '@/constants/infoPost';
 import { formatDate } from '@/utils/date/formatDate';
 
 import { ChevronLeft, Ellipsis } from 'lucide-react';
-
+import { useErrorToast } from '@/hooks/useErrorToast';
 export default function InfoPostDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -20,7 +23,7 @@ export default function InfoPostDetailPage() {
   const { mutateAsync: deleteInfoPost } = useDeleteInfoPost();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const handleDelete = async () => {
     const confirmed = window.confirm('정보글을 삭제하시겠습니까?');
 
@@ -31,7 +34,7 @@ export default function InfoPostDetailPage() {
       router.push('/infoPost');
     } catch (error) {
       console.error('정보글 삭제 실패', error);
-      alert('정보글 삭제에 실패했습니다.');
+      showErrorMessage('정보글 삭제에 실패했습니다');
     }
   };
 
@@ -41,7 +44,7 @@ export default function InfoPostDetailPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
         <p className="text-base font-semibold text-[#2C2C2C] sm:text-lg">
-          존재하지 않는 정보글입니다.
+          존재하지 않는 정보글입니다
         </p>
       </main>
     );
@@ -52,10 +55,15 @@ export default function InfoPostDetailPage() {
       <section className="mx-auto mt-8 flex min-h-[calc(100vh-48px)] max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           {/* 상단 */}
+          {errorMessage && (
+            <div className="animate-modal-pop fixed top-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+              {errorMessage}
+            </div>
+          )}
           <div
             className="flex h-18 items-center justify-between px-6"
             style={{
-              backgroundColor: categoryColorMap[infoPost.category] ?? '#E9E9E9',
+              backgroundColor: infoPostCategoryColorMap[infoPost.category],
             }}
           >
             <button
@@ -119,7 +127,7 @@ export default function InfoPostDetailPage() {
             <div className="mt-6 grid grid-cols-[72px_1fr] gap-y-4 text-sm sm:grid-cols-[90px_1fr] sm:text-[15px]">
               <span className="text-[#989898]">종류</span>
               <span className="text-[#2C2C2C]">
-                {categoryMap[infoPost.category]}
+                {infoPostCategoryMap[infoPost.category]}
               </span>
 
               <span className="text-[#989898]">작성자</span>
@@ -144,7 +152,7 @@ export default function InfoPostDetailPage() {
 
             {infoPost.images.length > 0 && (
               <div className="mt-8 flex flex-col gap-4">
-                {infoPost.images
+                {[...infoPost.images]
                   .sort((a, b) => a.sortOrder - b.sortOrder)
                   .map((image) => (
                     <img

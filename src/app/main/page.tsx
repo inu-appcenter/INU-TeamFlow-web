@@ -11,7 +11,7 @@ import { useInfoPosts } from '@/hooks/useInfoPostQuery';
 import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import { useCalendarGrid } from '@/hooks/calendar/useCalendarGrid';
@@ -22,12 +22,21 @@ import RecruitmentListItem from '@/components/main/recruitment/RecruitmentListIt
 import MonthCalendar from '@/components/main/calendar/MonthCalendar';
 import DaySchedulePanel from '@/components/main/calendar/DaySchedulePanel';
 import { categoryFilterOptions } from '@/constants/category';
+import { infoPostCategoryFilterOptions } from '@/constants/infoPost';
+import type { InfoPostCategory } from '@/types/infoPost';
 
 export default function Main() {
+  type InfoPostCategoryValue = 'ALL' | InfoPostCategory;
   const router = useRouter();
   const today = new Date();
   const [selectedInfoPostCategory, setSelectedInfoPostCategory] =
-    useState('ALL');
+    useState<InfoPostCategoryValue>('ALL');
+
+  const infoPostCategoryScrollRef = useRef<HTMLDivElement>(null);
+
+  const infoPostCategoryButtonRefs = useRef<
+    Partial<Record<InfoPostCategoryValue, HTMLButtonElement | null>>
+  >({});
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
@@ -62,6 +71,18 @@ export default function Main() {
     );
   };
 
+  const handleInfoPostCategoryChange = (category: InfoPostCategoryValue) => {
+    setSelectedInfoPostCategory(category);
+
+    requestAnimationFrame(() => {
+      infoPostCategoryButtonRefs.current[category]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    });
+  };
+
   const filteredRecruitments = recruitments.filter((recruitment) => {
     if (selectedCategory === 'ALL') return true;
 
@@ -71,19 +92,18 @@ export default function Main() {
   const mobileRecruitments = filteredRecruitments.slice(0, 4);
   const desktopRecruitments = filteredRecruitments.slice(0, 3);
 
-  const { data: infoPostData } = useInfoPosts({
+  const { data: infoPostData, isLoading: isInfoPostsLoading } = useInfoPosts({
+    category:
+      selectedInfoPostCategory === 'ALL' ? undefined : selectedInfoPostCategory,
     page: 0,
-    size: 100,
+    size: 4,
     sort: ['createdAt,DESC'],
   });
-  const infoPosts = infoPostData?.content ?? [];
-  const filteredInfoPosts = infoPosts.filter((infoPost) => {
-    if (selectedInfoPostCategory === 'ALL') return true;
 
-    return infoPost.category === selectedInfoPostCategory;
-  });
-  const mobileInfoPosts = filteredInfoPosts.slice(0, 4);
-  const desktopInfoPosts = filteredInfoPosts.slice(0, 3);
+  const infoPosts = infoPostData?.content ?? [];
+
+  const mobileInfoPosts = infoPosts.slice(0, 4);
+  const desktopInfoPosts = infoPosts.slice(0, 3);
 
   const { data: myNotices = [] } = useMyTeamNotices();
 
@@ -93,6 +113,34 @@ export default function Main() {
 
   const mobileNotices = sortedNotices.slice(0, 5);
   const desktopNotices = sortedNotices.slice(0, 4);
+
+  useEffect(() => {
+    const container = infoPostCategoryScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const delta =
+        Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+          ? event.deltaY
+          : event.deltaX;
+
+      container.scrollLeft += delta;
+    };
+
+    container.addEventListener('wheel', handleWheel, {
+      passive: false,
+    });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
@@ -253,56 +301,100 @@ export default function Main() {
           <div className="xl:col-span-6">
             <Card className="h-[345px] overflow-hidden p-6 sm:h-[350px]">
               <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] pb-2">
-                <h2 className="text-xl font-bold text-[#2C2C2C]">
-                  정보 게시판
-                </h2>
+                <div>
+                  <h2 className="text-xl font-bold text-[#2C2C2C]">
+                    정보 게시판
+                  </h2>
+                </div>
 
                 <button
                   type="button"
                   onClick={() => router.push('/infoPost')}
-                  className="z-50 cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80 active:scale-90"
+                  aria-label="정보 게시판으로 이동"
+                  className="z-50 flex cursor-pointer items-center justify-center text-[#2C2C2C] transition-all duration-150 hover:text-[#2C2C2C]/80 active:scale-90"
                 >
                   <ChevronRight />
                 </button>
               </div>
 
               {/* 카테고리 */}
-              <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
-                {categoryFilterOptions.map((category) => (
-                  <button
-                    key={category.value}
-                    type="button"
-                    onClick={() => setSelectedInfoPostCategory(category.value)}
-                    className={`z-50 cursor-pointer rounded-2xl border-[0.5px] px-2.5 py-1 text-sm font-normal transition-all duration-150 active:scale-95 sm:px-3.5 sm:py-1.5 sm:text-base ${
-                      selectedInfoPostCategory === category.value
-                        ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
-                        : 'border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C] hover:bg-[#E3E7EC]'
-                    }`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
+              <div className="relative mt-3 hidden sm:block">
+                <div
+                  ref={infoPostCategoryScrollRef}
+                  className="scrollbar-hide overflow-x-auto overscroll-x-contain pb-1"
+                >
+                  <div className="flex w-max gap-2 pr-8">
+                    {infoPostCategoryFilterOptions.map((category) => {
+                      const isSelected =
+                        selectedInfoPostCategory === category.value;
+
+                      return (
+                        <button
+                          key={category.value}
+                          ref={(element) => {
+                            infoPostCategoryButtonRefs.current[category.value] =
+                              element;
+                          }}
+                          type="button"
+                          onClick={() =>
+                            handleInfoPostCategoryChange(category.value)
+                          }
+                          className={`z-10 shrink-0 cursor-pointer snap-start rounded-2xl border-[0.5px] px-3.5 py-1.5 text-base font-normal whitespace-nowrap transition-all duration-200 active:scale-95 ${
+                            isSelected
+                              ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
+                              : 'border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C] hover:bg-[#E3E7EC]'
+                          }`}
+                        >
+                          {category.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pointer-events-none absolute top-0 right-0 h-full w-9 bg-gradient-to-l from-white via-white/80 to-transparent" />
               </div>
 
-              {/* 리스트 */}
+              {/* 모바일 리스트 */}
               <div className="mt-0 flex flex-col sm:hidden">
-                {mobileInfoPosts.map((infoPost) => (
-                  <InfoPostListItem
-                    key={infoPost.infoPostId}
-                    infoPost={infoPost}
-                    size="sm"
-                  />
-                ))}
+                {isInfoPostsLoading ? (
+                  <div className="flex h-[220px] items-center justify-center text-sm font-medium text-[#989898]">
+                    정보글을 불러오는 중입니다
+                  </div>
+                ) : mobileInfoPosts.length > 0 ? (
+                  mobileInfoPosts.map((infoPost) => (
+                    <InfoPostListItem
+                      key={infoPost.infoPostId}
+                      infoPost={infoPost}
+                      size="sm"
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-[220px] items-center justify-center text-sm font-medium text-[#989898]">
+                    등록된 정보글이 없습니다
+                  </div>
+                )}
               </div>
 
+              {/* 데스크톱 리스트 */}
               <div className="mt-1 hidden flex-col sm:flex">
-                {desktopInfoPosts.map((infoPost) => (
-                  <InfoPostListItem
-                    key={infoPost.infoPostId}
-                    infoPost={infoPost}
-                    size="lg"
-                  />
-                ))}
+                {isInfoPostsLoading ? (
+                  <div className="flex h-[190px] items-center justify-center text-sm font-medium text-[#989898]">
+                    정보글을 불러오는 중입니다
+                  </div>
+                ) : desktopInfoPosts.length > 0 ? (
+                  desktopInfoPosts.map((infoPost) => (
+                    <InfoPostListItem
+                      key={infoPost.infoPostId}
+                      infoPost={infoPost}
+                      size="lg"
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-[190px] items-center justify-center text-sm font-medium text-[#989898]">
+                    등록된 정보글이 없습니다
+                  </div>
+                )}
               </div>
             </Card>
           </div>

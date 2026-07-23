@@ -2,15 +2,9 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import type { InfoPostSummaryResponse } from '@/types/infoPost';
 
-const categoryMap = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
+import { infoPostCategoryMap } from '@/constants/infoPost';
+import type { InfoPostSummaryResponse } from '@/types/infoPost';
 
 type InfoPostListItemProps = {
   infoPost: InfoPostSummaryResponse;
@@ -37,7 +31,7 @@ export default function InfoPostListItem({
             size === 'sm' ? 'text-sm' : 'text-base'
           }`}
         >
-          [{categoryMap[infoPost.category]}] {infoPost.title}
+          [{infoPostCategoryMap[infoPost.category]}] {infoPost.title}
         </p>
 
         <p className="mt-1 text-xs text-[#989898]">

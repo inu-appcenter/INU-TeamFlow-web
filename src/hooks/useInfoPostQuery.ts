@@ -12,6 +12,7 @@ import {
   getInfoPostImagePresignedUrls,
   getInfoPosts,
   getMyInfoPosts,
+  getRecruitmentsByInfoPost,
   updateInfoPost,
   uploadInfoPostImage,
 } from '@/api/infoPost';
@@ -20,32 +21,44 @@ import type {
   GetInfoPostsParams,
   InfoPostCreateRequest,
   InfoPostUpdateRequest,
+  PageableParams,
 } from '@/types/infoPost';
 
 export const infoPostKeys = {
-  all: () => ['infoPosts'] as const,
-  mine: () => ['infoPosts', 'me'] as const,
-  detail: (id: number) => ['infoPosts', id] as const,
+  all: ['infoPosts'] as const,
+
+  lists: () => [...infoPostKeys.all, 'list'] as const,
+  list: (params: GetInfoPostsParams) =>
+    [...infoPostKeys.lists(), params] as const,
+
+  mineRoot: () => [...infoPostKeys.all, 'me'] as const,
+  mine: (params: PageableParams) =>
+    [...infoPostKeys.mineRoot(), params] as const,
+
+  details: () => [...infoPostKeys.all, 'detail'] as const,
+  detail: (infoPostId: number) =>
+    [...infoPostKeys.details(), infoPostId] as const,
+
+  recruitments: (infoPostId: number, params: PageableParams) =>
+    [...infoPostKeys.detail(infoPostId), 'recruitments', params] as const,
 };
 
 export const useInfoPosts = (params: GetInfoPostsParams = {}) =>
   useQuery({
-    queryKey: [...infoPostKeys.all(), params],
+    queryKey: infoPostKeys.list(params),
     queryFn: () => getInfoPosts(params),
     placeholderData: keepPreviousData,
     staleTime: 30 * 1000,
+    retry: false,
   });
 
-export const useMyInfoPosts = () =>
+export const useMyInfoPosts = (params: PageableParams = {}) =>
   useQuery({
-    queryKey: infoPostKeys.mine(),
-    queryFn: () =>
-      getMyInfoPosts({
-        page: 0,
-        size: 20,
-        sort: ['createdAt,DESC'],
-      }),
+    queryKey: infoPostKeys.mine(params),
+    queryFn: () => getMyInfoPosts(params),
+    placeholderData: keepPreviousData,
     staleTime: 30 * 1000,
+    retry: false,
   });
 
 export const useInfoPostDetail = (infoPostId: number) =>
@@ -53,6 +66,19 @@ export const useInfoPostDetail = (infoPostId: number) =>
     queryKey: infoPostKeys.detail(infoPostId),
     queryFn: () => getInfoPostDetail(infoPostId),
     enabled: Number.isFinite(infoPostId) && infoPostId > 0,
+    retry: false,
+  });
+
+export const useRecruitmentsByInfoPost = (
+  infoPostId: number,
+  params: PageableParams = {}
+) =>
+  useQuery({
+    queryKey: infoPostKeys.recruitments(infoPostId, params),
+    queryFn: () => getRecruitmentsByInfoPost(infoPostId, params),
+    enabled: Number.isFinite(infoPostId) && infoPostId > 0,
+    placeholderData: keepPreviousData,
+    retry: false,
   });
 
 export const useCreateInfoPost = () => {
@@ -60,9 +86,19 @@ export const useCreateInfoPost = () => {
 
   return useMutation({
     mutationFn: (body: InfoPostCreateRequest) => createInfoPost(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: infoPostKeys.all(),
+
+    onSuccess: (createdInfoPost) => {
+      queryClient.setQueryData(
+        infoPostKeys.detail(createdInfoPost.infoPostId),
+        createdInfoPost
+      );
+
+      void queryClient.invalidateQueries({
+        queryKey: infoPostKeys.lists(),
+      });
+
+      void queryClient.invalidateQueries({
+        queryKey: infoPostKeys.mineRoot(),
       });
     },
   });
@@ -79,13 +115,19 @@ export const useUpdateInfoPost = () => {
       infoPostId: number;
       body: InfoPostUpdateRequest;
     }) => updateInfoPost(infoPostId, body),
-    onSuccess: (_, variables) => {
+
+    onSuccess: (updatedInfoPost) => {
+      queryClient.setQueryData(
+        infoPostKeys.detail(updatedInfoPost.infoPostId),
+        updatedInfoPost
+      );
+
       queryClient.invalidateQueries({
-        queryKey: infoPostKeys.all(),
+        queryKey: infoPostKeys.lists(),
       });
 
       queryClient.invalidateQueries({
-        queryKey: infoPostKeys.detail(variables.infoPostId),
+        queryKey: infoPostKeys.mineRoot(),
       });
     },
   });
@@ -96,9 +138,18 @@ export const useDeleteInfoPost = () => {
 
   return useMutation({
     mutationFn: (infoPostId: number) => deleteInfoPost(infoPostId),
-    onSuccess: () => {
+
+    onSuccess: (_, infoPostId) => {
+      queryClient.removeQueries({
+        queryKey: infoPostKeys.detail(infoPostId),
+      });
+
       queryClient.invalidateQueries({
-        queryKey: infoPostKeys.all(),
+        queryKey: infoPostKeys.lists(),
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: infoPostKeys.mineRoot(),
       });
     },
   });
@@ -123,11 +174,17 @@ export const useUploadInfoPostImages = () =>
       }
 
       await Promise.all(
-        presignedUrls.map((presignedUrl, index) =>
-          uploadInfoPostImage(presignedUrl.uploadUrl, files[index])
-        )
+        presignedUrls.map((presignedUrl, index) => {
+          const file = files[index];
+
+          if (!file) {
+            throw new Error('업로드할 이미지 파일을 찾을 수 없습니다.');
+          }
+
+          return uploadInfoPostImage(presignedUrl.uploadUrl, file);
+        })
       );
 
-      return presignedUrls.map((presignedUrl) => presignedUrl.imageKey);
+      return presignedUrls.map(({ imageKey }) => imageKey);
     },
   });

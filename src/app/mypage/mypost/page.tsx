@@ -62,10 +62,12 @@ export default function MyPostPage() {
   } = useMyRecruitments();
 
   const {
-    data: infoPosts = [],
+    data: infoPostsPage,
     isLoading: isInfoPostsLoading,
     isError: isInfoPostsError,
   } = useMyInfoPosts();
+
+  const infoPosts = infoPostsPage?.content ?? [];
 
   const {
     data: applications = [],
