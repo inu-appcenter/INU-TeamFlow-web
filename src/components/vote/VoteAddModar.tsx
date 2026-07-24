@@ -35,6 +35,7 @@ interface TeamMember {
   username: string;
   teamRole: string;
   department: string;
+  userNickname: string;
 }
 
 interface VoteScheduleForm {
@@ -422,7 +423,7 @@ export default function VoteAddModal({
 
                       <div className="flex flex-col">
                         <span className="truncate text-base font-semibold text-[#2c2c2c]">
-                          {member.username}
+                          {member.userNickname}
                         </span>
                       </div>
 
@@ -450,7 +451,7 @@ export default function VoteAddModal({
                           className="flex items-center justify-between rounded-lg bg-white px-3 py-2"
                         >
                           <span className="truncate text-sm font-medium text-[#2c2c2c]">
-                            {member.username}
+                            {member.userNickname}
                           </span>
 
                           <button

@@ -31,7 +31,11 @@ export default function VoteDetailPage() {
   const [isSelectingResult, setIsSelectingResult] = useState(false);
 
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
-  const { data: vote, isLoading: isVoteLoading } = useVoteDetail(voteId);
+  const {
+    data: vote,
+    isLoading: isVoteLoading,
+    refetch: refetchVote,
+  } = useVoteDetail(voteId);
   const { data: voteSlots = [] } = useVoteSlots(voteId);
   const { mutateAsync: selectSlots } = useSelectVoteSlots(voteId);
   const { mutateAsync: confirmResult } = useConfirmVoteResult(voteId);
@@ -60,7 +64,7 @@ export default function VoteDetailPage() {
         endHour !== undefined &&
         !isNaN(startHour) &&
         !isNaN(endHour)
-      ? Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i)
+      ? Array.from({ length: endHour - startHour }, (_, i) => startHour + i)
       : [];
 
   const participantList =
@@ -76,9 +80,9 @@ export default function VoteDetailPage() {
   const getSlotColor = (participantCount: number) => {
     const ratio = participantCount / maxParticipantCount;
 
-    if (ratio >= 0.8) return 'bg-[#729BEF]';
-    if (ratio >= 0.5) return 'bg-[#BBD2FF]';
-    if (ratio > 0) return 'bg-[#DCE8FF]';
+    if (ratio >= 0.8) return 'bg-[#729BEF]/80';
+    if (ratio >= 0.5) return 'bg-[#BBD2FF]/90';
+    if (ratio > 0) return 'bg-[#DCE8FF]/80';
 
     return 'bg-[#F1F4F8]';
   };
@@ -327,7 +331,10 @@ export default function VoteDetailPage() {
                   <>
                     <div className="mb-4 flex pr-13 pl-8">
                       <button
-                        onClick={() => setIsParticipantListOpen(true)}
+                        onClick={() => {
+                          setIsParticipantListOpen(true);
+                          refetchVote();
+                        }}
                         className="ml-auto flex cursor-pointer items-center gap-1 rounded-full border-[0.5] border-[#D6DDE5] bg-[#EEF1F5] py-1 pr-2 pl-4 text-sm font-bold text-[#2c2c2c]/60 transition hover:text-[#5c5c5c]"
                       >
                         참여자 목록보기

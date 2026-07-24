@@ -54,6 +54,7 @@ export const useSelectVoteSlots = (voteId: number) => {
       selectVoteSlots(voteId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: voteKeys.voteSlots(voteId) });
+      queryClient.invalidateQueries({ queryKey: voteKeys.voteDetail(voteId) });
     },
   });
 };

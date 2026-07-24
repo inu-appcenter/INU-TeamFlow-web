@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ImagePlus, Send } from 'lucide-react';
+import { ChevronLeft, ImagePlus, Send, Menu } from 'lucide-react';
 import { useChatMessageAnchor } from '@/hooks/chat/useChatMessageAnchor';
 import { useChatMessageHistory } from '@/hooks/chat/useChatMessageHistory';
 import { formatChatDate, isSameDay } from '@/utils/date/formatChatDate';
@@ -15,6 +15,7 @@ import { useChatImageUpload } from '@/hooks/chat/useChatImageUpload';
 import { useMyInfo } from '@/hooks/useAuthQuery';
 import { useMarkChatAsRead } from '@/hooks/chat/useMarkChatAsRead';
 import type { ChatMessageResponse } from '@/types/chat';
+import ChatRoomDrawer from '@/components/chat/ChatRoomDrawer';
 
 export default function ChatRoomPage() {
   const router = useRouter();
@@ -27,6 +28,11 @@ export default function ChatRoomPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [roomInfo, setRoomInfo] = useState({
+    roomName: searchParams.get('roomName') ?? '',
+    roomImageUrl: searchParams.get('roomImageUrl') || null,
+  });
 
   const oldestLoadedId = anchor?.messages[0]?.chatMessageId;
 
@@ -132,10 +138,9 @@ export default function ChatRoomPage() {
     sendMessage({ messageType: 'IMAGE', imageKey });
   };
 
-  const roomName = searchParams.get('roomName') ?? '';
   const roomType =
     (searchParams.get('roomType') as 'TEAM' | 'DIRECT') ?? 'TEAM';
-  const roomImageUrl = searchParams.get('roomImageUrl') || null;
+
   const currentUserId = me?.userId;
 
   return (
@@ -145,31 +150,43 @@ export default function ChatRoomPage() {
       </div>
 
       <section className="mx-auto flex h-full min-h-0 max-w-[800px] flex-1 flex-col bg-white">
-        <header className="flex items-center gap-3 bg-white px-6 pt-5">
-          <button onClick={() => router.back()} className="cursor-pointer">
-            <ChevronLeft size={20} strokeWidth={2} className="sm:h-7 sm:w-7" />
-          </button>
-          <div
-            className={`relative h-10 w-10 shrink-0 overflow-hidden bg-[#D6DDE5] ${
-              roomType === 'TEAM' ? 'rounded-xl' : 'rounded-full'
-            }`}
-          >
-            {roomImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={roomImageUrl}
-                alt={roomName}
-                className="h-full w-full object-cover"
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-3 bg-white px-6 pt-5">
+            <button onClick={() => router.back()} className="cursor-pointer">
+              <ChevronLeft
+                size={20}
+                strokeWidth={2}
+                className="sm:h-7 sm:w-7"
               />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#3F4852]">
-                {roomName.slice(0, 1)}
-              </div>
-            )}
+            </button>
+            <div
+              className={`relative h-10 w-10 shrink-0 overflow-hidden bg-[#D6DDE5] ${
+                roomType === 'TEAM' ? 'rounded-xl' : 'rounded-full'
+              }`}
+            >
+              {roomInfo.roomImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={roomInfo.roomImageUrl}
+                  alt={roomInfo.roomName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#3F4852]">
+                  {roomInfo.roomName.slice(0, 1)}
+                </div>
+              )}
+            </div>
+            <h1 className="truncate text-[20px] font-semibold text-[#2C2C2C]">
+              {roomInfo.roomName}
+            </h1>
           </div>
-          <h1 className="truncate text-[20px] font-semibold text-[#2C2C2C]">
-            {roomName}
-          </h1>
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="mt-5 mr-7 cursor-pointer rounded-full p-2 transition duration-200 hover:bg-[#EEF1F5]"
+          >
+            <Menu size={22} />
+          </button>
         </header>
 
         <div
@@ -336,6 +353,17 @@ export default function ChatRoomPage() {
             <Send size={22} className="text-[#5E92F0]" />
           </button>
         </div>
+        <ChatRoomDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          roomId={roomId}
+          roomType={roomType}
+          roomName={roomInfo.roomName}
+          roomImageUrl={roomInfo.roomImageUrl}
+          onInfoUpdated={(next) =>
+            setRoomInfo((prev) => ({ ...prev, ...next }))
+          }
+        />
       </section>
     </main>
   );

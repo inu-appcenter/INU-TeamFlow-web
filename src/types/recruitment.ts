@@ -88,12 +88,16 @@ export interface ApplicationDetailResponse {
   applicationId: number;
   applicationStatus: ApplicationStatus;
   introduction: string;
+  teamId: number;
   recruitmentTitle: string;
   category: RecruitmentCategory;
   recruiterName: string;
+  applicantDepartment: string;
+  applicantStudentNumber: string;
   announcementTitle: string | null;
   applicantName: string;
   isRecruiter: boolean;
+  applicantId: number;
   createdAt: string;
   respondedAt: string | null;
 }
