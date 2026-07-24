@@ -102,6 +102,15 @@ export default function VoteResult({
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
+  const addOneDay = (dateStr: string) => {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   return (
     <div className="py-6 pr-12 pl-8 sm:py-8 sm:pr-14 sm:pl-10">
       {/* 제목 */}
@@ -277,14 +286,18 @@ export default function VoteResult({
               <button
                 onClick={() => {
                   onSubmit(
-                    `${selectedStart.date}T${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute}`,
-                    `${selectedEnd.date}T${(() => {
-                      const endMinute = Number(selectedEnd.minute) + 30;
-                      const endHour =
-                        selectedEnd.hour + Math.floor(endMinute / 60);
-                      const endMin = endMinute % 60;
-                      return `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
-                    })()}`
+                    isAllDay
+                      ? `${selectedStart.date}T00:00:00`
+                      : `${selectedStart.date}T${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute}`,
+                    isAllDay
+                      ? `${selectedEnd.date}T23:59:00`
+                      : `${selectedEnd.date}T${(() => {
+                          const endMinute = Number(selectedEnd.minute) + 30;
+                          const endHour =
+                            selectedEnd.hour + Math.floor(endMinute / 60);
+                          const endMin = endMinute % 60;
+                          return `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+                        })()}`
                   );
 
                   setIsConfirmModalOpen(false);

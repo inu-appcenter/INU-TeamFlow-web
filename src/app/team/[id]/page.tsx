@@ -118,6 +118,7 @@ export default function TeamDetail() {
 
   const dayLabel = days[selectedDate.getDay()];
   const isAdmin = team.role === 'LEADER' || team.role === 'MANAGER';
+  const isLeader = team.role === 'LEADER';
 
   const displayCount = isMd ? 4 : 3;
 
@@ -272,7 +273,7 @@ export default function TeamDetail() {
                   )}
 
                   {/* 수정 버튼 */}
-                  {isAdmin && (
+                  {isLeader && (
                     <button
                       onClick={() => router.push(`/team/${teamId}/edit`)}
                       className="absolute top-2 right-2 rounded-full bg-[#989898]/60 px-3 py-1 text-[11px] text-white backdrop-blur hover:bg-[#989898]/70 active:scale-95"
@@ -383,33 +384,36 @@ export default function TeamDetail() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-7 pr-2.5 pl-2 text-center text-xs text-[#DEDEDE]">
-                {days.map((day) => (
-                  <div key={day} className="py-2">
-                    {day}
-                  </div>
-                ))}
-              </div>
-
+              {/* 수정 */}
               <div
-                className="thin-scrollbar min-h-0 flex-1 overflow-y-auto"
+                className="flex min-h-0 flex-1 flex-col px-2"
                 style={{ scrollbarGutter: 'stable' }}
               >
-                <MonthGridWithEvents
-                  year={year}
-                  month={month}
-                  weeks={weeks}
-                  schedules={schedules}
-                  selectedDate={selectedDate}
-                  onSelectDate={(date) => {
-                    setSelectedDate(date);
-                    setIsMobileDetailOpen(true);
-                  }}
-                  rowMinHeight={86}
-                  selectedCellClassName="rounded-xl bg-white"
-                  cellTextSize="text-[13px]"
-                  otherCircleSize="h-6 w-6"
-                />
+                <div className="grid grid-cols-7 text-center text-xs text-[#DEDEDE]">
+                  {days.map((day) => (
+                    <div key={day} className="py-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto">
+                  <MonthGridWithEvents
+                    year={year}
+                    month={month}
+                    weeks={weeks}
+                    schedules={schedules}
+                    selectedDate={selectedDate}
+                    onSelectDate={(date) => {
+                      setSelectedDate(date);
+                      setIsMobileDetailOpen(true);
+                    }}
+                    rowMinHeight={86}
+                    selectedCellClassName="rounded-xl bg-white"
+                    cellTextSize="text-[13px]"
+                    otherCircleSize="h-6 w-6"
+                  />
+                </div>
               </div>
             </section>
             <section className="gap-6 md:flex md:grid md:grid-cols-10">

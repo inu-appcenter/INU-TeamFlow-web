@@ -71,3 +71,9 @@ export interface ChatMessageSendRequest {
   content?: string;
   imageKey?: string;
 }
+
+export type ChatRoomMemberResponse = {
+  userId: number;
+  nickname: string;
+  profileUrl: string | null;
+};

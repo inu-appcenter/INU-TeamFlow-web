@@ -69,7 +69,7 @@ export default function Recruitment() {
         </div>
       )}
 
-      <div className="mx-auto max-w-[1180px]">
+      <div className="mx-auto mb-20 max-w-[1180px]">
         {/* 헤더 */}
         <header className="mt-12 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-4">

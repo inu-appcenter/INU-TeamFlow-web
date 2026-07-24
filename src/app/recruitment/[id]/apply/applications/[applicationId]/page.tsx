@@ -2,6 +2,7 @@
 
 import { ChevronLeft, LoaderCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Card from '@/components/main/Card';
 import {
   useRecruitmentDetail,
@@ -12,6 +13,8 @@ import { formatDate } from '@/utils/date/formatDate';
 import { categoryColorMap } from '@/constants/category';
 import type { ApplicationStatus } from '@/types/recruitment';
 import { ApplicationDetailSkeleton } from '@/components/skeleton';
+import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
+import { getDepartmentName } from '@/utils/getDepartmentName';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',
@@ -33,10 +36,13 @@ export default function ApplicationDetail() {
 
   const recruitmentId = Number(params.id);
   const applicationId = Number(params.applicationId);
+  const [showJoinToast, setShowJoinToast] = useState(false);
 
   const { data: recruitment } = useRecruitmentDetail(recruitmentId);
   const { data: application, isLoading } = useApplicationDetail(applicationId);
   const { mutate: updateStatus, isPending } = useUpdateApplicationStatus();
+  const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
+    useCreateDirectChatRoom();
 
   if (isLoading) return <ApplicationDetailSkeleton />;
 
@@ -52,12 +58,29 @@ export default function ApplicationDetail() {
 
   const isWaiting = application.applicationStatus === 'WAITING';
 
+  const handleStartDirectChat = async () => {
+    const room = await createDirectRoom(application.applicantId);
+    router.push(
+      `/chat/${room.chatRoomId}?roomName=${encodeURIComponent(room.roomName)}&roomType=${room.chatRoomType}`
+    );
+  };
+
   const handleUpdateStatus = (status: 'ACCEPTED' | 'DECLINED') => {
     if (isPending) return;
-    updateStatus({
-      applicationId,
-      body: { applicationStatus: status },
-    });
+    updateStatus(
+      {
+        applicationId,
+        body: { applicationStatus: status },
+      },
+      {
+        onSuccess: () => {
+          if (status === 'ACCEPTED') {
+            setShowJoinToast(true);
+            setTimeout(() => setShowJoinToast(false), 2500);
+          }
+        },
+      }
+    );
   };
 
   return (
@@ -97,11 +120,22 @@ export default function ApplicationDetail() {
 
             <div className="mt-7 grid grid-cols-[72px_1fr] items-center gap-y-4 text-[13px] sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-[15px]">
               <span className="text-[#989898]">이름</span>
-              <span>{application.applicantName}</span>
+              <div className="flex items-center gap-4">
+                <span>{application.applicantName}</span>
+                {application.isRecruiter && (
+                  <button
+                    onClick={handleStartDirectChat}
+                    disabled={isCreatingRoom}
+                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-3 py-0.5 text-[11px] text-[#2c2c2c] transition hover:text-[#5E92F0] disabled:opacity-50 sm:text-sm"
+                  >
+                    1:1 채팅
+                  </button>
+                )}
+              </div>
               <span className="text-[#989898]">학과</span>
-              <span>학과</span>
+              <span>{getDepartmentName(application.applicantDepartment)}</span>
               <span className="text-[#989898]">학번</span>
-              <span>학번</span>
+              <span>{application.applicantStudentNumber}</span>
               <span className="text-[#989898]">지원일</span>
               <span className="">{formatDate(application.createdAt)}</span>
 
@@ -161,6 +195,11 @@ export default function ApplicationDetail() {
           </div>
         </Card>
       </section>
+      {showJoinToast && (
+        <div className="animate-modal-pop absolute top-32 left-1/2 z-300 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+          {application.applicantName}님이 연결된 팀 멤버로 추가됐어요
+        </div>
+      )}
     </main>
   );
 }

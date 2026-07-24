@@ -11,12 +11,18 @@ export const getChatClient = (): Client => {
 
   client = new Client({
     brokerURL: WS_URL,
-    connectHeaders: {
-      Authorization: `Bearer ${localStorage.getItem('accessToken') ?? ''}`,
-    },
     reconnectDelay: 3000,
     heartbeatIncoming: 10000,
     heartbeatOutgoing: 10000,
+    beforeConnect: () => {
+      const token = localStorage.getItem('accessToken') ?? '';
+      client!.connectHeaders = {
+        Authorization: `Bearer ${token}`,
+      };
+    },
+    onStompError: (frame) => {
+      console.error('STOMP 에러:', frame.headers['message'], frame.body);
+    },
   });
 
   return client;
@@ -60,6 +66,12 @@ export const subscribeChatRoom = (
 
 export const publishChatMessage = (roomId: number, body: unknown): void => {
   const c = getChatClient();
+
+  if (!c.connected) {
+    console.warn('STOMP 미연결 상태에서 publish 시도 - 무시됨');
+    return;
+  }
+
   c.publish({
     destination: `/pub/chat-rooms/${roomId}/messages`,
     body: JSON.stringify(body),

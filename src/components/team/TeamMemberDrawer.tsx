@@ -243,16 +243,19 @@ export default function TeamMemberDrawer({
                   {sortedTeamMembers.map((member) => (
                     <div
                       key={member.teamMemberId}
-                      className="relative flex items-center justify-between rounded-xl bg-[#F8F9FB] py-2 pr-3 pl-4 text-sm text-[#2C2C2C]"
+                      className="relative flex items-center justify-between rounded-xl bg-[#F8F9FB] py-2 pr-3 pl-1 text-sm text-[#2C2C2C]"
                     >
                       <div className="flex w-full items-center">
-                        <span className="w-20">{member.username}</span>
+                        <span className="w-15 border-r-[0.5px] border-[#D6DDE5] text-center font-semibold">
+                          {member.userNickname}
+                        </span>
 
-                        <span className="w-31 truncate text-xs text-[#989898]">
+                        <span className="w-37 truncate px-3 text-xs text-[#989898]">
                           {getDepartmentName(member.department)}
                         </span>
+
                         <span
-                          className={`ml-auto rounded-xl px-3 py-1 text-xs font-semibold ${
+                          className={`mx-auto rounded-xl px-3 py-1 text-xs font-semibold ${
                             member.teamRole === 'LEADER'
                               ? 'bg-[#5E92F0] text-white'
                               : member.teamRole === 'MANAGER'
@@ -265,7 +268,7 @@ export default function TeamMemberDrawer({
                       </div>
 
                       <div className="relative w-6 shrink-0">
-                        {member.userId !== me?.userId && (
+                        {member.userId !== me?.userId ? (
                           <button
                             onClick={() =>
                               setOpenMenuId((prev) =>
@@ -274,13 +277,17 @@ export default function TeamMemberDrawer({
                                   : member.teamMemberId
                               )
                             }
-                            className="cursor-pointer rounded-full p-1"
+                            className="cursor-pointer rounded-full p-1 transition duration-200 hover:bg-[#EEF1F5]"
                           >
                             <MoreVertical
                               size={16}
                               className="text-[#989898]"
                             />
                           </button>
+                        ) : (
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#EEF1F5] text-[11px] font-semibold text-[#5E92F0]">
+                            나
+                          </span>
                         )}
 
                         {openMenuId === member.teamMemberId && (
@@ -432,7 +439,7 @@ export default function TeamMemberDrawer({
                   {confirmTarget.type === 'kick'
                     ? `${confirmTarget.member.username}님을 팀에서 내보낼까요?`
                     : confirmTarget.type === 'transferLeader'
-                      ? `${confirmTarget.member.username}님에게 팀장 권한을 넘길까요?`
+                      ? `${confirmTarget.member.userNickname}님에게 팀장 권한을 넘길까요?`
                       : '정말 팀을 나가시겠어요?'}
                 </h2>
 
