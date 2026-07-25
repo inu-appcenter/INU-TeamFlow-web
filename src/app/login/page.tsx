@@ -91,11 +91,7 @@ export default function Login() {
             onClick={() => router.push(ROUTES.MAIN)}
             className="mt-4 ml-2 w-7 cursor-pointer text-[#2C2C2C] transition-all duration-150 active:scale-90"
           >
-            <ChevronLeft
-              size={24}
-              strokeWidth={2.5}
-              className="relative max-w-7 sm:h-7 sm:w-7"
-            />
+            <ChevronLeft size={24} strokeWidth={2.5} />
           </button>
 
           <form onSubmit={handleSubmit} className="flex flex-col">

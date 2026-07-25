@@ -11,7 +11,7 @@ import {
 } from '@/constants/infoPost';
 import { formatDate } from '@/utils/date/formatDate';
 
-import { ChevronLeft, Ellipsis } from 'lucide-react';
+import { ChevronLeft, EllipsisVertical } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
 export default function InfoPostDetailPage() {
   const router = useRouter();
@@ -79,9 +79,9 @@ export default function InfoPostDetailPage() {
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen((prev) => !prev)}
-                  className="cursor-pointer text-[#2C2C2C]"
+                  className="cursor-pointer pt-1 text-[#2C2C2C]"
                 >
-                  <Ellipsis size={22} />
+                  <EllipsisVertical size={20} />
                 </button>
 
                 {isMenuOpen && (

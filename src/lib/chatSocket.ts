@@ -29,25 +29,35 @@ export const getChatClient = (): Client => {
 };
 
 export const connectChatClient = (): Promise<void> => {
+  const c = getChatClient();
+
+  if (c.connected) {
+    return Promise.resolve();
+  }
+
   return new Promise((resolve, reject) => {
-    const c = getChatClient();
+    const originalOnConnect = c.onConnect;
+    const originalOnStompError = c.onStompError;
 
-    if (c.connected) {
+    c.onConnect = (frame) => {
+      originalOnConnect?.(frame);
       resolve();
-      return;
-    }
+    };
+    c.onStompError = (frame) => {
+      originalOnStompError?.(frame);
+      reject(frame);
+    };
 
-    c.onConnect = () => resolve();
-    c.onStompError = (frame) => reject(frame);
-    c.activate();
+    if (!c.active) {
+      c.activate();
+    }
   });
 };
 
 export const disconnectChatClient = async (): Promise<void> => {
-  if (client && client.connected) {
+  if (client) {
     await client.deactivate();
   }
-  client = null;
 };
 
 export const subscribeChatRoom = (

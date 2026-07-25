@@ -40,7 +40,7 @@ export default function TeamVotePage() {
                 onClick={() => router.back()}
                 className="cursor-pointer text-[#2C2C2C]"
               >
-                <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
+                <ChevronLeft size={24} strokeWidth={2.5} />
               </button>
 
               <h1 className="text-[22px] font-bold text-[#2C2C2C]">투표</h1>
