@@ -164,7 +164,7 @@ export default function RecruitmentForm({
                         className="fixed inset-0 z-10"
                         onClick={() => setIsTeamDropdownOpen(false)}
                       />
-                      <div className="absolute top-[50px] right-[-70px] z-20 w-[260px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-[6px_6px_24px_0px_rgba(149,157,165,0.20)]">
+                      <div className="absolute top-[50px] right-[-70px] z-20 w-[260px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-[2px_2px_15px_0px_rgba(149,157,165,0.20)]">
                         <div className="flex max-h-[240px] flex-col overflow-y-auto">
                           {myTeams.map((team) => (
                             <button

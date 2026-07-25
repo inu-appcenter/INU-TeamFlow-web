@@ -76,11 +76,7 @@ export default function ApplicationDetail() {
               className="cursor-pointer text-[#2C2C2C]"
               aria-label="내가 작성한 글로 돌아가기"
             >
-              <ChevronLeft
-                size={24}
-                strokeWidth={2.5}
-                className="sm:h-7 sm:w-7"
-              />
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
           </div>
 

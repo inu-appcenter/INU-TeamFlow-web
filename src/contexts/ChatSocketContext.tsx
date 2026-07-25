@@ -7,7 +7,11 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { connectChatClient, disconnectChatClient } from '@/lib/chatSocket';
+import {
+  getChatClient,
+  connectChatClient,
+  disconnectChatClient,
+} from '@/lib/chatSocket';
 import { useMyInfo } from '@/hooks/useAuthQuery';
 
 interface ChatSocketContextValue {
@@ -27,21 +31,28 @@ export const ChatSocketProvider = ({ children }: { children: ReactNode }) => {
     if (!userId) return;
 
     let mounted = true;
+    const client = getChatClient();
 
-    connectChatClient()
-      .then(() => {
-        if (mounted) setIsConnected(true);
-      })
-      .catch((err) => {
-        console.error('채팅 WebSocket 연결 실패', err);
-      });
+    client.onConnect = () => {
+      if (mounted) setIsConnected(true);
+    };
+    client.onDisconnect = () => {
+      if (mounted) setIsConnected(false);
+    };
+    client.onWebSocketClose = () => {
+      if (mounted) setIsConnected(false);
+    };
+
+    connectChatClient().catch((err) => {
+      console.error('채팅 WebSocket 연결 실패', err);
+    });
 
     return () => {
       mounted = false;
       disconnectChatClient();
       setIsConnected(false);
     };
-  }, [userId]); // me 객체 대신 userId 값만 비교
+  }, [userId]);
 
   return (
     <ChatSocketContext.Provider value={{ isConnected }}>

@@ -8,10 +8,11 @@ import {
   useVoteSlots,
   useSelectVoteSlots,
   useConfirmVoteResult,
+  useDeleteVote,
 } from '@/hooks/useVoteQuery';
 import VoteForm from '@/components/vote/VoteForm';
 import VoteResult from '@/components/vote/VoteResult';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, EllipsisVertical } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
@@ -29,6 +30,8 @@ export default function VoteDetailPage() {
   >('completed');
   const [isVoting, setIsVoting] = useState(false);
   const [isSelectingResult, setIsSelectingResult] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const {
@@ -39,6 +42,8 @@ export default function VoteDetailPage() {
   const { data: voteSlots = [] } = useVoteSlots(voteId);
   const { mutateAsync: selectSlots } = useSelectVoteSlots(voteId);
   const { mutateAsync: confirmResult } = useConfirmVoteResult(voteId);
+  const { mutate: deleteVoteMutate, isPending: isDeleting } =
+    useDeleteVote(teamId);
 
   if (isTeamLoading || isVoteLoading) return null;
 
@@ -87,6 +92,15 @@ export default function VoteDetailPage() {
     return 'bg-[#F1F4F8]';
   };
 
+  const handleDeleteVote = () => {
+    if (isDeleting) return;
+    deleteVoteMutate(voteId, {
+      onSuccess: () => {
+        router.back();
+      },
+    });
+  };
+
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
       <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
@@ -96,13 +110,50 @@ export default function VoteDetailPage() {
             className="flex h-[72px] items-center justify-between px-6"
             style={{ backgroundColor: categoryColorMap[team.category] }}
           >
-            <button onClick={() => router.back()} className="text-[#2C2C2C]">
+            <button
+              onClick={() => router.back()}
+              className="cursor-pointer text-[#2C2C2C]"
+            >
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
-            <span className="rounded-full bg-white/80 px-5 py-2 text-sm font-semibold text-[#2C2C2C]">
-              {categoryMap[team.category]}
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="rounded-full bg-white/80 px-5 py-2 text-sm font-semibold text-[#2C2C2C]">
+                {categoryMap[team.category]}
+              </span>
+
+              {isAdmin && (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                    className="cursor-pointer pt-1 text-[#2C2C2C]"
+                  >
+                    <EllipsisVertical size={20} />
+                  </button>
+
+                  {isMenuOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsMenuOpen(false)}
+                      />
+                      <div className="absolute top-8 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsDeleteConfirmOpen(true);
+                          }}
+                          disabled={isDeleting}
+                          className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA] disabled:opacity-50"
+                        >
+                          삭제하기
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 바디 */}
@@ -378,6 +429,44 @@ export default function VoteDetailPage() {
             )}
           </div>
         </Card>
+        {isDeleteConfirmOpen && (
+          <div
+            onClick={() => setIsDeleteConfirmOpen(false)}
+            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+            >
+              <h2 className="text-center text-xl font-bold">
+                투표를 삭제할까요?
+              </h2>
+
+              <p className="mt-2 text-center text-sm text-[#989898]">
+                삭제한 투표는 복구할 수 없어요
+              </p>
+
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => setIsDeleteConfirmOpen(false)}
+                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
+                >
+                  취소
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    handleDeleteVote();
+                  }}
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white"
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );

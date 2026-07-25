@@ -41,3 +41,8 @@ export const confirmVoteResult = (
   body: EventVoteTimeSelectRequest
 ): Promise<void> =>
   axiosInstance.post(`/votes/${voteId}/result`, body).then((res) => res.data);
+
+/** DELETE */
+export const deleteVote = async (voteId: number): Promise<void> => {
+  await axiosInstance.delete(`/votes/${voteId}`);
+};

@@ -77,11 +77,7 @@ export default function ApplicationDetail() {
               }
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft
-                size={24}
-                strokeWidth={2.5}
-                className="sm:h-7 sm:w-7"
-              />
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
           </div>
 

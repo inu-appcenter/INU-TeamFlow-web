@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Ellipsis } from 'lucide-react';
+import { ChevronLeft, EllipsisVertical } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Card from '@/components/main/Card';
 import RecruitmentDetailSkeleton from '@/components/skeleton/RecruitmentDetailSkeleton';
@@ -113,15 +113,15 @@ export default function RecruitmentDetail() {
               onClick={() => router.push('/recruitment')}
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
             <div className="relative">
               <button
                 onClick={() => setIsMenuOpen((prev) => !prev)}
-                className="cursor-pointer text-[#2C2C2C]"
+                className="cursor-pointer pt-1 text-[#2C2C2C]"
               >
-                <Ellipsis size={20} className="sm:h-[22px] sm:w-[22px]" />
+                <EllipsisVertical size={20} />
               </button>
 
               {isMenuOpen && isRecruiter && (

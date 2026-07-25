@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, Ellipsis, Pin, X } from 'lucide-react';
+import { ChevronLeft, EllipsisVertical, Pin, X } from 'lucide-react';
 import { useState } from 'react';
 import NoticeDetailSkeleton from '@/components/skeleton/NoticeDetailSkeleton';
 import Card from '@/components/main/Card';
@@ -102,16 +102,16 @@ export default function TeamNoticeDetail() {
               }}
               className="cursor-pointer text-[#2C2C2C]"
             >
-              <ChevronLeft size={24} strokeWidth={2.5} className="h-7 w-7" />
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
             {notice.isEditable && (
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen((prev) => !prev)}
-                  className="cursor-pointer text-[#2C2C2C]"
+                  className="cursor-pointer pt-1 text-[#2C2C2C]"
                 >
-                  <Ellipsis size={20} className="sm:h-[22px] sm:w-[22px]" />
+                  <EllipsisVertical size={20} />
                 </button>
 
                 {isMenuOpen && (

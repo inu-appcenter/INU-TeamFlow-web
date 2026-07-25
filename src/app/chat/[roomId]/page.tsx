@@ -152,12 +152,11 @@ export default function ChatRoomPage() {
       <section className="mx-auto flex h-full min-h-0 max-w-[800px] flex-1 flex-col bg-white">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3 bg-white px-6 pt-5">
-            <button onClick={() => router.back()} className="cursor-pointer">
-              <ChevronLeft
-                size={20}
-                strokeWidth={2}
-                className="sm:h-7 sm:w-7"
-              />
+            <button
+              onClick={() => router.back()}
+              className="cursor-pointer text-[#2c2c2c]"
+            >
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
             <div
               className={`relative h-10 w-10 shrink-0 overflow-hidden bg-[#D6DDE5] ${

@@ -5,6 +5,7 @@ import {
   createVote,
   getVoteSlots,
   selectVoteSlots,
+  deleteVote,
   confirmVoteResult,
 } from '@/api/vote';
 import type {
@@ -66,6 +67,16 @@ export const useConfirmVoteResult = (voteId: number) => {
       confirmVoteResult(voteId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['votes'] });
+    },
+  });
+};
+
+export const useDeleteVote = (teamId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (voteId: number) => deleteVote(voteId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: voteKeys.teamVotes(teamId) });
     },
   });
 };
