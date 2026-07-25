@@ -10,6 +10,7 @@ import {
   useUpdateMyProfile,
   useUploadProfileImage,
 } from '@/hooks/useUserQuery';
+import { useFcm } from '@/hooks/useFcm';
 
 import {
   Check,
@@ -46,6 +47,8 @@ export default function MyPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const { unregisterFcmToken } = useFcm();
+
   const { data: profileData, isLoading, isError } = useMyProfile();
   const { mutate: updateMyProfileMutate, isPending: isUpdatePending } =
     useUpdateMyProfile();
@@ -57,12 +60,13 @@ export default function MyPage() {
 
   const [password, setPassword] = useState('');
   const [checkPassword, setCheckPassword] = useState('');
-
   const [editProfileImage, setEditProfileImage] = useState('');
   const [editImageKey, setEditImageKey] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editDepartment, setEditDepartment] = useState('');
   const [editEmail, setEditEmail] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const currentCollege = colleges.find((college) =>
     college.departments.some(
       (department) => department.value === profileData?.department
@@ -163,9 +167,19 @@ export default function MyPage() {
     );
   };
 
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    router.push('/login');
+  const logout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+
+    try {
+      await unregisterFcmToken();
+    } catch (error) {
+      console.error('FCM 토큰 삭제에 실패했습니다.', error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      router.replace('/login');
+    }
   };
 
   if (isLoading) {
@@ -211,11 +225,13 @@ export default function MyPage() {
         </div>
 
         <button
+          type="button"
           onClick={logout}
-          className="flex cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-90"
+          disabled={isLoggingOut}
+          className="flex cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <LogOut size={14} />
-          로그아웃
+          {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
         </button>
       </header>
 
