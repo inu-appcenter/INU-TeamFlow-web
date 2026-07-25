@@ -11,10 +11,13 @@ import { LOGIN_TEXT } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { useLogin } from '@/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useFcm } from '@/hooks/useFcm';
+
 export default function Login() {
   const router = useRouter();
 
   const { mutate: loginMutate, isPending: isLoginPending } = useLogin();
+  const { registerFcmToken } = useFcm();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -26,13 +29,13 @@ export default function Login() {
   const login = () => {
     const trimmedUsername = username.trim();
 
-    if (username.trim() === '') {
-      showErrorMessage('아이디를 입력해주세요.');
+    if (trimmedUsername === '') {
+      showErrorMessage('아이디를 입력해주세요');
       return;
     }
 
     if (password === '') {
-      showErrorMessage('비밀번호를 입력해주세요.');
+      showErrorMessage('비밀번호를 입력해주세요');
       return;
     }
 
@@ -42,12 +45,19 @@ export default function Login() {
         password,
       },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           localStorage.setItem('accessToken', data.accessToken);
+
+          try {
+            await registerFcmToken();
+          } catch (error) {
+            console.error('FCM 토큰 등록 실패:', error);
+          }
+
           router.push(ROUTES.MAIN);
         },
         onError: () => {
-          showErrorMessage('아이디 또는 비밀번호가 올바르지 않습니다.');
+          showErrorMessage('아이디 또는 비밀번호가 올바르지 않습니다');
           setPassword('');
         },
       }
@@ -61,9 +71,11 @@ export default function Login() {
 
     login();
   };
+
   const handleCapsLock = (e: React.KeyboardEvent<HTMLInputElement>) => {
     setIsCapsLockOn(e.getModifierState('CapsLock'));
   };
+
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 pt-4">
       {errorMessage && (
@@ -136,9 +148,10 @@ export default function Login() {
                   !
                 </span>
 
-                <span className="font-medium">Caps Lock이 켜져 있어요.</span>
+                <span className="font-medium">Caps Lock이 켜져 있어요</span>
               </div>
             )}
+
             <span
               className="mx-7.5 mb-4 line-clamp-2 text-ellipsis text-[#9c9c9c] max-[320px]:cursor-pointer"
               onClick={() => {
