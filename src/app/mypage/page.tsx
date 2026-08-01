@@ -1,17 +1,19 @@
 'use client';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import { colleges } from '@/constants/departments';
 import {
+  useDeleteUser,
   useMyProfile,
   useProfilePresignedUrl,
   useUpdateMyProfile,
   useUploadProfileImage,
 } from '@/hooks/useUserQuery';
 import { useFcm } from '@/hooks/useFcm';
-
+import { useErrorToast } from '@/hooks/useErrorToast';
 import {
   Check,
   Vote,
@@ -21,6 +23,7 @@ import {
   Camera,
   LogOut,
   ChevronLeft,
+  X,
 } from 'lucide-react';
 
 interface Department {
@@ -67,25 +70,37 @@ export default function MyPage() {
   const [editEmail, setEditEmail] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  const { errorMessage, showErrorMessage } = useErrorToast();
+  const [isProfileImageMenuOpen, setIsProfileImageMenuOpen] = useState(false);
+  const [isDefaultImageSelected, setIsDefaultImageSelected] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDeleteUserConfirmOpen, setIsDeleteUserConfirmOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+
+  const { mutateAsync: deleteUser, isPending: isDeleteUserPending } =
+    useDeleteUser();
   const currentCollege = colleges.find((college) =>
     college.departments.some(
       (department) => department.value === profileData?.department
     )
   );
 
-  const editCurrentCollege = colleges.find((college) =>
-    college.departments.some(
-      (department) => department.value === editDepartment
-    )
-  );
-
   const isImagePending = isPresignedPending || isUploadPending;
 
+  const extractImageKey = (imageUrl: string | null) => {
+    if (!imageUrl) return null;
+
+    try {
+      return decodeURIComponent(new URL(imageUrl).pathname.replace(/^\/+/, ''));
+    } catch {
+      return null;
+    }
+  };
   const checkPasswordValid = () => {
     if (!password && !checkPassword) return true;
 
     if (password !== checkPassword) {
-      alert('새 비밀번호를 확인해주세요');
+      showErrorMessage('새 비밀번호를 확인해주세요');
       return false;
     }
 
@@ -97,6 +112,7 @@ export default function MyPage() {
 
     setEditProfileImage(profileData.imageUrl ?? DEFAULT_PROFILE_IMAGE);
     setEditImageKey(null);
+    setIsDefaultImageSelected(false);
     setEditName(profileData.name);
     setEditDepartment(profileData.department);
     setEditEmail(profileData.email);
@@ -108,26 +124,32 @@ export default function MyPage() {
   const saveModify = () => {
     if (!profileData || !checkPasswordValid()) return;
 
+    const existingImageKey = extractImageKey(profileData.imageUrl);
+
     const request = {
-      email: profileData.email,
+      email: editEmail,
       name: editName,
       department: editDepartment,
-      ...(editImageKey ? { imageKey: editImageKey } : {}),
+      ...(isDefaultImageSelected
+        ? { imageKey: null }
+        : editImageKey
+          ? { imageKey: editImageKey }
+          : existingImageKey
+            ? { imageKey: existingImageKey }
+            : {}),
       ...(password ? { password } : {}),
     };
 
-    console.log('수정 요청:', request);
-
     updateMyProfileMutate(request, {
       onSuccess: () => {
-        alert('프로필이 수정되었습니다.');
+        showErrorMessage('프로필이 수정되었습니다');
         setPassword('');
         setCheckPassword('');
         setEditImageKey(null);
         setModify(false);
       },
       onError: () => {
-        alert('프로필 수정에 실패했습니다.');
+        showErrorMessage('프로필 수정에 실패했습니다');
       },
     });
   };
@@ -153,15 +175,16 @@ export default function MyPage() {
               onSuccess: () => {
                 setEditProfileImage(URL.createObjectURL(file));
                 setEditImageKey(imageKey);
+                setIsDefaultImageSelected(false);
               },
               onError: () => {
-                alert('이미지 업로드에 실패했습니다.');
+                showErrorMessage('이미지 업로드에 실패했습니다');
               },
             }
           );
         },
         onError: () => {
-          alert('이미지 업로드 URL 발급에 실패했습니다.');
+          showErrorMessage('이미지 업로드 URL 발급에 실패했습니다');
         },
       }
     );
@@ -175,10 +198,43 @@ export default function MyPage() {
     try {
       await unregisterFcmToken();
     } catch (error) {
-      console.error('FCM 토큰 삭제에 실패했습니다.', error);
+      console.error('FCM 토큰 삭제에 실패했습니다', error);
     } finally {
       localStorage.removeItem('accessToken');
       router.replace('/login');
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (isDeleteUserPending) return;
+
+    try {
+      try {
+        await unregisterFcmToken();
+      } catch (error) {
+        console.error('FCM 토큰 삭제에 실패했습니다', error);
+      }
+
+      await deleteUser();
+
+      localStorage.removeItem('accessToken');
+      router.replace('/login');
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        showErrorMessage(
+          '팀장 권한을 보유하고 있거나 진행 중인 투표가 있어 탈퇴할 수 없습니다'
+        );
+        return;
+      }
+
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        showErrorMessage('로그인이 만료되었습니다');
+        localStorage.removeItem('accessToken');
+        router.replace('/login');
+        return;
+      }
+
+      showErrorMessage('회원 탈퇴에 실패했습니다');
     }
   };
 
@@ -194,16 +250,20 @@ export default function MyPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
         <p className="text-[15px] text-[#989898]">
-          프로필 정보를 불러오지 못했습니다.
+          프로필 정보를 불러오지 못했습니다
         </p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen px-3 py-6 pb-28 sm:px-6 sm:pt-10">
+    <main className="min-h-screen px-3 pt-6 pb-40 sm:px-6 sm:pt-10 sm:pb-24">
       <NotificationButton />
-
+      {errorMessage && (
+        <div className="fixed top-5 left-1/2 z-[500] -translate-x-1/2 rounded-xl bg-[#2C2C2C] px-5 py-3 text-[14px] font-medium text-white shadow-lg">
+          {errorMessage}
+        </div>
+      )}
       <input
         ref={fileInputRef}
         type="file"
@@ -223,16 +283,6 @@ export default function MyPage() {
 
           <h1 className="text-[26px] font-bold text-[#2C2C2C]">마이페이지</h1>
         </div>
-
-        <button
-          type="button"
-          onClick={logout}
-          disabled={isLoggingOut}
-          className="flex cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-90 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <LogOut size={14} />
-          {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
-        </button>
       </header>
 
       <section className="mx-auto grid max-w-[1180px] grid-cols-1 gap-5 lg:grid-cols-[450px_1fr]">
@@ -251,7 +301,7 @@ export default function MyPage() {
 
               {modify ? (
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => setIsProfileImageMenuOpen(true)}
                   disabled={isImagePending}
                   className="absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#5E92F0] text-white shadow-md transition-all duration-150 active:scale-90 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
                 >
@@ -305,7 +355,7 @@ export default function MyPage() {
                     프로필 정보
                   </p>
                   <p className="mt-1 text-[14px] text-[#989898]">
-                    이름, 비밀번호, 소속 정보를 수정할 수 있어요.
+                    이름, 비밀번호, 학과 정보를 수정할 수 있어요
                   </p>
                 </div>
 
@@ -399,8 +449,8 @@ export default function MyPage() {
           </div>
         </section>
 
-        <section className="flex flex-col gap-5">
-          <section className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-5 transition-all duration-200">
+        <section className="relative grid h-full grid-rows-[3fr_2fr] gap-5 overflow-visible">
+          <section className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-5">
             <h3 className="mb-5 text-[20px] font-bold text-[#2C2C2C]">
               내 활동
             </h3>
@@ -428,25 +478,27 @@ export default function MyPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-5 transition-all duration-200">
+          <section className="flex flex-col rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-5">
             <h3 className="text-[20px] font-bold text-[#2C2C2C]">계정 상태</h3>
 
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl bg-[#FBFBFB] p-5 transition-all duration-150 active:scale-95">
+            <div className="mt-auto mb-auto grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-[#FBFBFB] p-5">
                 <p className="text-[16px] font-medium text-[#2C2C2C]">
                   학교 인증
                 </p>
+
                 <p className="mt-1 text-[14px] text-[#989898]">
                   {profileData.isSchoolVerified
-                    ? '인증이 완료된 계정입니다.'
-                    : '아직 학교 인증이 필요합니다.'}
+                    ? '인증이 완료된 계정입니다'
+                    : '아직 학교 인증이 필요합니다'}
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-[#FBFBFB] p-5 transition-all duration-150 active:scale-95">
+              <div className="rounded-2xl bg-[#FBFBFB] p-5">
                 <p className="text-[16px] font-medium text-[#2C2C2C]">
-                  소속 정보
+                  학과 정보
                 </p>
+
                 <p className="mt-1 text-[14px] text-[#989898]">
                   {currentCollege?.name} ·{' '}
                   {
@@ -458,20 +510,196 @@ export default function MyPage() {
                 </p>
               </div>
             </div>
-
-            {!profileData.isSchoolVerified && (
-              <button
-                onClick={() => router.push('/mypage/authentication')}
-                className="mt-4 w-full cursor-pointer rounded-xl bg-[#F67F8F] py-3 text-[12px] font-medium text-white transition-all duration-150 active:scale-95"
-              >
-                학교 인증하러 가기
-              </button>
-            )}
           </section>
+
+          <button
+            type="button"
+            onClick={logout}
+            disabled={isLoggingOut}
+            className="absolute right-0 -bottom-14 flex cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <LogOut size={14} />
+            {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            className="absolute right-30 -bottom-14 flex cursor-pointer items-center gap-1 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            설정
+          </button>
         </section>
       </section>
 
       <BottomNav />
+      {isProfileImageMenuOpen && (
+        <div
+          onClick={() => setIsProfileImageMenuOpen(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 px-4"
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="animate-modal-pop w-full max-w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+          >
+            <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
+              프로필 이미지 변경
+            </h2>
+
+            <p className="mt-1 text-center text-[15px] text-[#989898]">
+              사용할 이미지를 선택해주세요
+            </p>
+
+            <div className="mt-5 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditProfileImage(DEFAULT_PROFILE_IMAGE);
+                  setEditImageKey(null);
+                  setIsDefaultImageSelected(true);
+                  setIsProfileImageMenuOpen(false);
+                }}
+                className="w-full cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+              >
+                기본 이미지 적용
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsProfileImageMenuOpen(false);
+                  fileInputRef.current?.click();
+                }}
+                className="w-full cursor-pointer rounded-xl bg-[#5E92F0] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
+              >
+                사진 찾아보기
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsProfileImageMenuOpen(false)}
+                className="w-full cursor-pointer py-2 text-[14px] font-medium text-[#989898]"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-[300]">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsSettingsOpen(false)}
+          />
+
+          <section className="animate-modal-pop absolute inset-4 overflow-hidden rounded-3xl border-[0.5px] border-[#D6DDE5] bg-[#F0F2F5] shadow-2xl sm:inset-8">
+            <header className="flex h-16 items-center justify-between border-b-[0.5px] border-[#D6DDE5] bg-white px-6">
+              <h2 className="text-[22px] font-bold text-[#2C2C2C]">설정</h2>
+
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(false)}
+                className="cursor-pointer rounded-full p-2 text-[#2C2C2C] transition hover:bg-[#F0F2F5] active:scale-90"
+              >
+                <X size={22} />
+              </button>
+            </header>
+
+            <div className="h-[calc(100%-64px)] overflow-y-auto p-5 sm:p-8">
+              <section className="mx-auto max-w-[900px] rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-6">
+                <h3 className="text-[18px] font-bold text-[#2C2C2C]">
+                  여기안에 많이 만들어볼까요
+                </h3>
+
+                <section className="mx-auto mt-5 max-w-[900px] rounded-3xl border-[0.5px] border-[#FFD3D3] bg-white p-6">
+                  <h3 className="text-[18px] font-bold text-[#E22222]">
+                    회원 탈퇴
+                  </h3>
+
+                  <p className="mt-2 text-[14px] leading-6 text-[#989898]">
+                    탈퇴하면 계정과 관련된 정보가 삭제되며 복구할 수 없습니다
+                  </p>
+
+                  <p className="mt-1 text-[14px] leading-6 text-[#989898]">
+                    팀장 권한을 보유하고 있거나 진행 중인 투표가 있으면 탈퇴할
+                    수 없습니다
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteUserConfirmOpen(true)}
+                    className="mt-5 cursor-pointer rounded-xl border border-[#FFD3D3] bg-[#FFF5F5] px-4 py-3 text-[14px] font-semibold text-[#E22222] transition-all duration-150 active:scale-95"
+                  >
+                    회원 탈퇴
+                  </button>
+                </section>
+              </section>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {isDeleteUserConfirmOpen && (
+        <div
+          onClick={() => {
+            if (!isDeleteUserPending) {
+              setIsDeleteUserConfirmOpen(false);
+            }
+          }}
+          className="fixed inset-0 z-[400] flex items-center justify-center bg-black/40 px-4"
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="animate-modal-pop w-full max-w-[400px] rounded-3xl bg-white p-6 shadow-xl"
+          >
+            <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
+              정말 탈퇴할까요
+            </h2>
+
+            <p className="mt-2 text-center text-[15px] leading-6 text-[#989898]">
+              탈퇴한 계정은 복구할 수 없습니다
+            </p>
+
+            <p className="mt-5 text-[14px] text-[#2C2C2C]">
+              계속하려면 아래에
+              <span className="mx-1 font-bold">{profileData.username}</span>을
+              입력해주세요
+            </p>
+
+            <input
+              value={deleteConfirmText}
+              onChange={(event) => setDeleteConfirmText(event.target.value)}
+              disabled={isDeleteUserPending}
+              placeholder={profileData.username}
+              autoComplete="off"
+              className="mt-3 w-full rounded-xl border border-[#D6DDE5] px-4 py-3 text-[14px] text-[#2C2C2C] transition outline-none focus:border-[#EF4444] disabled:bg-[#F6F8FA]"
+            />
+
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setIsDeleteUserConfirmOpen(false)}
+                disabled={isDeleteUserPending}
+                className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                취소
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDeleteUser}
+                disabled={
+                  isDeleteUserPending ||
+                  deleteConfirmText !== profileData.username
+                }
+                className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#F6A5A5]"
+              >
+                {isDeleteUserPending ? '탈퇴 중...' : '탈퇴'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

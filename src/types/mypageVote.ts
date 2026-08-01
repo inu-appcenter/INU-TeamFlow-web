@@ -1,20 +1,9 @@
-export type VoteTab = 'ALL' | 'OPENED' | 'CLOSED';
-
-export interface MyTeamResponse {
-  teamId: number;
-  name: string;
-  category: string;
-  memberCount: number;
-  description: string;
-  imageUrl: string | null;
-}
-
-export interface VoteUser {
+export interface VoteMember {
   name: string;
   department: string;
 }
 
-export interface MyVoteResponse {
+export interface MyVote {
   voteId: number;
   teamId: number;
   title: string;
@@ -22,13 +11,11 @@ export interface MyVoteResponse {
   createdDate: string;
   isOpened: boolean;
   isAllDay: boolean;
+  isVoter: boolean;
+  isCreator: boolean;
   dates: string[];
   dailyTimeStart: string | null;
   dailyTimeEnd: string | null;
-  completedVoterList: VoteUser[];
-  uncompletedVoterList: VoteUser[];
-}
-
-export interface MyVote extends MyVoteResponse {
-  teamName: string;
+  completedVoterList: VoteMember[];
+  uncompletedVoterList: VoteMember[];
 }
