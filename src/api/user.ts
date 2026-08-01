@@ -43,3 +43,7 @@ export const searchUsers = async (
   });
   return data;
 };
+
+/** DELETE /users/me */
+export const deleteUser = (): Promise<void> =>
+  axiosInstance.delete('/users/me').then(() => undefined);

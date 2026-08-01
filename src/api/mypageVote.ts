@@ -1,10 +1,9 @@
 import axiosInstance from '@/lib/axiosInstance';
-import type { MyTeamResponse, MyVoteResponse } from '@/types/mypageVote';
+import type { MyVote } from '@/types/mypageVote';
 
-/** GET /teams/me */
-export const getMyTeams = (): Promise<MyTeamResponse[]> =>
-  axiosInstance.get('/teams/me').then((res) => res.data);
+/** GET /votes/me */
+export const getMyVotes = async (): Promise<MyVote[]> => {
+  const response = await axiosInstance.get<MyVote[]>('/votes/me');
 
-/** GET /teams/{teamId}/votes */
-export const getTeamVotes = (teamId: number): Promise<MyVoteResponse[]> =>
-  axiosInstance.get(`/teams/${teamId}/votes`).then((res) => res.data);
+  return response.data;
+};
