@@ -128,7 +128,7 @@ export default function TeamNoticeDetail() {
                             `/team/${teamId}/notice/${noticeId}/edit`
                           );
                         }}
-                        className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                        className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
                       >
                         수정하기
                       </button>
@@ -137,7 +137,7 @@ export default function TeamNoticeDetail() {
                           setIsMenuOpen(false);
                           setIsDeleteConfirmOpen(true);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
+                        className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
                       >
                         삭제하기
                       </button>

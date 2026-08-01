@@ -22,6 +22,14 @@ export const categoryBorderColorMap: Record<string, string> = {
   ETC: '#BDBDBD',
 };
 
+export const categoryTextColorMap: Record<string, string> = {
+  CONTEST: '#9E3F8F',
+  STUDY: '#357A42',
+  PROJECT: '#426AA3',
+  CLUB: '#8C6800',
+  ETC: '#616161',
+};
+
 export const DEFAULT_CATEGORY_COLOR = '#E9E9E9';
 
 export const categoryFilterOptions = [

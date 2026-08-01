@@ -12,6 +12,7 @@ import {
 } from '@/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useRouter } from 'next/navigation';
+import { darkenColor } from '@/utils/color/darkenColor';
 
 export type RecruitmentFormData = {
   title: string;
@@ -247,7 +248,11 @@ export default function RecruitmentForm({
                         }`}
                         style={{
                           backgroundColor: categoryColorMap[typedKey],
-                          borderColor: categoryBorderColorMap[typedKey],
+                          borderColor: darkenColor(
+                            categoryColorMap[typedKey],
+                            30
+                          ),
+                          color: darkenColor(categoryColorMap[typedKey], 140),
                           cursor: 'not-allowed',
                         }}
                       >

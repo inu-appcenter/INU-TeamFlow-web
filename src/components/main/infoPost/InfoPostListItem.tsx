@@ -16,25 +16,26 @@ export default function InfoPostListItem({
   size,
 }: InfoPostListItemProps) {
   const router = useRouter();
+  const isLg = size === 'lg';
 
   return (
     <button
       type="button"
       onClick={() => router.push(`/infoPost/${infoPost.infoPostId}`)}
-      className={`flex w-full cursor-pointer items-center justify-between border-b-[0.5px] border-[#D6DDE5] text-left transition-all duration-150 hover:bg-[#F8F9FA] active:scale-[0.99] ${
-        size === 'sm' ? 'px-1 py-2.5' : 'px-1 py-3'
+      className={`z-50 flex w-full cursor-pointer items-center justify-between border-b-[0.5px] border-[#D6DDE5] text-left last:border-b-0 active:scale-[0.99] ${
+        isLg ? 'h-[76px]' : 'h-[68px]'
       }`}
     >
       <div className="min-w-0">
-        <p
-          className={`truncate font-medium text-[#2C2C2C] ${
-            size === 'sm' ? 'text-sm' : 'text-base'
+        <h3
+          className={`truncate font-semibold text-[#2C2C2C] ${
+            isLg ? 'text-[17px]' : 'text-[15px]'
           }`}
         >
-          [{infoPostCategoryMap[infoPost.category]}] {infoPost.title}
-        </p>
+          [ {infoPostCategoryMap[infoPost.category]} ] {infoPost.title}
+        </h3>
 
-        <p className="mt-1 text-xs text-[#989898]">
+        <p className="mt-1 truncate text-xs text-[#989898]">
           참조 모집글 {infoPost.recruitmentCount}개
         </p>
       </div>
@@ -46,7 +47,7 @@ export default function InfoPostListItem({
           width={64}
           height={48}
           className={`ml-4 shrink-0 rounded-lg object-cover ${
-            size === 'sm' ? 'h-10 w-14' : 'h-12 w-16'
+            isLg ? 'h-12 w-16' : 'h-10 w-14'
           }`}
         />
       )}

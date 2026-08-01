@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 import { MoreVertical, Camera, Pencil, Plus, Search, X } from 'lucide-react';
 import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
 import { useChatRoomMembers } from '@/hooks/chat/useChatRoomMembers';
@@ -15,18 +16,8 @@ import {
 } from '@/hooks/chat/useUpdateChatRoomInfo';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useMyInfo } from '@/hooks/useAuthQuery';
-
-type MockMember = {
-  userId: number;
-  nickname: string;
-  profileUrl: string | null;
-};
-
-const MOCK_MEMBERS: MockMember[] = [
-  { userId: 1, nickname: '송영의', profileUrl: null },
-  { userId: 2, nickname: '홍길동', profileUrl: null },
-  { userId: 3, nickname: '김철수', profileUrl: null },
-];
+import type { ChatRoomMemberResponse } from '@/types/chat';
+import { getDepartmentName } from '@/utils/getDepartmentName';
 
 type ChatRoomDrawerProps = {
   open: boolean;
@@ -56,24 +47,24 @@ export default function ChatRoomDrawer({
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [showImageOverlay, setShowImageOverlay] = useState(false);
   const [openMemberMenuId, setOpenMemberMenuId] = useState<number | null>(null);
-  const [confirmKickTarget, setConfirmKickTarget] = useState<MockMember | null>(
-    null
-  );
+  const [confirmKickTarget, setConfirmKickTarget] =
+    useState<ChatRoomMemberResponse | null>(null);
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
   const { data: me } = useMyInfo();
+  const { data: members, isLoading: isMembersLoading } =
+    useChatRoomMembers(roomId);
+  const sortedMembers = useMemo(() => {
+    if (!members) return members;
 
-  // const { data: members, isLoading: isMembersLoading } =
-  //   useChatRoomMembers(roomId);
-  // TODO: 백엔드 멤버 조회 API 완성되면 true로 바꾸고 mock 제거
-  const IS_MEMBERS_API_READY = false;
+    const myUserId = me?.userId;
+    const myself = members.filter((m) => m.userId === myUserId);
+    const others = members
+      .filter((m) => m.userId !== myUserId)
+      .sort((a, b) => a.userNickname.localeCompare(b.userNickname, 'ko'));
 
-  const { data: membersData, isLoading: isMembersLoading } = useChatRoomMembers(
-    roomId,
-    IS_MEMBERS_API_READY
-  );
-
-  const members = IS_MEMBERS_API_READY ? (membersData ?? []) : MOCK_MEMBERS;
+    return [...myself, ...others];
+  }, [members, me?.userId]);
 
   const { data: availableMembers = [] } = useChatRoomAvailableMembers(
     roomId,
@@ -100,7 +91,7 @@ export default function ChatRoomDrawer({
     });
   };
 
-  const handleDirectMessage = async (member: MockMember) => {
+  const handleDirectMessage = async (member: ChatRoomMemberResponse) => {
     setOpenMemberMenuId(null);
     try {
       const room = await createDirectRoom(member.userId);
@@ -192,6 +183,7 @@ export default function ChatRoomDrawer({
       },
     });
   };
+  useLockBodyScroll(open);
 
   return (
     <AnimatePresence>
@@ -222,7 +214,7 @@ export default function ChatRoomDrawer({
             {/* 스크롤 영역: 이미지/이름 + 멤버 박스 */}
             <div className="thin-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
               {/* 이미지 + 이름 */}
-              <div className="mt-4 flex flex-col items-center gap-4">
+              <div className="mt-2 flex flex-col items-center gap-4">
                 <div className="relative">
                   <div
                     className={`group relative h-20 w-20 shrink-0 overflow-hidden bg-[#D6DDE5] ${
@@ -304,13 +296,13 @@ export default function ChatRoomDrawer({
                       onBlur={() => setIsEditingName(false)}
                       maxLength={30}
                       autoFocus
-                      className="flex-1 rounded-lg border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-3 py-1.5 text-sm outline-none"
+                      className="flex-1 rounded-lg border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-3 py-2 text-sm outline-none"
                     />
                     <button
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={handleSaveName}
                       disabled={isRenaming}
-                      className="cursor-pointer rounded-lg bg-[#5E92F0] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+                      className="cursor-pointer rounded-lg bg-[#5E92F0] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
                     >
                       저장
                     </button>
@@ -415,22 +407,22 @@ export default function ChatRoomDrawer({
                     </button>
                   )}
 
-                  {isMembersLoading && !membersData ? (
+                  {isMembersLoading && !members ? (
                     <div className="mb-5 flex h-10 items-center justify-center text-sm text-[#9C9C9C]">
                       불러오는 중...
                     </div>
                   ) : (
-                    members?.map((member) => (
+                    sortedMembers?.map((member) => (
                       <div
                         key={member.userId}
                         className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-[#EEF1F5]"
                       >
                         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#D6DDE5]">
-                          {member.profileUrl && (
+                          {member.profileImageUrl && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={member.profileUrl}
-                              alt={member.nickname}
+                              src={member.profileImageUrl}
+                              alt={member.userNickname}
                               className="h-full w-full object-cover"
                             />
                           )}
@@ -439,10 +431,10 @@ export default function ChatRoomDrawer({
                         <div className="flex w-full items-center justify-between">
                           <div className="flex w-53 items-center justify-between">
                             <span className="text-sm font-medium text-[#2C2C2C]">
-                              {member.nickname}
+                              {member.userNickname}
                             </span>
                             <span className="text-xs font-medium text-[#989898]">
-                              학과가들어갈예정입니다
+                              {getDepartmentName(member.department)}
                             </span>
                           </div>
 
@@ -557,7 +549,7 @@ export default function ChatRoomDrawer({
                 className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
               >
                 <h2 className="text-center text-xl font-bold">
-                  {confirmKickTarget.nickname}님을 내보낼까요?
+                  {confirmKickTarget.userNickname}님을 내보낼까요?
                 </h2>
                 <div className="mt-4 flex gap-3">
                   <button

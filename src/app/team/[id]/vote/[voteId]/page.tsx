@@ -58,6 +58,18 @@ export default function VoteDetailPage() {
   }
   const isAdmin = team.role === 'LEADER' || team.role === 'MANAGER';
 
+  const canAccess = vote.isVoter || vote.isCreator;
+
+  if (!canAccess) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
+        <p className="font-semibold text-[#2C2C2C]">
+          참여자만 조회할 수 있는 투표예요
+        </p>
+      </main>
+    );
+  }
+
   const voteDates = vote.dates ?? [];
 
   const startHour = Number(vote.dailyTimeStart?.slice(0, 2));
@@ -144,7 +156,7 @@ export default function VoteDetailPage() {
                             setIsDeleteConfirmOpen(true);
                           }}
                           disabled={isDeleting}
-                          className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA] disabled:opacity-50"
+                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA] disabled:opacity-50"
                         >
                           삭제하기
                         </button>
@@ -395,15 +407,21 @@ export default function VoteDetailPage() {
 
                     <div className="mb-20 flex flex-col items-center gap-3">
                       <button
-                        onClick={() => vote.isOpened && setIsVoting(true)}
-                        disabled={!vote.isOpened}
-                        className={`rounded-xl px-8 py-2 font-semibold transition-all ${
-                          vote.isOpened
+                        onClick={() =>
+                          vote.isOpened && vote.isVoter && setIsVoting(true)
+                        }
+                        disabled={!vote.isOpened || !vote.isVoter}
+                        className={`h-10 w-30 rounded-xl font-semibold transition-all ${
+                          vote.isOpened && vote.isVoter
                             ? 'cursor-pointer bg-[#5E92F0] text-white active:scale-95'
                             : 'cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
                         }`}
                       >
-                        {vote.isOpened ? '투표하기' : '투표 마감'}
+                        {vote.isOpened
+                          ? vote.isVoter
+                            ? '투표하기'
+                            : '투표 미대상'
+                          : '투표 마감'}
                       </button>
 
                       {/* 관리자만 */}
@@ -413,10 +431,10 @@ export default function VoteDetailPage() {
                             !vote.isOpened ? null : setIsSelectingResult(true)
                           }
                           disabled={!vote.isOpened}
-                          className={`rounded-xl font-semibold transition-all ${
+                          className={`rounded-xl text-center font-semibold transition-all ${
                             vote.isOpened
-                              ? 'cursor-pointer border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-4 py-2 text-[#5E92F0] active:scale-95'
-                              : 'cursor-not-allowed bg-[#EEF1F5] px-8 py-2 text-[#989898]'
+                              ? 'h-10 w-30 cursor-pointer border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-4 py-2 text-[#5E92F0] active:scale-95'
+                              : 'h-10 w-30 cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
                           }`}
                         >
                           {vote.isOpened ? '일정 확정하기' : '확정 완료'}

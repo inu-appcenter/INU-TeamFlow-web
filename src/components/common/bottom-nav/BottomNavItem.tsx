@@ -9,12 +9,14 @@ interface BottomNavItemProps {
   icon: LucideIcon;
   label: string;
   href: string;
+  badgeCount?: number;
 }
 
 export default function BottomNavItem({
   icon: Icon,
   label,
   href,
+  badgeCount = 0,
 }: BottomNavItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -36,11 +38,18 @@ export default function BottomNavItem({
             : 'text-[#A2A9B2]/80 hover:text-gray-600'
         }`}
       >
-        <Icon
-          size={20}
-          strokeWidth={1.8}
-          className="mb-0.5 sm:mb-1 sm:h-[22px] sm:w-[22px]"
-        />
+        <div className="relative">
+          <Icon
+            size={20}
+            strokeWidth={1.8}
+            className="mb-0.5 sm:mb-1 sm:h-[22px] sm:w-[22px]"
+          />
+          {badgeCount > 0 && (
+            <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#5E92F0] text-[9px] font-semibold text-white sm:-right-3 sm:h-5 sm:w-5 sm:text-[10px]">
+              {badgeCount > 99 ? '99+' : badgeCount}
+            </span>
+          )}
+        </div>
         <span className="text-[11px] font-bold whitespace-nowrap sm:text-sm">
           {label}
         </span>

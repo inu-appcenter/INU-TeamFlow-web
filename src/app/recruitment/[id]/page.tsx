@@ -137,7 +137,7 @@ export default function RecruitmentDetail() {
                           setIsMenuOpen(false);
                           router.push(`/recruitment/${recruitmentId}/edit`);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                        className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
                       >
                         수정하기
                       </button>
@@ -148,7 +148,7 @@ export default function RecruitmentDetail() {
                         setIsDeleteConfirmOpen(true);
                       }}
                       disabled={isDeleting}
-                      className="w-full px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA] disabled:opacity-50"
+                      className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA] disabled:opacity-50"
                     >
                       삭제하기
                     </button>
@@ -185,10 +185,10 @@ export default function RecruitmentDetail() {
               <span className="text-[#989898]">모집현황</span>
               <div>
                 <span
-                  className={`rounded-xl px-3 py-1 text-[11px] font-medium sm:text-sm ${
+                  className={`rounded-full px-3 py-1 text-[11px] font-medium sm:text-[13px] ${
                     isClosed
                       ? 'bg-[#EEF1F5] text-[#989898]'
-                      : 'bg-[#A7ECA7] text-[#1F4D1A]'
+                      : 'bg-[#DDF7E5] text-[#2F8F4E]'
                   }`}
                 >
                   {isClosed ? '모집마감' : '모집중'}

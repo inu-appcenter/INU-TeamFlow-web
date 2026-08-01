@@ -10,6 +10,8 @@ export interface EventVoteResponse {
   description: string;
   isOpened: boolean;
   isAllDay: boolean;
+  isVoter: boolean; // 참여자 여부
+  isCreator: boolean; // 생성자 여부
   createdDate: string;
   dates: string[];
   dailyTimeStart: string | null;

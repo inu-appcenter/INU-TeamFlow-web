@@ -57,8 +57,8 @@ export default function Team() {
           </button>
         </div>
 
-        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-none p-6">
-          <div className="relative mb-4 flex border-b-[0.5px] border-[#D6DDE5]">
+        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-none p-5">
+          <div className="relative flex border-b-[0.5px] border-[#D6DDE5]">
             {categoryFilterOptions.map((category) => {
               const isActive = selectedCategory === category.value;
 
@@ -66,7 +66,7 @@ export default function Team() {
                 <button
                   key={category.value}
                   onClick={() => setSelectedCategory(category.value)}
-                  className={`relative z-50 cursor-pointer px-4 pb-4 text-lg font-bold whitespace-nowrap transition sm:text-xl md:px-6 md:pb-4 ${
+                  className={`relative z-50 flex-1 cursor-pointer pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:text-xl ${
                     isActive
                       ? 'text-[#5E92F0]'
                       : 'text-[#CBD2DA] hover:text-[#5E92F0]'
@@ -89,7 +89,7 @@ export default function Team() {
             })}
           </div>
 
-          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto">
+          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pt-4">
             {isLoading ? (
               <TeamListSkeleton />
             ) : (

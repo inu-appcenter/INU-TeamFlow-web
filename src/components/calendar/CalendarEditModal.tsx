@@ -1,16 +1,22 @@
 'use client';
 
 import type { ScheduleColor } from '@/constants/scheduleColor';
-import type { Schedule, RecurrenceEditScope } from '@/types/event';
-import { X } from 'lucide-react';
+import type {
+  Schedule,
+  RecurrenceEditScope,
+  EventParticipant,
+} from '@/types/event';
+import type { TeamMemberResponse } from '@/types/team';
+import { X, Users, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
-
+import Checkbox from '../common/Checkbox';
 import CalendarDatePicker from './CalendarDatePicker';
 import ColorPicker from './ColorPicker';
 import ScheduleTypeToggle from './ScheduleTypeToggle';
 import AllDayToggle from './AllDayToggle';
 import RepeatSettings from './RepeatSettings';
 import TimeRangeInputs from './TimeRangeInputs';
+import { getDepartmentName } from '@/utils/getDepartmentName';
 import {
   DAY_NUMBER_TO_BY_DAY,
   BY_DAY_TO_DAY_NUMBER,
@@ -28,6 +34,7 @@ interface CalendarEditModalProps {
   onClose: () => void;
   onEdit: (schedule: Schedule, scope: RecurrenceEditScope) => void;
   onDelete: (eventId: number, scope: RecurrenceEditScope) => void;
+  teamMembers?: TeamMemberResponse[];
 }
 
 const defaultColor: ScheduleColor = 'SUN';
@@ -88,6 +95,7 @@ export default function CalendarEditModal({
   onClose,
   onEdit,
   onDelete,
+  teamMembers = [],
 }: CalendarEditModalProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -97,6 +105,11 @@ export default function CalendarEditModal({
   const [scopeAction, setScopeAction] = useState<'save' | 'delete' | null>(
     null
   );
+  const [selectedParticipants, setSelectedParticipants] = useState<
+    EventParticipant[]
+  >(schedule?.participants ?? []);
+  const [isEditingParticipants, setIsEditingParticipants] = useState(false);
+  const [participantSearch, setParticipantSearch] = useState('');
 
   const [scheduleType, setScheduleType] = useState<ScheduleType>(
     getInitialScheduleType(schedule)
@@ -120,9 +133,51 @@ export default function CalendarEditModal({
       setIsDeleteConfirmOpen(false);
       setIsScopeModalOpen(false);
       setScopeAction(null);
+      setIsEditingParticipants(false);
       onClose();
     }, 250);
   };
+
+  const toggleParticipant = (member: TeamMemberResponse) => {
+    setSelectedParticipants((prev) =>
+      prev.some((p) => p.userId === member.userId)
+        ? prev.filter((p) => p.userId !== member.userId)
+        : [
+            ...prev,
+            {
+              userId: member.userId,
+              teamMemberId: member.teamMemberId,
+              name: member.userNickname || member.username,
+              teamRole: member.teamRole,
+            },
+          ]
+    );
+  };
+
+  const allSelected =
+    teamMembers.length > 0 &&
+    teamMembers.every((m) =>
+      selectedParticipants.some((p) => p.userId === m.userId)
+    );
+
+  const handleToggleAllParticipants = (checked: boolean) => {
+    setSelectedParticipants(
+      checked
+        ? teamMembers.map((m) => ({
+            userId: m.userId,
+            teamMemberId: m.teamMemberId,
+            name: m.userNickname || m.username,
+            teamRole: m.teamRole,
+          }))
+        : []
+    );
+  };
+
+  const filteredMembers = teamMembers.filter((m) =>
+    (m.userNickname || m.username)
+      ?.toLowerCase()
+      .includes(participantSearch.toLowerCase())
+  );
 
   const handleScheduleTypeChange = (type: ScheduleType) => {
     setScheduleType(type);
@@ -207,6 +262,7 @@ export default function CalendarEditModal({
         color: form.color,
         isSingle: scheduleType !== 'REPEAT',
         recurrence: recurrencePayload,
+        participants: selectedParticipants,
       },
       scope
     );
@@ -286,129 +342,252 @@ export default function CalendarEditModal({
           <X size={24} />
         </button>
 
-        <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto pb-2">
-          <div className="mb-3 flex gap-3">
-            <input
-              type="text"
-              placeholder="일정을 입력해주세요"
-              value={form.title}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  title: e.target.value,
-                }))
-              }
-              className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50 active:scale-95"
-            />
+        {isEditingParticipants ? (
+          <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto pb-2">
+            <div className="mb-3">
+              <div className="flex h-[55px] items-center rounded-2xl bg-[#F6F8FA] px-6">
+                <h2 className="text-[16px] font-semibold text-[#2C2C2C]">
+                  참여할 인원을 선택해주세요
+                </h2>
+              </div>
+            </div>
 
-            <ColorPicker
-              value={form.color}
-              onChange={(color) => setForm((prev) => ({ ...prev, color }))}
-            />
+            <div className="grid grid-cols-10 gap-3">
+              <div className="col-span-6">
+                <div className="thin-scrollbar h-[400px] overflow-y-auto rounded-2xl bg-[#F6F8FA] py-4">
+                  <div className="mb-3 flex items-center justify-between gap-3 px-6">
+                    <Checkbox
+                      checked={allSelected}
+                      onChange={handleToggleAllParticipants}
+                      label="전체선택"
+                      size="sm"
+                      className="text-sm text-[#989898]"
+                    />
+
+                    <input
+                      value={participantSearch}
+                      onChange={(e) => setParticipantSearch(e.target.value)}
+                      placeholder="이름 검색"
+                      className="w-[70%] rounded-lg border-[0.5] border-[#D6DDE5] bg-white px-3 py-2 text-sm outline-none"
+                    />
+                  </div>
+
+                  {filteredMembers.map((member) => (
+                    <label
+                      key={member.teamMemberId}
+                      className="flex cursor-pointer items-center gap-4 rounded-lg px-6 py-2 hover:bg-gray-100"
+                    >
+                      <Checkbox
+                        checked={selectedParticipants.some(
+                          (p) => p.userId === member.userId
+                        )}
+                        size="md"
+                        onChange={() => toggleParticipant(member)}
+                      />
+
+                      <div className="flex flex-col">
+                        <span className="truncate text-base font-semibold text-[#2c2c2c]">
+                          {member.userNickname || member.username}
+                        </span>
+                      </div>
+
+                      <span className="ml-auto truncate pr-2 text-sm text-[#989898]">
+                        {getDepartmentName(member.department)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="col-span-4">
+                <div className="thin-scrollbar h-[400px] overflow-y-auto rounded-2xl bg-[#F6F8FA] px-6 py-4">
+                  <h3 className="mt-2 mb-4 text-base font-semibold text-[#2c2c2c]">
+                    선택된 인원 ({selectedParticipants.length})
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedParticipants.map((p) => (
+                      <div
+                        key={p.userId}
+                        className="flex items-center justify-between rounded-lg bg-white px-3 py-2"
+                      >
+                        <span className="truncate text-sm font-medium text-[#2c2c2c]">
+                          {p.name}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedParticipants((prev) =>
+                              prev.filter((sp) => sp.userId !== p.userId)
+                            )
+                          }
+                          className="ml-2 text-[#989898] hover:text-[#2c2c2c]"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 mb-10 flex shrink-0 items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setIsEditingParticipants(false)}
+                className="h-10 rounded-xl bg-[#5E92F0] px-6 font-semibold text-white transition-all duration-150 active:scale-95"
+              >
+                완료
+              </button>
+            </div>
           </div>
+        ) : (
+          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pb-2">
+            <div className="mb-3 flex gap-3">
+              <input
+                type="text"
+                placeholder="일정을 입력해주세요"
+                value={form.title}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    title: e.target.value,
+                  }))
+                }
+                className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] transition-all duration-200 outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50 active:scale-95"
+              />
 
-          <ScheduleTypeToggle
-            value={scheduleType}
-            onChange={handleScheduleTypeChange}
-            disabled
-          />
-          {scheduleType !== 'PERIOD' && (
-            <AllDayToggle
-              checked={form.isAllDay}
-              onChange={(checked) =>
-                setForm((prev) => ({ ...prev, isAllDay: checked }))
-              }
+              <ColorPicker
+                value={form.color}
+                onChange={(color) => setForm((prev) => ({ ...prev, color }))}
+              />
+            </div>
+
+            <ScheduleTypeToggle
+              value={scheduleType}
+              onChange={handleScheduleTypeChange}
+              disabled
             />
-          )}
 
-          {scheduleType === 'REPEAT' && (
-            <RepeatSettings
-              repeatType={repeatType}
-              onRepeatTypeChange={setRepeatType}
-              repeatDays={repeatDays}
-              onRepeatDaysChange={handleRepeatDaysChange}
-              includeDailyOption
-            />
-          )}
+            {scheduleType !== 'PERIOD' && (
+              <AllDayToggle
+                checked={form.isAllDay}
+                onChange={(checked) =>
+                  setForm((prev) => ({ ...prev, isAllDay: checked }))
+                }
+              />
+            )}
 
-          <CalendarDatePicker
-            value={form.startDate}
-            placeholder={
-              scheduleType === 'NORMAL'
-                ? '날짜를 선택해주세요'
-                : '시작 날짜를 선택해주세요'
-            }
-            onChange={(date) =>
-              setForm((prev) => ({
-                ...prev,
-                startDate: date,
-                ...(scheduleType === 'NORMAL' && {
-                  endDate: date,
-                }),
-              }))
-            }
-          />
+            {scheduleType === 'REPEAT' && (
+              <RepeatSettings
+                repeatType={repeatType}
+                onRepeatTypeChange={setRepeatType}
+                repeatDays={repeatDays}
+                onRepeatDaysChange={handleRepeatDaysChange}
+                includeDailyOption
+              />
+            )}
 
-          {scheduleType !== 'NORMAL' && (
             <CalendarDatePicker
-              value={form.endDate}
+              value={form.startDate}
               placeholder={
-                scheduleType === 'PERIOD'
-                  ? '마지막 날짜를 선택해주세요'
-                  : '반복 종료 날짜를 선택해주세요'
+                scheduleType === 'NORMAL'
+                  ? '날짜를 선택해주세요'
+                  : '시작 날짜를 선택해주세요'
               }
               onChange={(date) =>
                 setForm((prev) => ({
                   ...prev,
-                  endDate: date,
+                  startDate: date,
+                  ...(scheduleType === 'NORMAL' && {
+                    endDate: date,
+                  }),
                 }))
               }
             />
-          )}
 
-          {!form.isAllDay && scheduleType !== 'PERIOD' && (
-            <TimeRangeInputs
-              startTime={form.startTime}
-              endTime={form.endTime}
-              onStartTimeChange={(time) =>
-                setForm((prev) => ({ ...prev, startTime: time }))
+            {scheduleType !== 'NORMAL' && (
+              <CalendarDatePicker
+                value={form.endDate}
+                placeholder={
+                  scheduleType === 'PERIOD'
+                    ? '마지막 날짜를 선택해주세요'
+                    : '반복 종료 날짜를 선택해주세요'
+                }
+                onChange={(date) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    endDate: date,
+                  }))
+                }
+              />
+            )}
+
+            {!form.isAllDay && scheduleType !== 'PERIOD' && (
+              <TimeRangeInputs
+                startTime={form.startTime}
+                endTime={form.endTime}
+                onStartTimeChange={(time) =>
+                  setForm((prev) => ({ ...prev, startTime: time }))
+                }
+                onEndTimeChange={(time) =>
+                  setForm((prev) => ({ ...prev, endTime: time }))
+                }
+              />
+            )}
+
+            {schedule.teamId && (
+              <button
+                type="button"
+                onClick={() => setIsEditingParticipants(true)}
+                className="mb-3 flex h-[55px] w-full items-center justify-between rounded-2xl bg-[#F6F8FA] px-6 text-left text-[16px] font-semibold text-[#2c2c2c] transition-all duration-200 outline-none active:scale-95"
+              >
+                <span className="flex items-center gap-3">
+                  <Users size={17} strokeWidth={2.5} />
+                  참여자 수정
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="text-[15px] text-[#989898]">
+                    {selectedParticipants.length}명
+                  </span>
+                  <ChevronRight size={22} strokeWidth={2} />
+                </span>
+              </button>
+            )}
+
+            <textarea
+              placeholder="설명을 입력해주세요"
+              value={form.description}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
               }
-              onEndTimeChange={(time) =>
-                setForm((prev) => ({ ...prev, endTime: time }))
-              }
+              className="h-[110px] w-full resize-none rounded-2xl bg-[#F6F8FA] px-6 py-4 text-[16px] font-semibold text-[#2C2C2C] outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50"
             />
-          )}
 
-          <textarea
-            placeholder="설명을 입력해주세요"
-            value={form.description}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                description: e.target.value,
-              }))
-            }
-            className="h-[110px] w-full resize-none rounded-2xl bg-[#F6F8FA] px-6 py-4 text-[16px] font-semibold text-[#2C2C2C] outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50"
-          />
+            <div className="mt-6 mb-10 flex shrink-0 items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setIsDeleteConfirmOpen(true)}
+                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+              >
+                삭제
+              </button>
 
-          <div className="mt-16 mb-10 flex shrink-0 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setIsDeleteConfirmOpen(true)}
-              className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
-            >
-              삭제
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
-            >
-              저장
-            </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+              >
+                저장
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {isDeleteConfirmOpen && (
           <div

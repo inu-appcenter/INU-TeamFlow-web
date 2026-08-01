@@ -10,6 +10,7 @@ import { X, ChevronDown } from 'lucide-react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 import Checkbox from '../common/Checkbox';
 import VoteDatePicker from '@/components/vote/VoteDatePicker';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 export interface EventVoteCreateRequest {
   title: string;
@@ -55,16 +56,7 @@ export default function VoteAddModal({
   onCreate,
   members,
 }: VoteAddModalProps) {
-  useEffect(() => {
-    if (!open) return;
-
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = originalStyle;
-    };
-  }, [open]);
+  useLockBodyScroll(open);
 
   const [isClosing, setIsClosing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -482,7 +474,7 @@ export default function VoteAddModal({
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="absolute left-0 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+              className="absolute left-0 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
             >
               이전
             </button>
@@ -492,7 +484,7 @@ export default function VoteAddModal({
             <button
               type="button"
               onClick={handleNext}
-              className="mb-16 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
             >
               다음
             </button>
@@ -500,7 +492,7 @@ export default function VoteAddModal({
             <button
               type="button"
               onClick={handleCreate}
-              className="mb-16 h-10 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 font-semibold text-white transition-all duration-200 active:scale-95"
+              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 font-semibold text-white transition-all duration-200 active:scale-95"
             >
               등록
             </button>

@@ -2,15 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ImagePlus, Send, Menu } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { ChevronLeft, ImagePlus, Send, Menu, ChevronDown } from 'lucide-react';
 import { useChatMessageAnchor } from '@/hooks/chat/useChatMessageAnchor';
 import { useChatMessageHistory } from '@/hooks/chat/useChatMessageHistory';
-import { formatChatDate, isSameDay } from '@/utils/date/formatChatDate';
+import { isEmojiOnlyMessage } from '@/utils/isEmojiOnly';
+import {
+  formatChatDate,
+  isSameDay,
+  isSameMinute,
+} from '@/utils/date/formatChatDate';
+import { useChatRoomMembers } from '@/hooks/chat/useChatRoomMembers';
 import NotificationButton from '@/components/common/notification/NotificationButton';
-import { formatTime } from '@/utils/date/formatTime';
+import { formatChatMessageTime } from '@/utils/date/formatChatMessageTime';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
 import { useSendChatMessage } from '@/hooks/chat/useSendChatMessage';
-import { useChatMessageSubscribe } from '@/hooks/chat/useChatMessageSubscribe';
+import { useChatMessageSubscribe } from '@/hooks/chat/useChatRoomSubscription';
 import { useChatImageUpload } from '@/hooks/chat/useChatImageUpload';
 import { useMyInfo } from '@/hooks/useAuthQuery';
 import { useMarkChatAsRead } from '@/hooks/chat/useMarkChatAsRead';
@@ -61,6 +68,9 @@ export default function ChatRoomPage() {
   const { mutateAsync: uploadImage, isPending: isUploading } =
     useChatImageUpload();
   const { mutate: markAsRead } = useMarkChatAsRead(roomId);
+  const { data: members } = useChatRoomMembers(roomId);
+  const totalMemberCount = members?.length ?? 0;
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   useChatMessageSubscribe(roomId);
 
@@ -85,6 +95,21 @@ export default function ChatRoomPage() {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // 스크롤이 맨 아래에서 떨어지면 "아래로" 버튼 표시
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const distanceFromBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight;
+      setShowScrollToBottom(distanceFromBottom > 200); // 200px 이상 떨어지면 표시
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // 이전 메시지 로드 후 스크롤 위치 보정 (튐 방지)
   useEffect(() => {
@@ -143,15 +168,24 @@ export default function ChatRoomPage() {
 
   const currentUserId = me?.userId;
 
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
+
   return (
     <main className="h-screen overflow-hidden bg-[#F0F2F5] px-3 sm:px-6">
       <div className="hidden lg:block">
         <NotificationButton />
       </div>
 
-      <section className="mx-auto flex h-full min-h-0 max-w-[800px] flex-1 flex-col bg-white">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3 bg-white px-6 pt-5">
+      <section className="relative mx-auto flex h-full min-h-0 max-w-[800px] flex-1 flex-col bg-white">
+        <header className="absolute top-0 right-0 left-0 z-10 flex items-center justify-between bg-white/70 backdrop-blur-sm">
+          <div className="flex items-center gap-3 px-6 py-4">
             <button
               onClick={() => router.back()}
               className="cursor-pointer text-[#2c2c2c]"
@@ -182,7 +216,7 @@ export default function ChatRoomPage() {
           </div>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="mt-5 mr-7 cursor-pointer rounded-full p-2 transition duration-200 hover:bg-[#EEF1F5]"
+            className="mr-7 cursor-pointer rounded-full p-2 transition duration-200 active:scale-90"
           >
             <Menu size={22} />
           </button>
@@ -190,14 +224,14 @@ export default function ChatRoomPage() {
 
         <div
           ref={scrollRef}
-          className="thin-scrollbar flex-1 overflow-y-auto px-6 py-2"
+          className="thin-scrollbar flex-1 overflow-y-auto px-6 pt-13 pb-4"
         >
           {isLoading || !anchor ? (
             <div className="flex h-full items-center justify-center text-sm text-[#9C9C9C]">
               불러오는 중...
             </div>
           ) : (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5">
               <div ref={topSentinelRef} className="h-1" />
               {isFetchingNextPage && (
                 <div className="py-2 text-center text-xs text-[#9C9C9C]">
@@ -207,12 +241,24 @@ export default function ChatRoomPage() {
               {allMessages.map((message, index) => {
                 const isMine = message.senderId === currentUserId;
                 const prevMessage = allMessages[index - 1];
+                const nextMessage = allMessages[index + 1];
+                const unreadCount = Math.max(
+                  0,
+                  totalMemberCount - 1 - message.readCount
+                );
+
                 const showDateDivider =
                   !prevMessage ||
                   !isSameDay(prevMessage.createdAt, message.createdAt);
                 const isSameSenderAsPrev =
                   !showDateDivider &&
                   prevMessage?.senderId === message.senderId;
+
+                // 다음 메시지가 같은 사람 + 같은 분(分)이면 지금 메시지엔 시간 숨김
+                const showTime =
+                  !nextMessage ||
+                  nextMessage.senderId !== message.senderId ||
+                  !isSameMinute(message.createdAt, nextMessage.createdAt);
 
                 const showReadDivider =
                   anchor.lastReadMessageId !== null &&
@@ -277,9 +323,18 @@ export default function ChatRoomPage() {
 
                         <div className="flex items-end gap-1">
                           {isMine && (
-                            <span className="mb-0.5 text-[10px] text-[#B0b0b0]">
-                              {formatTime(message.createdAt)}
-                            </span>
+                            <div className="mb-0.5 flex flex-col items-end">
+                              {unreadCount > 0 && (
+                                <span className="text-[10px] font-medium text-[#5E92F0]">
+                                  {unreadCount}
+                                </span>
+                              )}
+                              {showTime && (
+                                <span className="text-[10px] text-[#B0b0b0]">
+                                  {formatChatMessageTime(message.createdAt)}
+                                </span>
+                              )}
+                            </div>
                           )}
 
                           {message.messageType === 'IMAGE' &&
@@ -290,9 +345,14 @@ export default function ChatRoomPage() {
                               alt="전송된 이미지"
                               className="max-h-64 rounded-2xl object-cover"
                             />
+                          ) : message.content &&
+                            isEmojiOnlyMessage(message.content) ? (
+                            <div className="px-1 py-1 text-[40px] leading-none">
+                              {message.content}
+                            </div>
                           ) : (
                             <div
-                              className={`rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed break-words ${
+                              className={`rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed break-words ${
                                 isMine
                                   ? 'rounded-br-sm bg-[#5E92F0] text-white'
                                   : 'rounded-bl-sm bg-[#F6F8FB] text-[#2C2C2C]'
@@ -303,9 +363,18 @@ export default function ChatRoomPage() {
                           )}
 
                           {!isMine && (
-                            <span className="mb-0.5 text-[10px] text-[#B6B6B6]">
-                              {formatTime(message.createdAt)}
-                            </span>
+                            <div className="mb-0.5 flex flex-col items-start">
+                              {unreadCount > 0 && (
+                                <span className="text-[10px] font-medium text-[#5E92F0]">
+                                  {unreadCount}
+                                </span>
+                              )}
+                              {showTime && (
+                                <span className="text-[10px] text-[#B6B6B6]">
+                                  {formatChatMessageTime(message.createdAt)}
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -315,6 +384,20 @@ export default function ChatRoomPage() {
               })}
             </div>
           )}
+          <AnimatePresence>
+            {showScrollToBottom && (
+              <motion.button
+                onClick={scrollToBottom}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="absolute bottom-30 left-1/2 flex h-9 w-9 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full bg-white text-[#989898] shadow-[0_4px_12px_rgba(149,157,165,0.25)] transition hover:bg-[#F6F8FA]"
+              >
+                <ChevronDown size={20} strokeWidth={2.5} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="flex items-center gap-2 bg-[#F6F8FA] px-6 py-4 pb-10">

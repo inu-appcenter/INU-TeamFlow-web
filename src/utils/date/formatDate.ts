@@ -1,3 +1,4 @@
+// ISO 날짜 문자열 → "YYYY-MM-DD" 형식으로 변환
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
 

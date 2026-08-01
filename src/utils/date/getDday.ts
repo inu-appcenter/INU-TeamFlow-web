@@ -1,3 +1,4 @@
+// 목표 날짜(target)까지 D-day를 계산해서 문자열로 반환
 export const getDday = (target: Date | string) => {
   const today = new Date();
 

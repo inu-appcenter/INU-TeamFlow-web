@@ -20,8 +20,8 @@ const statusLabelMap: Record<ApplicationStatus, string> = {
 };
 
 const statusColorMap: Record<ApplicationStatus, string> = {
-  WAITING: 'bg-[#EEF1F5] text-[#5E92F0]',
-  ACCEPTED: 'bg-[#A7ECA7] text-[#1F4D1A]',
+  WAITING: 'bg-[#E8F1FF] text-[#5E92F0]',
+  ACCEPTED: 'bg-[#DDF7E5] text-[#2F8F4E]',
   DECLINED: 'bg-[#FFD3D3] text-[#B32424]',
   CANCELLED: 'bg-[#EEF1F5] text-[#989898]',
 };
@@ -84,7 +84,7 @@ export default function ApplicationDetail() {
           <div className="px-8 py-7 sm:px-10 sm:py-10">
             <div className="flex-1 items-center">
               <span
-                className={`rounded-xl px-3 py-1 text-[12px] font-medium sm:text-[16px] ${statusColorMap[application.applicationStatus]}`}
+                className={`rounded-full px-3 py-1 text-[13px] font-medium sm:text-[15px] ${statusColorMap[application.applicationStatus]}`}
               >
                 {statusLabelMap[application.applicationStatus]}
               </span>

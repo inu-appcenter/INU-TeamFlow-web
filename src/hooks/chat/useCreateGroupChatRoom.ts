@@ -1,14 +1,15 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { leaveChatRoom } from '@/api/chat';
+import { createGroupChatRoom } from '@/api/chat';
 import { chatRoomKeys } from '@/hooks/chat/useChatRooms';
+import type { GroupChatRoomCreateRequest } from '@/types/chat';
 
-export function useLeaveChatRoom() {
+export function useCreateGroupChatRoom() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (roomId: number) => leaveChatRoom(roomId),
+    mutationFn: (body: GroupChatRoomCreateRequest) => createGroupChatRoom(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatRoomKeys.base() });
     },

@@ -29,7 +29,7 @@ export default function ScheduleListItem({
       onClick={() => onClickItem(schedule)}
       className={`flex h-[58px] shrink-0 cursor-pointer items-center justify-between rounded-md border-l-6 px-3 text-left transition-all duration-150 outline-none active:scale-95 ${
         isDone ? 'border-l-transparent pl-2' : ''
-      }`}
+      } ${schedule.teamId && schedule.isParticipant === false ? 'opacity-40' : ''}`}
       style={{
         backgroundColor: EVENT_COLOR_MAP[schedule.color],
         borderLeftColor: isDone

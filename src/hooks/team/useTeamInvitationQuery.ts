@@ -3,6 +3,7 @@ import {
   getTeamInvitations,
   createTeamInvitation,
   updateInvitationStatus,
+  searchInvitationCandidates,
 } from '@/api/invitation';
 import type {
   TeamInvitationCreateRequest,
@@ -14,6 +15,8 @@ import { teamKeys } from '@/hooks/team/useTeamQuery';
 export const invitationKeys = {
   all: () => ['invitations'] as const,
   list: (direction: InvitationDirection) => ['invitations', direction] as const,
+  candidates: (teamId: number, keyword: string) =>
+    ['teams', teamId, 'invitations', 'candidates', keyword] as const,
 };
 
 export const useTeamInvitations = (
@@ -33,6 +36,10 @@ export const useCreateInvitation = (teamId: number) => {
       createTeamInvitation(teamId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: invitationKeys.all() });
+      // 후보 검색 결과도 최신 상태(PENDING)로 갱신
+      queryClient.invalidateQueries({
+        queryKey: ['teams', teamId, 'invitations', 'candidates'],
+      });
     },
   });
 };
@@ -56,5 +63,16 @@ export const useUpdateInvitationStatus = () => {
         queryClient.invalidateQueries({ queryKey: ['teams'] });
       }
     },
+  });
+};
+
+export const useInvitationCandidates = (teamId: number, keyword: string) => {
+  const trimmed = keyword.trim();
+
+  return useQuery({
+    queryKey: invitationKeys.candidates(teamId, trimmed),
+    queryFn: () => searchInvitationCandidates(teamId, trimmed),
+    enabled: trimmed.length > 0,
+    staleTime: 1000 * 30,
   });
 };

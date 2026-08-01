@@ -8,7 +8,7 @@ export default function ApplicationDetailSkeleton() {
           <div className="h-16 bg-[#E9E9E9] sm:h-18" />
 
           <div className="px-8 py-7 sm:px-10 sm:py-10">
-            <div className="h-6 w-16 animate-pulse rounded-xl bg-[#E5E8EC] sm:h-7 sm:w-20" />
+            <div className="h-6 w-16 animate-pulse rounded-xl bg-[#E5E8EC] sm:h-7 sm:w-15" />
 
             <div className="mt-4 h-6 w-2/3 animate-pulse rounded bg-[#E5E8EC] sm:h-7" />
 

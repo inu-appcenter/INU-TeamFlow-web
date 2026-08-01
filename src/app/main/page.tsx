@@ -158,8 +158,8 @@ export default function Main() {
         <section className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* 캘린더 */}
           <div className="lg:col-span-7">
-            <Card className="h-[400px] overflow-hidden p-6">
-              <div className="mb-3 flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] pb-2">
+            <Card className="h-[400px] overflow-hidden px-4 pt-6 lg:p-6">
+              <div className="mx-2 mb-3 flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] pb-2 lg:mx-0">
                 <h2 className="text-xl font-bold text-[#2C2C2C]">
                   {month + 1}월
                 </h2>
@@ -183,7 +183,7 @@ export default function Main() {
                 </div>
               </div>
 
-              <div className="grid h-[305px] grid-cols-1 gap-4 md:grid-cols-[1.2fr_0.8fr]">
+              <div className="grid h-[315px] grid-cols-1 gap-4 md:grid-cols-[1.2fr_0.8fr] lg:h-[305px]">
                 <MonthCalendar
                   year={year}
                   month={month}
@@ -258,21 +258,36 @@ export default function Main() {
                 </button>
               </div>
 
-              <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
-                {categoryFilterOptions.map((category) => (
-                  <button
-                    key={category.value}
-                    type="button"
-                    onClick={() => setSelectedCategory(category.value)}
-                    className={`z-50 cursor-pointer rounded-2xl border-[0.5px] px-2.5 py-1 text-sm font-normal transition-all duration-150 active:scale-95 sm:px-3.5 sm:py-1.5 sm:text-base ${
-                      selectedCategory === category.value
-                        ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
-                        : 'border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C] hover:bg-[#E3E7EC]'
-                    }`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
+              <div className="relative mt-3 hidden border-b-[0.5px] border-[#D6DDE5] sm:flex">
+                {categoryFilterOptions.map((category) => {
+                  const isActive = selectedCategory === category.value;
+
+                  return (
+                    <button
+                      key={category.value}
+                      type="button"
+                      onClick={() => setSelectedCategory(category.value)}
+                      className={`relative z-50 flex-1 cursor-pointer pb-3 text-center text-[17px] font-semibold whitespace-nowrap transition ${
+                        isActive
+                          ? 'text-[#5E92F0]'
+                          : 'text-[#CBD2DA] hover:text-[#5E92F0]'
+                      }`}
+                    >
+                      {category.label}
+                      {isActive && (
+                        <motion.div
+                          layoutId="mainRecruitmentCategoryIndicator"
+                          className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                          transition={{
+                            type: 'spring',
+                            stiffness: 600,
+                            damping: 50,
+                          }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="mt-0 flex flex-col sm:hidden">
@@ -285,7 +300,7 @@ export default function Main() {
                 ))}
               </div>
 
-              <div className="mt-1 hidden flex-col sm:flex">
+              <div className="hidden flex-col sm:flex">
                 {desktopRecruitments.map((recruitment) => (
                   <RecruitmentListItem
                     key={recruitment.recruitmentId}
@@ -318,41 +333,38 @@ export default function Main() {
               </div>
 
               {/* 카테고리 */}
-              <div className="relative mt-3 hidden sm:block">
-                <div
-                  ref={infoPostCategoryScrollRef}
-                  className="scrollbar-hide overflow-x-auto overscroll-x-contain pb-1"
-                >
-                  <div className="flex w-max gap-2 pr-8">
-                    {infoPostCategoryFilterOptions.map((category) => {
-                      const isSelected =
-                        selectedInfoPostCategory === category.value;
+              <div className="relative mt-3 hidden border-b-[0.5px] border-[#D6DDE5] sm:flex">
+                {infoPostCategoryFilterOptions.slice(0, 6).map((category) => {
+                  const isActive = selectedInfoPostCategory === category.value;
 
-                      return (
-                        <button
-                          key={category.value}
-                          ref={(element) => {
-                            infoPostCategoryButtonRefs.current[category.value] =
-                              element;
+                  return (
+                    <button
+                      key={category.value}
+                      type="button"
+                      onClick={() =>
+                        setSelectedInfoPostCategory(category.value)
+                      }
+                      className={`relative z-50 flex-1 cursor-pointer pb-3 text-center text-[17px] font-semibold whitespace-nowrap transition ${
+                        isActive
+                          ? 'text-[#5E92F0]'
+                          : 'text-[#CBD2DA] hover:text-[#5E92F0]'
+                      }`}
+                    >
+                      {category.label}
+                      {isActive && (
+                        <motion.div
+                          layoutId="mainInfoPostCategoryIndicator"
+                          className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                          transition={{
+                            type: 'spring',
+                            stiffness: 600,
+                            damping: 50,
                           }}
-                          type="button"
-                          onClick={() =>
-                            handleInfoPostCategoryChange(category.value)
-                          }
-                          className={`z-10 shrink-0 cursor-pointer snap-start rounded-2xl border-[0.5px] px-3.5 py-1.5 text-base font-normal whitespace-nowrap transition-all duration-200 active:scale-95 ${
-                            isSelected
-                              ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
-                              : 'border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C] hover:bg-[#E3E7EC]'
-                          }`}
-                        >
-                          {category.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="pointer-events-none absolute top-0 right-0 h-full w-9 bg-gradient-to-l from-white via-white/80 to-transparent" />
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* 모바일 리스트 */}
@@ -377,7 +389,7 @@ export default function Main() {
               </div>
 
               {/* 데스크톱 리스트 */}
-              <div className="mt-1 hidden flex-col sm:flex">
+              <div className="hidden flex-col sm:flex">
                 {isInfoPostsLoading ? (
                   <div className="flex h-[190px] items-center justify-center text-sm font-medium text-[#989898]">
                     정보글을 불러오는 중입니다
