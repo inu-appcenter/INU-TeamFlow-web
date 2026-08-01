@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IMessage } from '@stomp/stompjs';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
-import { subscribeChatRoom } from '@/lib/chatSocket';
+import { getChatClient, subscribeChatRoom } from '@/lib/chatSocket';
 import type {
   ChatMessageResponse,
   ChatMessageAnchorResponse,
@@ -39,6 +39,16 @@ export function useChatMessageSubscribe(roomId: number) {
       );
     });
 
-    return () => sub?.unsubscribe();
+    return () => {
+      // 언마운트 시점에 소켓이 이미 닫혀있으면 unsubscribe 시도 자체를 스킵
+      const client = getChatClient();
+      if (sub && client.connected) {
+        try {
+          sub.unsubscribe();
+        } catch {
+          // 이미 닫힌 연결에 대한 unsubscribe 실패는 무시
+        }
+      }
+    };
   }, [isConnected, roomId]);
 }

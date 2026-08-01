@@ -18,11 +18,13 @@ import {
 } from '@/hooks/team/useTeamQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import type { AxiosError } from 'axios';
-import { useUserSearch } from '@/hooks/useUserSearch';
+import { useInvitationCandidates } from '@/hooks/team/useTeamInvitationQuery';
+import type { InvitationCandidateStatus } from '@/types/invitation';
 
 type InviteUser = {
   studentNumber: string;
   name: string;
+  invitationStatus: InvitationCandidateStatus;
 };
 
 type TeamMemberDrawerProps = {
@@ -54,10 +56,8 @@ export default function TeamMemberDrawer({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('members');
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-
   const [keyword, setKeyword] = useState('');
-  const { data: searchedUsers = [] } = useUserSearch(keyword);
-  const [invitedNumbers, setInvitedNumbers] = useState<Set<string>>(new Set());
+  const { data: searchedUsers = [] } = useInvitationCandidates(teamId, keyword);
   const { data: me } = useMyInfo();
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
@@ -78,8 +78,11 @@ export default function TeamMemberDrawer({
   // 본인 + 이미 팀원인 사람 제외
   const filteredUsers = searchedUsers
     .filter((u) => u.userId !== me?.userId)
-    .filter((u) => !teamMembers.some((m) => m.userId === u.userId))
-    .map((u) => ({ studentNumber: u.studentNumber, name: u.name }));
+    .map((u) => ({
+      studentNumber: u.studentNumber,
+      name: u.name,
+      invitationStatus: u.invitationStatus,
+    }));
 
   const { mutate: updateMemberRole, isPending: isAssigning } =
     useUpdateMemberRole(teamId);
@@ -117,10 +120,8 @@ export default function TeamMemberDrawer({
   const handleInvite = async (studentNumber: string) => {
     try {
       await onInvite(studentNumber);
-      setInvitedNumbers((prev) => new Set(prev).add(studentNumber));
       setSuccessMessage('초대 요청을 보냈어요');
       setTimeout(() => setSuccessMessage(null), 2000);
-      // setKeyword('') 제거 — 검색 결과 유지해서 "초대 대기" 상태 보이게
     } catch {}
   };
 
@@ -208,7 +209,10 @@ export default function TeamMemberDrawer({
                 {isAdmin && keyword && (
                   <div className="thin-scrollbar mt-2 flex max-h-[180px] shrink-0 flex-col overflow-y-auto rounded-xl border-[0.5px] border-[#D6DDE5]">
                     {filteredUsers.map((user) => {
-                      const isInvited = invitedNumbers.has(user.studentNumber);
+                      const isPending = user.invitationStatus === 'PENDING';
+                      const isMember = user.invitationStatus === 'MEMBER';
+                      const disabled = isInviting || isPending || isMember;
+
                       return (
                         <div
                           key={user.studentNumber}
@@ -224,10 +228,14 @@ export default function TeamMemberDrawer({
                           </div>
                           <button
                             onClick={() => handleInvite(user.studentNumber)}
-                            disabled={isInviting || isInvited}
+                            disabled={disabled}
                             className="cursor-pointer rounded-full bg-[#5E92F0] px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
                           >
-                            {isInvited ? '초대 대기' : '추가'}
+                            {isMember
+                              ? '팀원'
+                              : isPending
+                                ? '초대 대기'
+                                : '추가'}
                           </button>
                         </div>
                       );

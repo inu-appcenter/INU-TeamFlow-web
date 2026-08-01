@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import TeamMemberDrawer from '@/components/team/TeamMemberDrawer';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import ScheduleListItem from '@/components/calendar/ScheduleListItem';
 import MonthGridWithEvents from '@/components/calendar/MonthGridWithEvents';
 import { TeamDetailSkeleton } from '@/components/skeleton';
@@ -75,6 +75,19 @@ export default function TeamDetail() {
   const calendarDates = useCalendarGrid(year, month);
   const weeks = useCalendarWeeks(calendarDates);
   const [isMemberDrawerOpen, setIsMemberDrawerOpen] = useState(false);
+
+  const sortedVotes = useMemo(
+    () =>
+      [...allVotes].sort((a, b) => b.createdDate.localeCompare(a.createdDate)),
+    [allVotes]
+  );
+  const sortedNotices = useMemo(
+    () =>
+      [...teamNoticesAll].sort((a, b) =>
+        b.createdAt.localeCompare(a.createdAt)
+      ),
+    [teamNoticesAll]
+  );
 
   useEffect(() => {
     const checkScreen = () => {
@@ -122,7 +135,7 @@ export default function TeamDetail() {
 
   const displayCount = isMd ? 4 : 3;
 
-  const teamVotes = allVotes.slice(0, displayCount);
+  const teamVotes = sortedVotes.slice(0, displayCount);
 
   const handlePrevMonth = () => {
     const prev = new Date(year, month - 1, 1);
@@ -159,7 +172,7 @@ export default function TeamDetail() {
           isFinished: !target.isFinished,
           occurrenceAt: target.occurrenceAt ?? target.startAt,
           recurrenceEditScope: 'THIS_INSTANCE',
-          participants: [],
+          participants: teamMembers.map((m) => m.teamMemberId),
           ...(target.recurrence && { recurrence: target.recurrence }),
         },
       });
@@ -177,7 +190,7 @@ export default function TeamDetail() {
         endAt: request.endAt,
         isAllDay: request.isAllDay,
         color: request.color,
-        participants: [],
+        participants: teamMembers.map((m) => m.teamMemberId),
         ...(request.recurrence && { recurrence: request.recurrence }),
       });
     } catch (err) {
@@ -202,7 +215,7 @@ export default function TeamDetail() {
           isFinished: updated.isFinished,
           occurrenceAt: updated.occurrenceAt ?? updated.startAt,
           recurrenceEditScope: scope,
-          participants: [],
+          participants: updated.participants.map((p) => p.teamMemberId),
           ...(updated.recurrence && { recurrence: updated.recurrence }),
         },
       });
@@ -237,7 +250,7 @@ export default function TeamDetail() {
     setIsVoteAddOpen(false);
   };
 
-  const teamNotices = teamNoticesAll.slice(0, displayCount);
+  const teamNotices = sortedNotices.slice(0, displayCount);
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
@@ -445,7 +458,7 @@ export default function TeamDetail() {
                           </h2>
 
                           <span
-                            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
                               vote.isOpened
                                 ? 'bg-[#E8F1FF] text-[#5E92F0]'
                                 : 'bg-[#EEF1F5] text-[#989898]'
@@ -640,6 +653,7 @@ export default function TeamDetail() {
           onClose={() => setEditSchedule(null)}
           onEdit={handleEditSchedule}
           onDelete={handleDeleteSchedule}
+          teamMembers={teamMembers}
         />
       )}
 

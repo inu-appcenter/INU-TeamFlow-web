@@ -6,6 +6,7 @@ import type {
   TeamInvitationStatusUpdateRequest,
   InvitationDirection,
 } from '@/types/invitation';
+import type { UserSearchResponse } from '@/types/user';
 
 export const getTeamInvitations = async (
   direction: InvitationDirection,
@@ -36,6 +37,18 @@ export const updateInvitationStatus = async (
   const { data } = await axiosInstance.put(
     `/teams/invitations/${invitationId}/status`,
     body
+  );
+  return data;
+};
+
+/** GET /teams/{teamId}/invitations/candidates */
+export const searchInvitationCandidates = async (
+  teamId: number,
+  name: string
+): Promise<UserSearchResponse[]> => {
+  const { data } = await axiosInstance.get<UserSearchResponse[]>(
+    `/teams/${teamId}/invitations/candidates`,
+    { params: { name } }
   );
   return data;
 };

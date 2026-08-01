@@ -1,10 +1,12 @@
 import type { Schedule } from '@/types/event';
 
+// 달력 그리드에서 각 칸이 이전달/이번달/다음달 날짜인지 구분하는 타입
 export type CalendarDate = {
   date: number;
   type: 'prev' | 'current' | 'next';
 };
 
+// Date 객체 → "YYYY-MM-DD" 문자열 키로 변환
 export const formatDateKey = (date: Date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -12,6 +14,7 @@ export const formatDateKey = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
+// 특정 일정(schedule)이 주어진 날짜(dateKey)에 표시되어야 하는지 판단
 export const isScheduleOnDate = (schedule: Schedule, dateKey: string) => {
   // 반복 일정이면 occurrenceAt 기준 우선 처리
   if (!schedule.isSingle && schedule.occurrenceAt) {

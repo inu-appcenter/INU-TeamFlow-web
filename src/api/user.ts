@@ -7,7 +7,6 @@ import type {
   UpdateMyProfileRequest,
   UpdateMyProfileResponse,
   UserMeResponse,
-  UserSearchResponse,
 } from '@/types/user';
 
 /** GET /users/me */

@@ -9,6 +9,7 @@ import { Repeat, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { EventColor, Recurrence } from '@/types/event';
 import CalendarDatePicker from './CalendarDatePicker';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 type RepeatType = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
@@ -65,16 +66,7 @@ export default function CalendarAddModal({
   selectedDate,
   isEdit = false,
 }: CalendarAddModalProps) {
-  useEffect(() => {
-    if (!open) return;
-
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = originalStyle;
-    };
-  }, [open]);
+  useLockBodyScroll(open);
 
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const [isClosing, setIsClosing] = useState(false);
@@ -552,29 +544,30 @@ export default function CalendarAddModal({
             }}
             className="h-[110px] w-full resize-none rounded-2xl bg-[#F6F8FA] px-6 py-4 text-[16px] font-semibold text-[#2C2C2C] outline-none placeholder:font-medium placeholder:text-[#2C2C2C]/50"
           />
-        </div>
-        <div
-          className={`mt-6 flex shrink-0 items-center ${
-            isEdit ? 'justify-between' : 'justify-end'
-          }`}
-        >
-          {isEdit && (
+
+          <div
+            className={`mt-6 mb-10 flex shrink-0 items-center ${
+              isEdit ? 'justify-between' : 'justify-end'
+            }`}
+          >
+            {isEdit && (
+              <button
+                type="button"
+                onClick={handleClose}
+                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
+              >
+                삭제
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={handleClose}
-              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
+              onClick={handleSave}
+              className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
             >
-              삭제
+              저장
             </button>
-          )}
-
-          <button
-            type="button"
-            onClick={handleSave}
-            className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
-          >
-            저장
-          </button>
+          </div>
         </div>
       </div>
     </div>

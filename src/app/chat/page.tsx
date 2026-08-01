@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
+import GroupChatCreateModal from '@/components/chat/GroupChatCreateModal';
 import { useChatRooms } from '@/hooks/chat/useChatRooms';
 import { ChatRoomListSkeleton } from '@/components/skeleton/ChatListSkeleton';
 import { formatChatTime } from '@/utils/date/formatChatTime';
@@ -21,9 +22,26 @@ const TABS: { key: ChatTab; label: string }[] = [
 export default function ChatListPage() {
   const [activeTab, setActiveTab] = useState<ChatTab>('TEAM');
   const { data: chatRooms, isLoading } = useChatRooms(activeTab);
+  // 탭 점 표시 판단용 — 비활성 탭의 안읽음 여부도 알아야 하므로 둘 다 조회
+  const { data: teamRooms } = useChatRooms('TEAM');
+  const { data: directRooms } = useChatRooms('DIRECT');
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const router = useRouter();
 
-  const filteredRooms = chatRooms ?? [];
+  const hasUnread = {
+    TEAM: teamRooms?.some((room) => room.unreadCount > 0) ?? false,
+    DIRECT: directRooms?.some((room) => room.unreadCount > 0) ?? false,
+  };
+
+  // 최근 메시지 순 정렬 (없는 방은 맨 아래로)
+  const filteredRooms = [...(chatRooms ?? [])].sort((a, b) => {
+    if (!a.lastMessageAt && !b.lastMessageAt) return 0;
+    if (!a.lastMessageAt) return 1;
+    if (!b.lastMessageAt) return -1;
+    return (
+      new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+    );
+  });
 
   return (
     <main className="h-screen overflow-hidden bg-[#F0F2F5] px-3 pt-4 sm:px-6 sm:pt-6">
@@ -35,7 +53,7 @@ export default function ChatListPage() {
         <div className="mb-3 flex items-end justify-between pl-4">
           <h1 className="text-2xl font-bold text-[#2C2C2C]">나의 채팅 목록</h1>
           <button
-            onClick={() => {}}
+            onClick={() => setIsGroupModalOpen(true)}
             className="z-50 flex cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] py-2.5 pr-4 pl-3.5 text-[15px] font-medium text-white transition hover:bg-[#4C82E5]"
           >
             <Plus size={18} strokeWidth={2.5} />
@@ -43,7 +61,7 @@ export default function ChatListPage() {
           </button>
         </div>
 
-        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-none p-6">
+        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-none p-5">
           <div className="relative mb-3 flex border-b-[0.5px] border-[#D6DDE5]">
             {TABS.map((tab) => (
               <button
@@ -55,7 +73,12 @@ export default function ChatListPage() {
                     : 'text-[#CBD2DA] hover:text-[#5E92F0]'
                 }`}
               >
-                {tab.label}
+                <span className="relative inline-flex items-center">
+                  {tab.label}
+                  {hasUnread[tab.key] && (
+                    <span className="absolute -top-0.5 -right-3 h-1.5 w-1.5 rounded-full bg-[#5E92F0]" />
+                  )}
+                </span>
                 {activeTab === tab.key && (
                   <motion.div
                     layoutId="chatTabIndicator"
@@ -139,6 +162,9 @@ export default function ChatListPage() {
       </section>
 
       <BottomNav />
+      {isGroupModalOpen && (
+        <GroupChatCreateModal onClose={() => setIsGroupModalOpen(false)} />
+      )}
     </main>
   );
 }

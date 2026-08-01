@@ -1,3 +1,5 @@
+import type { TeamRole } from '@/constants/teamEnum';
+
 export type EventColor =
   | 'SUN'
   | 'BLOSSOM'
@@ -14,6 +16,13 @@ export type RecurrenceEditScope =
   | 'THIS_INSTANCE'
   | 'THIS_AND_FOLLOWING'
   | 'ALL_SERIES';
+
+export interface EventParticipant {
+  userId: number;
+  teamMemberId: number;
+  name: string;
+  teamRole: TeamRole;
+}
 
 // Recurrence
 
@@ -43,6 +52,8 @@ export interface EventListResponse {
   isSingle: boolean;
   isFinished: boolean;
   isException: boolean;
+  isParticipant: boolean;
+  participants: EventParticipant[];
   recurrence: Recurrence | null;
 }
 

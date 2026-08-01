@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { getTeamRoleLabel } from '@/utils/teamRole';
-import { categoryColorMap } from '@/constants/category';
+import { categoryColorMap, categoryTextColorMap } from '@/constants/category';
+import { darkenColor } from '@/utils/color/darkenColor';
 
 import {
   ChevronLeft,
@@ -141,8 +142,12 @@ export default function Notice() {
                   <span
                     style={{
                       backgroundColor: categoryColorMap[notice.teamCategory],
+                      color: darkenColor(
+                        categoryColorMap[notice.teamCategory],
+                        140
+                      ),
                     }}
-                    className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-[#2c2c2c]/80"
+                    className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
                   >
                     {notice.teamName}
                   </span>

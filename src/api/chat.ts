@@ -10,6 +10,10 @@ import type {
   ChatImagePresignedUrlRequest,
   ChatImagePresignedUrlResponse,
   ChatRoomListParams,
+  ChatRoomImageUpdateRequest,
+  GroupChatRoomCreateRequest,
+  ChatRoomMemberResponse,
+  ChatRoomInviteRequest,
 } from '@/types/chat';
 
 // 내 채팅방 목록 조회
@@ -66,4 +70,41 @@ export const getChatImagePresignedUrl = async (
     body
   );
   return data;
+};
+
+// 팀 채팅방 이미지 설정 (리더만 가능)
+export const updateChatRoomImage = async (
+  roomId: number,
+  body: ChatRoomImageUpdateRequest
+): Promise<void> => {
+  await axiosInstance.patch(`/chat-rooms/${roomId}/image`, body);
+};
+
+// 팀 멤버 선택해 그룹 채팅방 생성
+export const createGroupChatRoom = async (
+  body: GroupChatRoomCreateRequest
+): Promise<ChatRoomSummaryResponse> => {
+  const { data } = await axiosInstance.post('/chat-rooms/group', body);
+  return data;
+};
+
+// 채팅방 현재 멤버 목록 조회
+export const getChatRoomMembers = async (
+  roomId: number
+): Promise<ChatRoomMemberResponse[]> => {
+  const { data } = await axiosInstance.get(`/chat-rooms/${roomId}/members`);
+  return data;
+};
+
+// 채팅방에 멤버 초대
+export const inviteChatRoomMembers = async (
+  roomId: number,
+  body: ChatRoomInviteRequest
+): Promise<void> => {
+  await axiosInstance.post(`/chat-rooms/${roomId}/invite`, body);
+};
+
+// 채팅방 퇴장
+export const leaveChatRoom = async (roomId: number): Promise<void> => {
+  await axiosInstance.delete(`/chat-rooms/${roomId}/members/me`);
 };

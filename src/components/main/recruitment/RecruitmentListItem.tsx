@@ -27,8 +27,8 @@ export default function RecruitmentListItem({
     <button
       type="button"
       onClick={() => router.push(`/recruitment/${recruitment.recruitmentId}`)}
-      className={`z-50 cursor-pointer border-b-[0.5px] border-[#D6DDE5] text-left last:border-b-0 active:scale-[0.99] ${
-        isLg ? 'py-3.5' : 'py-3'
+      className={`z-50 flex w-full cursor-pointer flex-col justify-center border-b-[0.5px] border-[#D6DDE5] text-left last:border-b-0 active:scale-[0.99] ${
+        isLg ? 'h-[76px]' : 'h-[68px]'
       }`}
     >
       <h3

@@ -1,6 +1,9 @@
 export type InviteStatus = 'WAITING' | 'ACCEPTED' | 'DECLINED';
 export type InvitationDirection = 'RECEIVED' | 'SENT';
 
+// 팀원 검색/초대 후보 목록에서의 관계 상태
+export type InvitationCandidateStatus = 'PENDING' | 'NONE' | 'MEMBER';
+
 export interface TeamInvitationResponse {
   invitationId: number;
   teamName: string;

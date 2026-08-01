@@ -1,3 +1,5 @@
+import { InvitationCandidateStatus } from '@/types/invitation';
+
 export interface UserMeResponse {
   userId: number;
   username: string;
@@ -35,4 +37,5 @@ export type UserSearchResponse = {
   name: string;
   studentNumber: string;
   department: string;
+  invitationStatus: InvitationCandidateStatus;
 };

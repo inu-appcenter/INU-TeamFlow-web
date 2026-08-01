@@ -30,10 +30,11 @@ export const useTeamDetail = (teamId: number) =>
     queryFn: () => getTeamDetail(teamId),
   });
 
-export const useTeamMembers = (teamId: number) =>
+export const useTeamMembers = (teamId: number, enabled = true) =>
   useQuery({
     queryKey: teamKeys.teamMembers(teamId),
     queryFn: () => getTeamMembers(teamId),
+    enabled: enabled && !!teamId,
   });
 
 export const useCreateTeam = () => {

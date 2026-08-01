@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
 import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { getDday } from '@/utils/date/getDday';
@@ -64,7 +65,7 @@ export default function Recruitment() {
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       {errorMessage && (
-        <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+        <div className="animate-modal-pop fixed top-32 left-1/2 z-100 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
           {errorMessage}
         </div>
       )}
@@ -82,68 +83,84 @@ export default function Recruitment() {
 
             <h1 className="text-2xl font-bold text-[#2C2C2C]">모집</h1>
           </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
+              <div className="relative h-full">
+                <select
+                  value={searchType}
+                  onChange={(e) => setSearchType(e.target.value)}
+                  className="bg[#F6F8FA] h-full appearance-none rounded-l-full border-r-[0.5px] border-[#D6DDE5] px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
+                >
+                  <option value="title">제목</option>
+                  <option value="announcementTitle">정보글</option>
+                </select>
+
+                <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#2C2C2C]">
+                  <ChevronDown size={14} />
+                </span>
+              </div>
+
+              <div className="flex flex-1 items-center gap-3 px-3">
+                <Search size={18} className="text-[#989898]" />
+
+                <input
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  placeholder="검색어를 입력하세요"
+                  className="w-full bg-transparent text-[#2C2C2C] outline-none placeholder:text-[#989898]"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (!checkVerified()) return;
+                router.push('/recruitment/create');
+              }}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center gap-1 rounded-full bg-[#5E92F0] text-white transition-all duration-150 active:scale-95 sm:w-auto sm:rounded-lg sm:px-4"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+
+              <span className="hidden sm:inline">모집글 작성</span>
+            </button>
+          </div>
         </header>
 
-        {/* 카테고리 */}
-        <section className="mb-4 flex flex-wrap gap-2">
-          {categoryFilterOptions.map((category) => (
-            <button
-              key={category.value}
-              onClick={() => setSelectedCategory(category.value)}
-              className={`sm:text-md cursor-pointer rounded-2xl border-[0.5px] px-3.5 py-1.5 text-[18px] font-normal ${
-                selectedCategory === category.value
-                  ? 'border-[#D6DDE5] bg-[#5E92F0] text-white'
-                  : 'border-[#D6DDE5] bg-white text-[#2C2C2C]'
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
-        </section>
+        <div className="mb-4 rounded-t-2xl bg-white pt-4">
+          {/* 카테고리 */}
+          <div className="relative flex">
+            {categoryFilterOptions.map((category) => {
+              const isActive = selectedCategory === category.value;
 
-        {/* 검색바 */}
-        <section className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
-            <div className="relative h-full">
-              <select
-                value={searchType}
-                onChange={(e) => setSearchType(e.target.value)}
-                className="h-full appearance-none rounded-l-full border-r-[0.5px] border-[#D6DDE5] bg-white px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
-              >
-                <option value="title">제목</option>
-                <option value="announcementTitle">정보글</option>
-              </select>
-
-              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#2C2C2C]">
-                <ChevronDown size={14} />
-              </span>
-            </div>
-
-            <div className="flex flex-1 items-center gap-3 px-3">
-              <Search size={18} className="text-[#989898]" />
-
-              <input
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="검색어를 입력하세요"
-                className="w-full bg-transparent text-[#2C2C2C] outline-none placeholder:text-[#989898]"
-              />
-            </div>
+              return (
+                <button
+                  key={category.value}
+                  onClick={() => setSelectedCategory(category.value)}
+                  className={`relative z-50 flex-1 cursor-pointer pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:text-xl ${
+                    isActive
+                      ? 'text-[#5E92F0]'
+                      : 'text-[#CBD2DA] hover:text-[#5E92F0]'
+                  }`}
+                >
+                  {category.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="recruitmentCategoryIndicator"
+                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 600,
+                        damping: 50,
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (!checkVerified()) return;
-              router.push('/recruitment/create');
-            }}
-            className="flex h-10 w-10 cursor-pointer items-center justify-center gap-1 rounded-full bg-[#5E92F0] text-white transition-all duration-150 active:scale-95 sm:w-auto sm:rounded-lg sm:px-4"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-
-            <span className="hidden sm:inline">모집글 작성</span>
-          </button>
-        </section>
+        </div>
 
         {/* 리스트 */}
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -197,10 +214,10 @@ export default function Recruitment() {
                   </div>
 
                   <span
-                    className={`rounded-xl px-3 py-1 text-sm font-medium ${
+                    className={`rounded-full px-3 py-1 text-[13px] font-medium ${
                       isClosed
                         ? 'bg-[#EEF1F5] text-[#989898]'
-                        : 'bg-[#A7ECA7] text-[#1F4D1A]'
+                        : 'bg-[#DDF7E5] text-[#2F8F4E]'
                     }`}
                   >
                     {isClosed ? '모집마감' : '모집중'}

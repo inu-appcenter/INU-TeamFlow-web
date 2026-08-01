@@ -170,6 +170,10 @@ export default function MonthGridWithEvents({
                     className={`absolute h-5 shrink-0 truncate border-l-4 text-left text-[9px] leading-5 font-semibold transition-all duration-150 ${
                       isDone ? 'border-l-transparent' : 'pl-1'
                     } ${
+                      schedule.teamId && schedule.isParticipant === false
+                        ? 'opacity-40'
+                        : ''
+                    } ${
                       isPeriod
                         ? isPeriodStart
                           ? 'mr-0 ml-1 rounded-l rounded-r-none'

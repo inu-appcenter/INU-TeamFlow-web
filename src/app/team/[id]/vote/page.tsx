@@ -4,8 +4,12 @@ import Card from '@/components/main/Card';
 import { useTeamDetail } from '@/hooks/team/useTeamQuery';
 import { useTeamVotes } from '@/hooks/useVoteQuery';
 import { categoryMap, categoryColorMap } from '@/constants/category';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import { useErrorToast } from '@/hooks/useErrorToast';
+import { useMemo, useState } from 'react';
+
+const ITEMS_PER_PAGE = 8;
 
 export default function TeamVotePage() {
   const router = useRouter();
@@ -16,6 +20,23 @@ export default function TeamVotePage() {
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const { data: teamVotes = [], isLoading: isVotesLoading } =
     useTeamVotes(teamId);
+  const { errorMessage, showErrorMessage } = useErrorToast();
+
+  const [page, setPage] = useState(1);
+
+  const sorted = useMemo(
+    () =>
+      [...teamVotes].sort((a, b) => b.createdDate.localeCompare(a.createdDate)),
+    [teamVotes]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+
+  const paged = sorted.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (isTeamLoading || isVotesLoading) return null;
 
@@ -26,6 +47,14 @@ export default function TeamVotePage() {
       </main>
     );
   }
+
+  const handleVoteClick = (vote: (typeof teamVotes)[number]) => {
+    if (!vote.isVoter && !vote.isCreator) {
+      showErrorMessage('투표 참여자가 아니에요');
+      return;
+    }
+    router.push(`/team/${teamId}/vote/${vote.voteId}`);
+  };
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
@@ -53,21 +82,24 @@ export default function TeamVotePage() {
 
           <div className="flex-1 overflow-y-auto px-6 sm:px-8">
             <section className="flex flex-col">
-              {teamVotes.map((vote) => {
+              {paged.map((vote) => {
                 const completed = vote.completedVoterList?.length ?? 0;
                 const total =
                   (vote.completedVoterList?.length ?? 0) +
                   (vote.uncompletedVoterList?.length ?? 0);
 
                 const progress = total === 0 ? 0 : (completed / total) * 100;
+                const canAccess = vote.isVoter || vote.isCreator;
 
                 return (
                   <button
                     key={vote.voteId}
-                    onClick={() =>
-                      router.push(`/team/${teamId}/vote/${vote.voteId}`)
-                    }
-                    className="border-b-[0.5px] border-[#D6DDE5] py-6 text-left transition-all duration-200 ease-in-out active:scale-[0.99]"
+                    onClick={() => handleVoteClick(vote)}
+                    className={`border-b-[0.5px] border-[#D6DDE5] py-6 text-left transition-all duration-200 ease-in-out ${
+                      canAccess
+                        ? 'active:scale-[0.99]'
+                        : 'cursor-not-allowed opacity-50'
+                    }`}
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-3">
@@ -76,7 +108,7 @@ export default function TeamVotePage() {
                         </h2>
 
                         <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[12px] font-semibold ${
+                          className={`shrink-0 rounded-full px-3 py-1 text-[12px] font-medium ${
                             vote.isOpened
                               ? 'bg-[#E8F1FF] text-[#5E92F0]'
                               : 'bg-[#EEF1F5] text-[#989898]'
@@ -117,15 +149,60 @@ export default function TeamVotePage() {
                 );
               })}
 
-              {teamVotes.length === 0 && (
+              {paged.length === 0 && (
                 <div className="flex h-[300px] items-center justify-center text-sm text-[#989898]">
                   아직 등록된 투표가 없어요
                 </div>
               )}
             </section>
+
+            {/* 페이지네이션 */}
+            {sorted.length > 0 && (
+              <div className="flex items-center justify-center gap-2 py-6">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
+                >
+                  <ChevronLeft size={22} strokeWidth={2.5} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setPage(n)}
+                      className={`flex items-center justify-center px-1 text-[16px] font-semibold transition-all duration-150 active:scale-90 ${
+                        currentPage === n
+                          ? 'text-[#5E92F0]'
+                          : 'cursor-pointer text-[#2c2c2c]/50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  )
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
+                >
+                  <ChevronRight size={22} strokeWidth={2.5} />
+                </button>
+              </div>
+            )}
           </div>
         </Card>
       </section>
+      {errorMessage && (
+        <div className="animate-modal-pop absolute top-32 left-1/2 z-300 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+          {errorMessage}
+        </div>
+      )}
     </main>
   );
 }
