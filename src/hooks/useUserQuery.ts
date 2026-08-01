@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   createProfilePresignedUrl,
+  deleteUser,
   getMyProfile,
   updateMyProfile,
   uploadProfileImage,
@@ -45,4 +46,9 @@ export const useUploadProfileImage = () =>
   useMutation({
     mutationFn: ({ uploadUrl, file }: { uploadUrl: string; file: File }) =>
       uploadProfileImage(uploadUrl, file),
+  });
+
+export const useDeleteUser = () =>
+  useMutation({
+    mutationFn: deleteUser,
   });

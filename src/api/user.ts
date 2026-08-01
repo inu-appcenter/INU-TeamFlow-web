@@ -33,3 +33,16 @@ export const uploadProfileImage = (uploadUrl: string, file: File) =>
       'Content-Type': file.type,
     },
   });
+
+export const searchUsers = async (
+  name: string
+): Promise<UserSearchResponse[]> => {
+  const { data } = await axiosInstance.get<UserSearchResponse[]>('/users', {
+    params: { name },
+  });
+  return data;
+};
+
+/** DELETE /users/me */
+export const deleteUser = (): Promise<void> =>
+  axiosInstance.delete('/users/me').then(() => undefined);

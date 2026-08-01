@@ -34,11 +34,11 @@ export const getMyApplications = async (
   return getList<MyApplicationResponse>(res.data);
 };
 
-/** GET /team-notices/me */
+/** GET /notices/me */
 export const getMyTeamNotices = async (
   params: PageableParams = { page: 0, size: 20 }
 ): Promise<MyTeamNoticeResponse[]> => {
-  const res = await axiosInstance.get('/team-notices/me', { params });
+  const res = await axiosInstance.get('/notices/me', { params });
   return getList<MyTeamNoticeResponse>(res.data);
 };
 
