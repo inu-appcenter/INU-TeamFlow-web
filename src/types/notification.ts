@@ -2,7 +2,7 @@ export type NotificationType =
   | 'NOTICE'
   | 'INVITE'
   | 'APPLICATION'
-  | 'TEAM_SCHEDULE'
+  | 'CALENDAR'
   | 'CHAT';
 
 export type NotificationFilterType = 'ALL' | NotificationType;
