@@ -27,7 +27,7 @@ const notificationTabs: {
   { label: '공지사항', value: 'NOTICE' },
   { label: '초대', value: 'INVITE' },
   { label: '신청', value: 'APPLICATION' },
-  { label: '팀 일정', value: 'TEAM_SCHEDULE' },
+  { label: '일정', value: 'CALENDAR' },
   { label: '채팅', value: 'CHAT' },
 ];
 
@@ -35,7 +35,7 @@ const notificationTypeLabel: Record<NotificationType, string> = {
   NOTICE: '공지사항',
   INVITE: '초대',
   APPLICATION: '신청',
-  TEAM_SCHEDULE: '팀 일정',
+  CALENDAR: '일정',
   CHAT: '채팅',
 };
 
@@ -43,7 +43,7 @@ const notificationTypeStyle: Record<NotificationType, string> = {
   NOTICE: 'bg-[#EAF2FF] text-[#5E92F0]',
   INVITE: 'bg-[#EEE9FF] text-[#7656D6]',
   APPLICATION: 'bg-[#EAF8EF] text-[#3B8A58]',
-  TEAM_SCHEDULE: 'bg-[#FFF2E6] text-[#C8762D]',
+  CALENDAR: 'bg-[#FFF2E6] text-[#C8762D]',
   CHAT: 'bg-[#EEF1F5] text-[#5C6670]',
 };
 
