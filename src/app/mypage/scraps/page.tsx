@@ -14,7 +14,7 @@ import { getDday } from '@/utils/date/getDday';
 const pageName = '스크랩';
 
 //2. 글 검색 기능 있어야돼요? 답변은 true와 false로 해주세요
-const isSearch = true;
+const isSearch = false;
 //검색 필터를 입력해주세요
 const searchFilter = [
   //{ value: 'title', label: '제목' },
@@ -23,7 +23,7 @@ const searchFilter = [
 ];
 
 //3. 글 작성 기능 있어야돼요? 답변은 true와 false로 해주세요
-const isCreate = true;
+const isCreate = false;
 
 //4. 카테고리 기능 있어야돼요? 답변은 true와 false로 해주세요
 const isCategory = true;

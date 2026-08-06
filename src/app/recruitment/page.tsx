@@ -2,18 +2,32 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
 import { getDday } from '@/utils/date/getDday';
-import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
+
 import { formatDate } from '@/utils/date/formatDate';
-import {
-  categoryMap,
-  categoryColorMap,
-  categoryFilterOptions,
-} from '@/constants/category';
+import { categoryFilterOptions } from '@/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import Header from '@/components/common/Header';
+import ContentCard from '@/components/common/ContentCard';
+
+//Header 연결을 위한 입력 공간
+//1. 페이지 이름을 입력해주세요
+const pageName = '모집';
+
+//2. 글 검색 기능 있어야돼요? 답변은 true와 false로 해주세요
+const isSearch = true;
+//검색 필터를 입력해주세요
+const searchFilter = [
+  //예시 { value: 'title', label: '제목' },
+  { value: 'title', label: '제목' },
+];
+
+//3. 글 작성 기능 있어야돼요? 답변은 true와 false로 해주세요
+const isCreate = true;
+
+//4. 카테고리 기능 있어야돼요? 답변은 true와 false로 해주세요
+const isCategory = true;
 
 export default function Recruitment() {
   const router = useRouter();
@@ -21,13 +35,12 @@ export default function Recruitment() {
   const [keyword, setKeyword] = useState('');
   const [searchType, setSearchType] = useState('title');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const { errorMessage, showErrorMessage, setErrorMessage } = useErrorToast(
+  const { errorMessage, setErrorMessage } = useErrorToast(
     1800,
     searchParams.get('error') === 'school-verification-required'
       ? '학교 인증 후 이용 가능합니다'
       : ''
   );
-  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   useEffect(() => {
     if (!errorMessage) return;
@@ -72,95 +85,20 @@ export default function Recruitment() {
 
       <div className="mx-auto mb-20 max-w-[1180px]">
         {/* 헤더 */}
-        <header className="mt-12 mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/')}
-              className="cursor-pointer text-[#2C2C2C]"
-            >
-              <ChevronLeft size={28} strokeWidth={2.5} />
-            </button>
-
-            <h1 className="text-2xl font-bold text-[#2C2C2C]">모집</h1>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white md:w-[400px] md:flex-none">
-              <div className="relative h-full">
-                <select
-                  value={searchType}
-                  onChange={(e) => setSearchType(e.target.value)}
-                  className="bg[#F6F8FA] h-full appearance-none rounded-l-full border-r-[0.5px] border-[#D6DDE5] px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
-                >
-                  <option value="title">제목</option>
-                  <option value="announcementTitle">정보글</option>
-                </select>
-
-                <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#2C2C2C]">
-                  <ChevronDown size={14} />
-                </span>
-              </div>
-
-              <div className="flex flex-1 items-center gap-3 px-3">
-                <Search size={18} className="text-[#989898]" />
-
-                <input
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  placeholder="검색어를 입력하세요"
-                  className="w-full bg-transparent text-[#2C2C2C] outline-none placeholder:text-[#989898]"
-                />
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (!checkVerified()) return;
-                router.push('/recruitment/create');
-              }}
-              className="flex h-10 w-10 cursor-pointer items-center justify-center gap-1 rounded-full bg-[#5E92F0] text-white transition-all duration-150 active:scale-95 sm:w-auto sm:rounded-lg sm:px-4"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-
-              <span className="hidden sm:inline">모집글 작성</span>
-            </button>
-          </div>
-        </header>
-
-        <div className="mb-4 rounded-t-2xl bg-white pt-4">
-          {/* 카테고리 */}
-          <div className="relative flex">
-            {categoryFilterOptions.map((category) => {
-              const isActive = selectedCategory === category.value;
-
-              return (
-                <button
-                  key={category.value}
-                  onClick={() => setSelectedCategory(category.value)}
-                  className={`relative z-50 flex-1 cursor-pointer pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:text-xl ${
-                    isActive
-                      ? 'text-[#5E92F0]'
-                      : 'text-[#CBD2DA] hover:text-[#5E92F0]'
-                  }`}
-                >
-                  {category.label}
-                  {isActive && (
-                    <motion.div
-                      layoutId="recruitmentCategoryIndicator"
-                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 600,
-                        damping: 50,
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <Header
+          pageName={pageName}
+          isSearch={isSearch}
+          isCreate={isCreate}
+          isCategory={isCategory}
+          searchFilter={searchFilter}
+          categories={categoryFilterOptions}
+          keyword={keyword}
+          searchType={searchType}
+          selectedCategory={selectedCategory}
+          onKeywordChange={setKeyword}
+          onSearchTypeChange={setSearchType}
+          onCategoryChange={setSelectedCategory}
+        />
 
         {/* 리스트 */}
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -172,58 +110,18 @@ export default function Recruitment() {
             endDate.setHours(0, 0, 0, 0);
 
             const isClosed = endDate < today || recruitment.status === 'CLOSED';
-
             return (
-              <div
-                key={recruitment.recruitmentId}
-                className="cursor-pointer rounded-2xl border-l-15 bg-white p-6"
-                style={{ borderColor: categoryColorMap[recruitment.category] }}
-                onClick={() =>
-                  router.push(`/recruitment/${recruitment.recruitmentId}`)
-                }
-              >
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-lg font-bold text-[#2C2C2C]">
-                    [ {categoryMap[recruitment.category]} ]
-                  </span>
-
-                  <h2 className="truncate text-lg font-bold text-[#2C2C2C]">
-                    {recruitment.title}
-                  </h2>
-                </div>
-
-                <p
-                  className={`mt-2 text-sm ${
-                    recruitment.announcementTitle
-                      ? 'text-[#2C2C2C]'
-                      : 'text-[#B0B0B0]'
-                  }`}
-                >
-                  {recruitment.announcementTitle || '연결된 정보글이 없습니다'}
-                </p>
-
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <p className="text-[13px] text-[#989898]">
-                      {formatDate(recruitment.endAt)}
-                    </p>
-
-                    <span className="text-[13px] font-medium text-[#5E92F0]">
-                      {getDday(recruitment.endAt)}
-                    </span>
-                  </div>
-
-                  <span
-                    className={`rounded-full px-3 py-1 text-[13px] font-medium ${
-                      isClosed
-                        ? 'bg-[#EEF1F5] text-[#989898]'
-                        : 'bg-[#DDF7E5] text-[#2F8F4E]'
-                    }`}
-                  >
-                    {isClosed ? '모집마감' : '모집중'}
-                  </span>
-                </div>
-              </div>
+              <ContentCard
+                cardType="recruitment"
+                category={recruitment.category}
+                title={recruitment.title}
+                content={recruitment.status}
+                cardStatus={isClosed ? 'CLOSED' : 'OPEN'}
+                path={`/recruitment/${recruitment.recruitmentId}`}
+                startAt={formatDate(recruitment.createdAt)}
+                endAt={formatDate(recruitment.endAt)}
+                dDay={getDday(recruitment.endAt)}
+              />
             );
           })}
         </section>

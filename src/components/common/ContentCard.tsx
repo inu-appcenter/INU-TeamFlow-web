@@ -62,14 +62,14 @@ export default function ContentCard(props: CardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const statusLabel = cardStatusMap[props.cardStatus];
-  const cardRoute = pathname.split('/').filter(Boolean).at(-2) ?? '';
+
   return (
     <main>
       {/* 리스트 */}
       <div
         className="cursor-pointer rounded-2xl border-l-15 bg-white p-6"
         style={{ borderColor: categoryBorderColorMap[props.category] }}
-        onClick={() => router.push(`/${props.path}/${2}`)}
+        onClick={() => router.push(`${props.path}`)}
       >
         <div className="flex items-center gap-2">
           <span className="truncate text-lg font-bold text-[#2C2C2C]">
@@ -142,18 +142,18 @@ export default function ContentCard(props: CardProps) {
                 신청취소
               </span>
             </div>
+          ) : statusLabel ? (
+            <span
+              className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium`}
+              style={{
+                backgroundColor: statusBorderColorMap[props.cardStatus],
+                color: statusTextColorMap[props.cardStatus],
+              }}
+            >
+              {statusLabel}
+            </span>
           ) : (
-            statusLabel && (
-              <span
-                className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium`}
-                style={{
-                  backgroundColor: statusBorderColorMap[props.cardStatus],
-                  color: statusTextColorMap[props.cardStatus],
-                }}
-              >
-                {statusLabel}
-              </span>
-            )
+            ''
           )}
         </div>
       </div>

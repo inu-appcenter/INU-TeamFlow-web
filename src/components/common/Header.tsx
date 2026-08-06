@@ -7,7 +7,7 @@ import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
 // //이걸 복붙해서 사용해주세요
-// //DetailTopBar 연결을 위한 입력 공간
+// //Header 연결을 위한 입력 공간
 // //1. 페이지 이름을 입력해주세요
 // const pageName = '스크랩';
 
@@ -28,7 +28,7 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 // const [searchType, setSearchType] = useState('title');
 // const [selectedCategory, setSelectedCategory] = useState('ALL');
 // // 헤더 위치에 넣어주세요
-/* <DetailTopBar
+/* <Header
   pageName={pageName}
   isSearch={isSearch}
   isCreate={isCreate}
