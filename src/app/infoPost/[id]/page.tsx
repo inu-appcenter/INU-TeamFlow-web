@@ -11,7 +11,7 @@ import {
 } from '@/constants/infoPost';
 import { formatDate } from '@/utils/date/formatDate';
 
-import { ChevronLeft, EllipsisVertical } from 'lucide-react';
+import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
 export default function InfoPostDetailPage() {
   const router = useRouter();
@@ -21,8 +21,8 @@ export default function InfoPostDetailPage() {
 
   const { data: infoPost, isLoading } = useInfoPostDetail(infoPostId);
   const { mutateAsync: deleteInfoPost } = useDeleteInfoPost();
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrapped, setIsScrapped] = useState(false);
   const { errorMessage, showErrorMessage } = useErrorToast();
   const handleDelete = async () => {
     const confirmed = window.confirm('정보글을 삭제하시겠습니까?');
@@ -74,57 +74,70 @@ export default function InfoPostDetailPage() {
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
-            {infoPost.isAuthor && (
-              <div className="relative">
+            <div className="relative">
+              {infoPost.isAuthor ? (
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen((prev) => !prev)}
-                  className="cursor-pointer pt-1 text-[#2C2C2C]"
+                  className="cursor-pointer pt-1.5 text-[#2C2C2C]"
                 >
                   <EllipsisVertical size={20} />
                 </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsScrapped((prev) => !prev)}
+                  className="iems-center cursor-pointer pt-2 text-[#2C2C2C]"
+                >
+                  <Bookmark
+                    size={22}
+                    strokeWidth={2}
+                    fill={isScrapped ? 'currentColor' : 'none'}
+                    className={isScrapped ? 'text-[#5E92F0]' : ''}
+                  />
+                </button>
+              )}
 
-                {isMenuOpen && (
-                  <>
+              {isMenuOpen && infoPost.isAuthor && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="메뉴 닫기"
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsMenuOpen(false)}
+                  />
+
+                  <div className="absolute top-7 right-0 z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
                     <button
                       type="button"
-                      aria-label="메뉴 닫기"
-                      className="fixed inset-0 z-10"
-                      onClick={() => setIsMenuOpen(false)}
-                    />
+                      onClick={() =>
+                        router.push(`/infoPost/${infoPostId}/edit`)
+                      }
+                      className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                    >
+                      수정하기
+                    </button>
 
-                    <div className="absolute top-7 right-0 z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          router.push(`/infoPost/${infoPostId}/edit`)
-                        }
-                        className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
-                      >
-                        수정하기
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleDelete}
-                        className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
-                      >
-                        삭제하기
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
+                    >
+                      삭제하기
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* 본문 */}
           <div className="px-8 py-7 sm:px-10 sm:py-10">
-            <h1 className="text-2xl font-bold text-[#2C2C2C] sm:text-3xl">
+            <h1 className="text-[24px]] font-bold text-[#2C2C2C] sm:text-3xl">
               {infoPost.title}
             </h1>
 
-            <div className="mt-6 grid grid-cols-[72px_1fr] gap-y-4 text-sm sm:grid-cols-[90px_1fr] sm:text-[15px]">
+            <div className="mt-7 grid grid-cols-[72px_1fr] items-center gap-y-4 text-[13px] sm:mt-8 sm:grid-cols-[90px_1fr] sm:gap-y-5 sm:text-[15px]">
               <span className="text-[#989898]">종류</span>
               <span className="text-[#2C2C2C]">
                 {infoPostCategoryMap[infoPost.category]}

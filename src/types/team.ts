@@ -7,6 +7,7 @@ export interface TeamSummaryResponse {
   memberCount: number;
   description: string;
   imageUrl: string | null;
+  teamRole: TeamRole;
 }
 
 export interface TeamDetailResponse {
@@ -31,6 +32,7 @@ export interface TeamMemberResponse {
   teamRole: TeamRole;
   department: string;
   userNickname: string;
+  profileImageUrl: string;
 }
 
 export interface TeamCreateRequest {

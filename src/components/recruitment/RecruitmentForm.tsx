@@ -4,6 +4,7 @@ import Card from '@/components/main/Card';
 import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 import { useMyTeams } from '@/hooks/team/useTeamQuery';
+import { useMyInfoPosts } from '@/hooks/useInfoPostQuery';
 import {
   categoryMap,
   categoryColorMap,
@@ -53,6 +54,13 @@ export default function RecruitmentForm({
   );
 
   const { data: myTeams = [] } = useMyTeams();
+  const manageableTeams = myTeams.filter(
+    (t) => t.teamRole === 'LEADER' || t.teamRole === 'MANAGER'
+  );
+  const { data: myInfoPostsPage } = useMyInfoPosts({ size: 50 });
+  const linkableInfoPosts = (myInfoPostsPage?.content ?? []).filter(
+    (p) => p.linkable
+  );
 
   const onChange = (key: keyof RecruitmentFormData, value: string) => {
     setForm((prev) => ({
@@ -63,7 +71,7 @@ export default function RecruitmentForm({
 
   const currentColor =
     categoryColorMap[form.category] ?? DEFAULT_CATEGORY_COLOR;
-  const [isTeamSelectOpen, setIsTeamSelectOpen] = useState(false);
+  const [isInfoPostDropdownOpen, setIsInfoPostDropdownOpen] = useState(false);
   const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
 
   return (
@@ -115,21 +123,77 @@ export default function RecruitmentForm({
                   </span>
                 </div>
 
-                <div className="flex items-end gap-3">
+                <div className="relative flex items-end gap-3">
                   <input
                     readOnly
-                    value={form.announcementId ?? ''}
+                    value={
+                      linkableInfoPosts.find(
+                        (p) => p.infoPostId === form.announcementId
+                      )?.title ?? ''
+                    }
                     placeholder="연결된 공고가 없습니다"
-                    onChange={(e) => onChange('announcementId', e.target.value)}
                     className="h-[42px] flex-1 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-0 focus:outline-none"
                   />
 
                   <button
                     type="button"
+                    onClick={() => setIsInfoPostDropdownOpen((prev) => !prev)}
                     className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white"
                   >
                     공고 연결하기
                   </button>
+
+                  {isInfoPostDropdownOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsInfoPostDropdownOpen(false)}
+                      />
+                      <div className="absolute top-[50px] right-[-70px] z-20 w-[260px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-[2px_2px_15px_0px_rgba(149,157,165,0.20)]">
+                        <div className="thin-scrollbar flex max-h-[240px] flex-col overflow-y-auto">
+                          {linkableInfoPosts.map((post) => (
+                            <button
+                              key={post.infoPostId}
+                              type="button"
+                              onClick={() => {
+                                setForm((prev) => ({
+                                  ...prev,
+                                  announcementId: post.infoPostId,
+                                }));
+                                setIsInfoPostDropdownOpen(false);
+                              }}
+                              className={`flex items-center justify-between rounded-xl px-4 py-2 text-left transition hover:bg-[#F6F8FA] ${
+                                form.announcementId === post.infoPostId
+                                  ? 'bg-[#EEF1F5]'
+                                  : ''
+                              }`}
+                            >
+                              <p className="truncate font-semibold text-[#2C2C2C]">
+                                {post.title}
+                              </p>
+                              <div
+                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                                  form.announcementId === post.infoPostId
+                                    ? 'border-[#5E92F0]'
+                                    : 'border-[#D6DDE5]'
+                                }`}
+                              >
+                                {form.announcementId === post.infoPostId && (
+                                  <div className="h-2 w-2 rounded-full bg-[#5E92F0]" />
+                                )}
+                              </div>
+                            </button>
+                          ))}
+
+                          {linkableInfoPosts.length === 0 && (
+                            <p className="py-4 text-center text-sm text-[#989898]">
+                              연결 가능한 정보글이 없습니다
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -166,8 +230,8 @@ export default function RecruitmentForm({
                         onClick={() => setIsTeamDropdownOpen(false)}
                       />
                       <div className="absolute top-[50px] right-[-70px] z-20 w-[260px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-[2px_2px_15px_0px_rgba(149,157,165,0.20)]">
-                        <div className="flex max-h-[240px] flex-col overflow-y-auto">
-                          {myTeams.map((team) => (
+                        <div className="thin-scrollbar flex max-h-[240px] flex-col overflow-y-auto">
+                          {manageableTeams.map((team) => (
                             <button
                               key={team.teamId}
                               type="button"
@@ -207,9 +271,9 @@ export default function RecruitmentForm({
                             </button>
                           ))}
 
-                          {myTeams.length === 0 && (
+                          {manageableTeams.length === 0 && (
                             <p className="py-4 text-center text-sm text-[#989898]">
-                              소속된 팀이 없습니다
+                              매니저 이상 권한을 가진 팀이 없습니다
                             </p>
                           )}
                         </div>

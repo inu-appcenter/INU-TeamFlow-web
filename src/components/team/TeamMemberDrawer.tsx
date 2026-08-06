@@ -159,7 +159,7 @@ export default function TeamMemberDrawer({
               </div>
             )}
             {successMessage && (
-              <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#5E92F0] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+              <div className="animate-modal-pop fixed top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
                 {successMessage}
               </div>
             )}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, EllipsisVertical } from 'lucide-react';
+import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Card from '@/components/main/Card';
 import RecruitmentDetailSkeleton from '@/components/skeleton/RecruitmentDetailSkeleton';
@@ -27,6 +27,7 @@ export default function RecruitmentDetail() {
   const { mutate: deleteRecruitmentMutate, isPending: isDeleting } =
     useDeleteRecruitment();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrapped, setIsScrapped] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
@@ -117,12 +118,26 @@ export default function RecruitmentDetail() {
             </button>
 
             <div className="relative">
-              <button
-                onClick={() => setIsMenuOpen((prev) => !prev)}
-                className="cursor-pointer pt-1 text-[#2C2C2C]"
-              >
-                <EllipsisVertical size={20} />
-              </button>
+              {isRecruiter ? (
+                <button
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                  className="cursor-pointer pt-1.5 text-[#2C2C2C]"
+                >
+                  <EllipsisVertical size={20} />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsScrapped((prev) => !prev)}
+                  className="iems-center cursor-pointer pt-2 text-[#2C2C2C]"
+                >
+                  <Bookmark
+                    size={22}
+                    strokeWidth={2}
+                    fill={isScrapped ? 'currentColor' : 'none'}
+                    className={isScrapped ? 'text-[#5E92F0]' : ''}
+                  />
+                </button>
+              )}
 
               {isMenuOpen && isRecruiter && (
                 <>
