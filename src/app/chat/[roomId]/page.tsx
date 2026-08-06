@@ -164,7 +164,7 @@ export default function ChatRoomPage() {
   };
 
   const roomType =
-    (searchParams.get('roomType') as 'TEAM' | 'DIRECT') ?? 'TEAM';
+    (searchParams.get('roomType') as 'TEAM' | 'DIRECT' | 'GROUP') ?? 'TEAM';
 
   const currentUserId = me?.userId;
 
@@ -224,7 +224,8 @@ export default function ChatRoomPage() {
 
         <div
           ref={scrollRef}
-          className="thin-scrollbar flex-1 overflow-y-auto px-6 pt-13 pb-4"
+          className="thin-scrollbar flex-1 overflow-y-auto pt-13 pr-2 pb-4 pl-4"
+          style={{ scrollbarGutter: 'stable' }}
         >
           {isLoading || !anchor ? (
             <div className="flex h-full items-center justify-center text-sm text-[#9C9C9C]">
@@ -252,6 +253,7 @@ export default function ChatRoomPage() {
                   !isSameDay(prevMessage.createdAt, message.createdAt);
                 const isSameSenderAsPrev =
                   !showDateDivider &&
+                  prevMessage?.messageType !== 'SYSTEM' &&
                   prevMessage?.senderId === message.senderId;
 
                 // 다음 메시지가 같은 사람 + 같은 분(分)이면 지금 메시지엔 시간 숨김
@@ -274,111 +276,124 @@ export default function ChatRoomPage() {
                         </span>
                       </div>
                     )}
-                    {showReadDivider && (
-                      <div className="my-4 flex items-center gap-2">
-                        <div className="h-px flex-1 bg-[#D6DDE5]" />
-                        <span className="text-xs font-medium text-[#989898]">
-                          여기까지 읽음
-                        </span>
-                        <div className="h-px flex-1 bg-[#D6DDE5]" />
-                      </div>
-                    )}
 
-                    <div
-                      className={`flex items-end gap-2 ${
-                        isMine ? 'flex-row-reverse' : 'flex-row'
-                      } ${isSameSenderAsPrev ? 'mt-1' : 'mt-4'}`}
-                    >
-                      {!isMine &&
-                        roomType === 'TEAM' &&
-                        !isSameSenderAsPrev && (
-                          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#D6DDE5]">
-                            {message.senderProfileUrl && (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={message.senderProfileUrl}
-                                alt={message.senderName}
-                                className="h-full w-full object-cover"
-                              />
-                            )}
+                    {message.messageType === 'SYSTEM' ? (
+                      <div className="my-2 flex items-center justify-center">
+                        <span className="rounded-full bg-[#F6F8FB] px-3 py-1.5 text-xs font-medium text-[#989898]">
+                          {message.content}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        {showReadDivider && (
+                          <div className="my-4 flex items-center gap-2">
+                            <div className="h-px flex-1 bg-[#D6DDE5]" />
+                            <span className="text-xs font-medium text-[#989898]">
+                              여기까지 읽음
+                            </span>
+                            <div className="h-px flex-1 bg-[#D6DDE5]" />
                           </div>
                         )}
 
-                      {!isMine && roomType === 'TEAM' && isSameSenderAsPrev && (
-                        <div className="w-8 shrink-0" />
-                      )}
+                        <div
+                          className={`flex items-end gap-2 ${
+                            isMine ? 'flex-row-reverse' : 'flex-row'
+                          } ${isSameSenderAsPrev ? 'mt-1' : 'mt-4'}`}
+                        >
+                          {!isMine &&
+                            roomType !== 'DIRECT' &&
+                            !isSameSenderAsPrev && (
+                              <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#D6DDE5]">
+                                {message.senderProfileUrl && (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={message.senderProfileUrl}
+                                    alt={message.senderName}
+                                    className="h-full w-full object-cover"
+                                  />
+                                )}
+                              </div>
+                            )}
 
-                      <div
-                        className={`flex max-w-[70%] flex-col ${
-                          isMine ? 'items-end' : 'items-start'
-                        }`}
-                      >
-                        {!isMine &&
-                          roomType === 'TEAM' &&
-                          !isSameSenderAsPrev && (
-                            <span className="mb-1 px-1 text-xs font-medium text-[#989898]">
-                              {message.senderName}
-                            </span>
-                          )}
+                          {!isMine &&
+                            roomType !== 'DIRECT' &&
+                            isSameSenderAsPrev && (
+                              <div className="w-8 shrink-0" />
+                            )}
 
-                        <div className="flex items-end gap-1">
-                          {isMine && (
-                            <div className="mb-0.5 flex flex-col items-end">
-                              {unreadCount > 0 && (
-                                <span className="text-[10px] font-medium text-[#5E92F0]">
-                                  {unreadCount}
+                          <div
+                            className={`flex max-w-[70%] flex-col ${
+                              isMine ? 'items-end' : 'items-start'
+                            }`}
+                          >
+                            {!isMine &&
+                              roomType !== 'DIRECT' &&
+                              !isSameSenderAsPrev && (
+                                <span className="mb-1 px-1 text-xs font-medium text-[#989898]">
+                                  {message.senderName}
                                 </span>
                               )}
-                              {showTime && (
-                                <span className="text-[10px] text-[#B0b0b0]">
-                                  {formatChatMessageTime(message.createdAt)}
-                                </span>
-                              )}
-                            </div>
-                          )}
 
-                          {message.messageType === 'IMAGE' &&
-                          message.imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={message.imageUrl}
-                              alt="전송된 이미지"
-                              className="max-h-64 rounded-2xl object-cover"
-                            />
-                          ) : message.content &&
-                            isEmojiOnlyMessage(message.content) ? (
-                            <div className="px-1 py-1 text-[40px] leading-none">
-                              {message.content}
-                            </div>
-                          ) : (
-                            <div
-                              className={`rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed break-words ${
-                                isMine
-                                  ? 'rounded-br-sm bg-[#5E92F0] text-white'
-                                  : 'rounded-bl-sm bg-[#F6F8FB] text-[#2C2C2C]'
-                              }`}
-                            >
-                              {message.content}
-                            </div>
-                          )}
+                            <div className="flex items-end gap-1">
+                              {isMine && (
+                                <div className="mb-0.5 flex flex-col items-end">
+                                  {unreadCount > 0 && (
+                                    <span className="text-[10px] font-medium text-[#5E92F0]">
+                                      {unreadCount}
+                                    </span>
+                                  )}
+                                  {showTime && (
+                                    <span className="text-[10px] text-[#B0b0b0]">
+                                      {formatChatMessageTime(message.createdAt)}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
 
-                          {!isMine && (
-                            <div className="mb-0.5 flex flex-col items-start">
-                              {unreadCount > 0 && (
-                                <span className="text-[10px] font-medium text-[#5E92F0]">
-                                  {unreadCount}
-                                </span>
+                              {message.messageType === 'IMAGE' &&
+                              message.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={message.imageUrl}
+                                  alt="전송된 이미지"
+                                  className="max-h-64 rounded-2xl object-cover"
+                                />
+                              ) : message.content &&
+                                isEmojiOnlyMessage(message.content) ? (
+                                <div className="px-1 py-1 text-[40px] leading-none">
+                                  {message.content}
+                                </div>
+                              ) : (
+                                <div
+                                  className={`rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed break-words ${
+                                    isMine
+                                      ? 'rounded-br-sm bg-[#5E92F0] text-white'
+                                      : 'rounded-bl-sm bg-[#F6F8FB] text-[#2C2C2C]'
+                                  }`}
+                                >
+                                  {message.content}
+                                </div>
                               )}
-                              {showTime && (
-                                <span className="text-[10px] text-[#B6B6B6]">
-                                  {formatChatMessageTime(message.createdAt)}
-                                </span>
+
+                              {!isMine && (
+                                <div className="mb-0.5 flex flex-col items-start">
+                                  {unreadCount > 0 && (
+                                    <span className="text-[10px] font-medium text-[#5E92F0]">
+                                      {unreadCount}
+                                    </span>
+                                  )}
+                                  {showTime && (
+                                    <span className="text-[10px] text-[#B6B6B6]">
+                                      {formatChatMessageTime(message.createdAt)}
+                                    </span>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
                 );
               })}

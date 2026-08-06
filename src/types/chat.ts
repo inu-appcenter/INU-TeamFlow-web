@@ -4,7 +4,7 @@ import type { TeamRole } from '@/constants/teamEnum';
 // ── 공통 enum ──
 // GROUP: 팀 멤버 중 골라서 만드는 소분과 채팅방 (팀 생성 시 자동 만들어지는 TEAM 전체방과 구분됨)
 export type ChatRoomType = 'TEAM' | 'DIRECT' | 'GROUP';
-export type ChatMessageType = 'TEXT' | 'IMAGE';
+export type ChatMessageType = 'TEXT' | 'IMAGE' | 'SYSTEM';
 
 // ── 채팅방 목록 ──
 export interface ChatRoomSummaryResponse {

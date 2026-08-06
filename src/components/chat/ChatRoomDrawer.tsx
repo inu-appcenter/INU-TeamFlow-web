@@ -23,7 +23,7 @@ type ChatRoomDrawerProps = {
   open: boolean;
   onClose: () => void;
   roomId: number;
-  roomType: 'TEAM' | 'DIRECT';
+  roomType: 'TEAM' | 'DIRECT' | 'GROUP';
   roomName: string;
   roomImageUrl: string | null;
   onInfoUpdated: (next: { roomName?: string; roomImageUrl?: string }) => void;
@@ -233,43 +233,46 @@ export default function ChatRoomDrawer({
                         {roomName.slice(0, 1)}
                       </div>
                     )}
+                    {roomType === 'GROUP' && (
+                      <>
+                        <div
+                          className={`pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30 transition ${
+                            showImageOverlay
+                              ? 'opacity-100'
+                              : 'opacity-0 group-hover:opacity-100'
+                          }`}
+                        >
+                          <Camera size={20} className="text-white" />
+                        </div>
 
-                    <div
-                      className={`pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30 transition ${
-                        showImageOverlay
-                          ? 'opacity-100'
-                          : 'opacity-0 group-hover:opacity-100'
-                      }`}
-                    >
-                      <Camera size={20} className="text-white" />
-                    </div>
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          onClick={() => setShowImageOverlay(true)}
+                          className={`absolute inset-0 h-full w-full ${
+                            showImageOverlay
+                              ? 'hidden'
+                              : 'pointer-events-auto cursor-pointer group-hover:pointer-events-none'
+                          }`}
+                        />
 
-                    <button
-                      type="button"
-                      tabIndex={-1}
-                      onClick={() => setShowImageOverlay(true)}
-                      className={`absolute inset-0 h-full w-full ${
-                        showImageOverlay
-                          ? 'hidden'
-                          : 'pointer-events-auto cursor-pointer group-hover:pointer-events-none'
-                      }`}
-                    />
-
-                    <select
-                      value=""
-                      onChange={handleImageMenuSelect}
-                      onBlur={() => setShowImageOverlay(false)}
-                      disabled={isUpdatingImage}
-                      className={`absolute inset-0 h-full w-full cursor-pointer appearance-none opacity-0 group-hover:pointer-events-auto ${
-                        showImageOverlay
-                          ? 'pointer-events-auto'
-                          : 'pointer-events-none'
-                      }`}
-                    >
-                      <option value="" disabled hidden />
-                      <option value="upload">사진 선택</option>
-                      <option value="reset">기본 이미지 적용</option>
-                    </select>
+                        <select
+                          value=""
+                          onChange={handleImageMenuSelect}
+                          onBlur={() => setShowImageOverlay(false)}
+                          disabled={isUpdatingImage}
+                          className={`absolute inset-0 h-full w-full cursor-pointer appearance-none opacity-0 group-hover:pointer-events-auto ${
+                            showImageOverlay
+                              ? 'pointer-events-auto'
+                              : 'pointer-events-none'
+                          }`}
+                        >
+                          <option value="" disabled hidden />
+                          <option value="upload">사진 선택</option>
+                          <option value="reset">기본 이미지 적용</option>
+                        </select>
+                      </>
+                    )}
                   </div>
 
                   <input
@@ -307,7 +310,7 @@ export default function ChatRoomDrawer({
                       저장
                     </button>
                   </div>
-                ) : (
+                ) : roomType === 'GROUP' ? (
                   <button
                     onClick={() => {
                       setNameDraft(roomName);
@@ -318,6 +321,10 @@ export default function ChatRoomDrawer({
                     {roomName}
                     <Pencil size={14} className="text-[#989898]" />
                   </button>
+                ) : (
+                  <p className="text-base font-bold text-[#2C2C2C]">
+                    {roomName}
+                  </p>
                 )}
               </div>
 
@@ -327,7 +334,7 @@ export default function ChatRoomDrawer({
                   대화상대 ({members?.length ?? 0})
                 </p>
 
-                {roomType === 'TEAM' && isInviteOpen && (
+                {roomType !== 'DIRECT' && isInviteOpen && (
                   <div className="mx-3 mb-2 flex items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-3 py-2">
                     <Search size={14} className="text-[#989898]" />
                     <input
@@ -340,7 +347,7 @@ export default function ChatRoomDrawer({
                   </div>
                 )}
 
-                {roomType === 'TEAM' && isInviteOpen && keyword && (
+                {roomType !== 'DIRECT' && isInviteOpen && keyword && (
                   <div className="thin-scrollbar mx-3 mt-2 mb-2 flex max-h-[160px] flex-col overflow-y-auto rounded-xl border-[0.5px] border-[#D6DDE5] bg-white">
                     {availableMembers.map((user) => {
                       const isSelected = selectedIds.has(user.userId);
@@ -371,7 +378,7 @@ export default function ChatRoomDrawer({
                   </div>
                 )}
 
-                {roomType === 'TEAM' && selectedIds.size > 0 && (
+                {roomType !== 'DIRECT' && selectedIds.size > 0 && (
                   <button
                     onClick={handleAddMembers}
                     disabled={isAdding}
@@ -383,7 +390,7 @@ export default function ChatRoomDrawer({
 
                 <div className="flex flex-col px-2">
                   {/* 초대하기 슬롯: 멤버 목록 첫 줄 */}
-                  {roomType === 'TEAM' && (
+                  {roomType !== 'DIRECT' && (
                     <button
                       onClick={() => {
                         setIsInviteOpen((prev) => !prev);
@@ -499,14 +506,16 @@ export default function ChatRoomDrawer({
             </div>
 
             {/* 나가기: 항상 하단 고정 */}
-            <div className="mx-2 mt-3 shrink-0 border-t-[0.5px] border-[#D6DDE5] pt-3">
-              <button
-                onClick={() => setConfirmLeave(true)}
-                className="w-full cursor-pointer rounded-xl py-2 text-center text-sm font-semibold text-[#E22222] transition duration-300 hover:bg-[#FDEEEE]"
-              >
-                채팅방 나가기
-              </button>
-            </div>
+            {roomType !== 'TEAM' && (
+              <div className="mx-2 mt-3 shrink-0 border-t-[0.5px] border-[#D6DDE5] pt-3">
+                <button
+                  onClick={() => setConfirmLeave(true)}
+                  className="w-full cursor-pointer rounded-xl py-2 text-center text-sm font-semibold text-[#E22222] transition duration-300 hover:bg-[#FDEEEE]"
+                >
+                  채팅방 나가기
+                </button>
+              </div>
+            )}
           </motion.aside>
 
           {confirmLeave && (

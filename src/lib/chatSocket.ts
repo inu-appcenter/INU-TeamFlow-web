@@ -87,3 +87,17 @@ export const publishChatMessage = (roomId: number, body: unknown): void => {
     body: JSON.stringify(body),
   });
 };
+
+export const subscribeChatRoomRead = (
+  roomId: number,
+  onMessage: (message: IMessage) => void
+): StompSubscription | null => {
+  const c = getChatClient();
+
+  if (!c.connected) {
+    console.warn('STOMP 미연결 상태에서 subscribe 시도 - 무시됨');
+    return null;
+  }
+
+  return c.subscribe(`/sub/chat-rooms/${roomId}/read`, onMessage);
+};
