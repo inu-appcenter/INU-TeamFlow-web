@@ -1,30 +1,41 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { getTeamRoleLabel } from '@/utils/teamRole';
-import { categoryColorMap, categoryTextColorMap } from '@/constants/category';
+import { categoryColorMap } from '@/constants/category';
 import { darkenColor } from '@/utils/color/darkenColor';
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  ChevronDown,
-  Mail,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 import { formatDate } from '@/utils/date/formatDate';
+import Header from '@/components/common/Header';
+//이걸 복붙해서 사용해주세요
+//Header 연결을 위한 입력 공간
+//1. 페이지 이름을 입력해주세요
+const pageName = '공지';
+
+//2. 글 검색 기능 있어야돼요? 답변은 true와 false로 해주세요
+const isSearch = true;
+//검색 필터를 입력해주세요
+const searchFilter = [
+  //예시 { value: 'title', label: '제목' },
+  { value: 'title', label: '제목' },
+  { value: 'team', label: '팀' },
+];
+
+//3. 글 작성 기능 있어야돼요? 답변은 true와 false로 해주세요
+const isCreate = false;
+
+//4. 카테고리 기능 있어야돼요? 답변은 true와 false로 해주세요
+const isCategory = false;
 
 const ITEMS_PER_PAGE = 8;
 
 export default function Notice() {
-  const router = useRouter();
   const [keyword, setKeyword] = useState('');
   const [searchType, setSearchType] = useState('title');
   const [page, setPage] = useState(1);
-
   const { data: notices = [] } = useMyTeamNotices();
 
   const normalizedKeyword = keyword.replace(/\s/g, '');
@@ -55,62 +66,21 @@ export default function Notice() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleKeywordChange = (value: string) => {
-    setKeyword(value);
-    setPage(1);
-  };
-
-  const handleSearchTypeChange = (value: string) => {
-    setSearchType(value);
-    setPage(1);
-  };
-
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto mb-10 max-w-[1180px]">
         {/* 헤더 */}
-        <header className="mt-12 mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => {
-                router.push('/');
-              }}
-              className="cursor-pointer text-[#2C2C2C]"
-            >
-              <ChevronLeft size={28} strokeWidth={2.5} />
-            </button>
-
-            <h1 className="text-2xl font-bold text-[#2C2C2C]">공지사항</h1>
-          </div>
-
-          {/* 검색바 */}
-          <div className="flex h-10 w-full items-center overflow-hidden rounded-xl border-[0.5] border-[#D6DDE5] bg-white sm:w-[400px]">
-            <div className="relative h-full">
-              <select
-                value={searchType}
-                onChange={(e) => handleSearchTypeChange(e.target.value)}
-                className="h-full appearance-none rounded-l-full border-r-[0.5] border-[#D6DDE5] bg-white px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
-              >
-                <option value="title">제목</option>
-                <option value="team">팀명</option>
-              </select>
-
-              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#2C2C2C]">
-                <ChevronDown size={14} />
-              </span>
-            </div>
-
-            <div className="flex flex-1 items-center gap-3 px-3">
-              <Search size={18} className="text-[#989898]" />
-              <input
-                value={keyword}
-                onChange={(e) => handleKeywordChange(e.target.value)}
-                placeholder="검색어를 입력하세요"
-                className="w-full bg-transparent text-[#2C2C2C] outline-none placeholder:text-[#989898]"
-              />
-            </div>
-          </div>
-        </header>
+        <Header
+          pageName={pageName}
+          isSearch={isSearch}
+          isCreate={isCreate}
+          isCategory={isCategory}
+          searchFilter={searchFilter}
+          keyword={keyword}
+          searchType={searchType}
+          onKeywordChange={setKeyword}
+          onSearchTypeChange={setSearchType}
+        />
 
         {/* 안읽은 공지 배너 */}
         {unreadCount > 0 && (
@@ -123,7 +93,6 @@ export default function Notice() {
             </p>
           </div>
         )}
-
         {/* 리스트 */}
         <section className="flex flex-col gap-3">
           {paged.map((notice) => (
@@ -175,7 +144,6 @@ export default function Notice() {
             </div>
           )}
         </section>
-
         {/* 페이지네이션 */}
         {totalPages > 0 && (
           <div className="mt-8 flex items-center justify-center gap-2">
