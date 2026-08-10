@@ -11,9 +11,9 @@ import { useChatRoomAvailableMembers } from '@/hooks/chat/useChatRoomAvailableMe
 import { useAddChatRoomMembers } from '@/hooks/chat/useAddChatRoomMembers';
 import { useLeaveChatRoom } from '@/hooks/chat/useLeaveChatRoom';
 import {
-  useUpdateChatRoomName,
-  useUpdateChatRoomImage,
-} from '@/hooks/chat/useUpdateChatRoomInfo';
+  useUpdateMyChatRoomName,
+  useUpdateMyChatRoomImage,
+} from '@/hooks/chat/useUpdateMyChatRoomInfo';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useMyInfo } from '@/hooks/useAuthQuery';
 import type { ChatRoomMemberResponse } from '@/types/chat';
@@ -26,7 +26,10 @@ type ChatRoomDrawerProps = {
   roomType: 'TEAM' | 'DIRECT' | 'GROUP';
   roomName: string;
   roomImageUrl: string | null;
-  onInfoUpdated: (next: { roomName?: string; roomImageUrl?: string }) => void;
+  onInfoUpdated: (next: {
+    roomName?: string;
+    roomImageUrl?: string | null;
+  }) => void;
 };
 
 export default function ChatRoomDrawer({
@@ -69,16 +72,16 @@ export default function ChatRoomDrawer({
   const { data: availableMembers = [] } = useChatRoomAvailableMembers(
     roomId,
     keyword,
-    roomType === 'TEAM'
+    roomType === 'GROUP'
   );
 
   const { mutateAsync: addMembers, isPending: isAdding } =
     useAddChatRoomMembers(roomId);
   const { mutate: leaveRoom, isPending: isLeaving } = useLeaveChatRoom();
-  const { mutateAsync: updateName, isPending: isRenaming } =
-    useUpdateChatRoomName(roomId);
-  const { mutateAsync: updateImage, isPending: isUpdatingImage } =
-    useUpdateChatRoomImage(roomId);
+  const { mutateAsync: updateMyName, isPending: isRenaming } =
+    useUpdateMyChatRoomName(roomId);
+  const { mutateAsync: updateMyImage, isPending: isUpdatingImage } =
+    useUpdateMyChatRoomImage(roomId);
 
   const { errorMessage, showErrorMessage } = useErrorToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -136,13 +139,20 @@ export default function ChatRoomDrawer({
   };
 
   const handleSaveName = async () => {
-    if (!nameDraft.trim() || nameDraft === roomName) {
+    const trimmed = nameDraft.trim();
+
+    if (!trimmed || trimmed === roomName) {
       setIsEditingName(false);
       return;
     }
+
     try {
-      await updateName(nameDraft.trim());
-      onInfoUpdated({ roomName: nameDraft.trim() });
+      const updatedName = await updateMyName(trimmed);
+
+      onInfoUpdated({
+        roomName: updatedName ?? trimmed,
+      });
+
       setIsEditingName(false);
     } catch {
       showErrorMessage('이름 변경에 실패했어요');
@@ -154,7 +164,7 @@ export default function ChatRoomDrawer({
     e.target.value = '';
     if (!file) return;
     try {
-      const newUrl = await updateImage(file);
+      const newUrl = await updateMyImage(file);
       onInfoUpdated({ roomImageUrl: newUrl });
     } catch {
       showErrorMessage('이미지 변경에 실패했어요');
@@ -163,7 +173,7 @@ export default function ChatRoomDrawer({
 
   const handleResetImage = async () => {
     try {
-      const newUrl = await updateImage(null);
+      const newUrl = await updateMyImage(null);
       onInfoUpdated({ roomImageUrl: newUrl });
     } catch {
       showErrorMessage('이미지 초기화에 실패했어요');
@@ -218,7 +228,7 @@ export default function ChatRoomDrawer({
                 <div className="relative">
                   <div
                     className={`group relative h-20 w-20 shrink-0 overflow-hidden bg-[#D6DDE5] ${
-                      roomType === 'TEAM' ? 'rounded-2xl' : 'rounded-full'
+                      roomType === 'DIRECT' ? 'rounded-full' : 'rounded-2xl'
                     }`}
                   >
                     {roomImageUrl ? (
@@ -334,7 +344,7 @@ export default function ChatRoomDrawer({
                   대화상대 ({members?.length ?? 0})
                 </p>
 
-                {roomType !== 'DIRECT' && isInviteOpen && (
+                {roomType === 'GROUP' && isInviteOpen && (
                   <div className="mx-3 mb-2 flex items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-3 py-2">
                     <Search size={14} className="text-[#989898]" />
                     <input
@@ -347,7 +357,7 @@ export default function ChatRoomDrawer({
                   </div>
                 )}
 
-                {roomType !== 'DIRECT' && isInviteOpen && keyword && (
+                {roomType === 'GROUP' && isInviteOpen && keyword && (
                   <div className="thin-scrollbar mx-3 mt-2 mb-2 flex max-h-[160px] flex-col overflow-y-auto rounded-xl border-[0.5px] border-[#D6DDE5] bg-white">
                     {availableMembers.map((user) => {
                       const isSelected = selectedIds.has(user.userId);
@@ -378,7 +388,7 @@ export default function ChatRoomDrawer({
                   </div>
                 )}
 
-                {roomType !== 'DIRECT' && selectedIds.size > 0 && (
+                {roomType === 'GROUP' && selectedIds.size > 0 && (
                   <button
                     onClick={handleAddMembers}
                     disabled={isAdding}
@@ -390,7 +400,7 @@ export default function ChatRoomDrawer({
 
                 <div className="flex flex-col px-2">
                   {/* 초대하기 슬롯: 멤버 목록 첫 줄 */}
-                  {roomType !== 'DIRECT' && (
+                  {roomType === 'GROUP' && (
                     <button
                       onClick={() => {
                         setIsInviteOpen((prev) => !prev);

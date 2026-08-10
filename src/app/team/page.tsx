@@ -51,7 +51,7 @@ export default function Team() {
               if (!checkVerified()) return;
               router.push('/team/create');
             }}
-            className="z-50 flex cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] py-2.5 pr-4 pl-3.5 text-[15px] font-medium text-white transition hover:bg-[#4C82E5]"
+            className="z-50 flex cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] py-2.5 pr-4 pl-3.5 text-[15px] font-medium text-white transition transition-all duration-150 hover:bg-[#4C82E5] active:scale-90"
           >
             <Plus size={18} strokeWidth={2.5} />팀 생성하기
           </button>
@@ -89,7 +89,10 @@ export default function Team() {
             })}
           </div>
 
-          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pt-4">
+          <div
+            style={{ scrollbarGutter: 'stable' }}
+            className="no-scrollbar min-h-0 flex-1 overflow-y-auto pt-4"
+          >
             {isLoading ? (
               <TeamListSkeleton />
             ) : (
@@ -107,8 +110,8 @@ export default function Team() {
                       }}
                     />
 
-                    <div className="p-5">
-                      <div className="mb-2 flex items-center justify-between">
+                    <div className="py-5 pl-5">
+                      <div className="mb-2 flex items-center justify-between pr-4">
                         <h2 className="text-lg font-bold text-[#2C2C2C]">
                           {team.name}
                         </h2>
@@ -120,7 +123,7 @@ export default function Team() {
                         {team.description}
                       </p>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between pr-5">
                         <span className="rounded-full bg-[#D6DDE5] px-3 py-1 text-xs font-semibold text-[#3F4852]">
                           {categoryMap[team.category]}
                         </span>

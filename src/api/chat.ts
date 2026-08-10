@@ -10,8 +10,9 @@ import type {
   ChatImagePresignedUrlRequest,
   ChatImagePresignedUrlResponse,
   ChatRoomListParams,
-  ChatRoomImageUpdateRequest,
   GroupChatRoomCreateRequest,
+  ChatRoomMyNameUpdateRequest,
+  ChatRoomMyImageUpdateRequest,
   ChatRoomMemberResponse,
   ChatRoomInviteRequest,
 } from '@/types/chat';
@@ -72,13 +73,29 @@ export const getChatImagePresignedUrl = async (
   return data;
 };
 
-// 팀 채팅방 이미지 설정 (리더만 가능)
-export const updateChatRoomImage = async (
+// 팀 채팅방 이름 설정
+export async function updateMyChatRoomName(
   roomId: number,
-  body: ChatRoomImageUpdateRequest
-): Promise<void> => {
-  await axiosInstance.patch(`/chat-rooms/${roomId}/image`, body);
-};
+  body: ChatRoomMyNameUpdateRequest
+) {
+  const { data } = await axiosInstance.patch(
+    `/chat-rooms/${roomId}/my-name`,
+    body
+  );
+  return data;
+}
+
+// 팀 채팅방 이미지 설정
+export async function updateMyChatRoomImage(
+  roomId: number,
+  body: ChatRoomMyImageUpdateRequest
+) {
+  const { data } = await axiosInstance.patch(
+    `/chat-rooms/${roomId}/my-image`,
+    body
+  );
+  return data;
+}
 
 // 팀 멤버 선택해 그룹 채팅방 생성
 export const createGroupChatRoom = async (

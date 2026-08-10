@@ -21,23 +21,47 @@ const TABS: { key: ChatTab; label: string }[] = [
 
 export default function ChatListPage() {
   const [activeTab, setActiveTab] = useState<ChatTab>('TEAM');
-  const { data: chatRooms, isLoading } = useChatRooms(activeTab);
-  // 탭 점 표시 판단용 — 비활성 탭의 안읽음 여부도 알아야 하므로 둘 다 조회
-  const { data: teamRooms } = useChatRooms('TEAM');
-  const { data: directRooms } = useChatRooms('DIRECT');
+  const { data: teamRooms = [], isLoading: isTeamLoading } =
+    useChatRooms('TEAM');
+  const { data: groupRooms = [], isLoading: isGroupLoading } =
+    useChatRooms('GROUP');
+  const { data: directRooms = [], isLoading: isDirectLoading } =
+    useChatRooms('DIRECT');
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const router = useRouter();
 
+  const chatRooms =
+    activeTab === 'DIRECT' ? directRooms : [...teamRooms, ...groupRooms];
+
+  const isLoading =
+    activeTab === 'DIRECT' ? isDirectLoading : isTeamLoading || isGroupLoading;
+
   const hasUnread = {
-    TEAM: teamRooms?.some((room) => room.unreadCount > 0) ?? false,
-    DIRECT: directRooms?.some((room) => room.unreadCount > 0) ?? false,
+    TEAM:
+      [...teamRooms, ...groupRooms].some((room) => room.unreadCount > 0) ??
+      false,
+
+    DIRECT: directRooms.some((room) => room.unreadCount > 0) ?? false,
   };
 
+  const visibleRooms = chatRooms.filter((room) => {
+    // 팀 채팅은 항상 노출
+    if (room.chatRoomType === 'TEAM') {
+      return true;
+    }
+    // 그룹 채팅은 메시지가 있는 경우만 노출
+    if (room.chatRoomType === 'GROUP') {
+      return !!room.lastMessageAt;
+    }
+    // 1:1은 그대로
+    return true;
+  });
   // 최근 메시지 순 정렬 (없는 방은 맨 아래로)
-  const filteredRooms = [...(chatRooms ?? [])].sort((a, b) => {
+  const filteredRooms = [...visibleRooms].sort((a, b) => {
     if (!a.lastMessageAt && !b.lastMessageAt) return 0;
     if (!a.lastMessageAt) return 1;
     if (!b.lastMessageAt) return -1;
+
     return (
       new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     );
@@ -54,7 +78,7 @@ export default function ChatListPage() {
           <h1 className="text-2xl font-bold text-[#2C2C2C]">나의 채팅 목록</h1>
           <button
             onClick={() => setIsGroupModalOpen(true)}
-            className="z-50 flex cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] py-2.5 pr-4 pl-3.5 text-[15px] font-medium text-white transition hover:bg-[#4C82E5]"
+            className="z-50 flex cursor-pointer items-center gap-1 rounded-lg bg-[#5E92F0] py-2.5 pr-4 pl-3.5 text-[15px] font-medium text-white transition transition-all duration-150 hover:bg-[#4C82E5] active:scale-90"
           >
             <Plus size={18} strokeWidth={2.5} />
             채팅 생성하기
@@ -115,7 +139,9 @@ export default function ChatListPage() {
                     >
                       <div
                         className={`relative h-12 w-12 shrink-0 overflow-hidden bg-[#D6DDE5] sm:h-14 sm:w-14 ${
-                          activeTab === 'TEAM' ? 'rounded-xl' : 'rounded-full'
+                          room.chatRoomType === 'DIRECT'
+                            ? 'rounded-full'
+                            : 'rounded-xl'
                         }`}
                       >
                         {room.imageUrl ? (

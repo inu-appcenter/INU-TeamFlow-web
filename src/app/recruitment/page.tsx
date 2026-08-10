@@ -148,7 +148,7 @@ export default function Recruitment() {
                   {isActive && (
                     <motion.div
                       layoutId="recruitmentCategoryIndicator"
-                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                      className="absolute inset-x-0 bottom-0 h-[2.5px] bg-[#5E92F0]"
                       transition={{
                         type: 'spring',
                         stiffness: 600,

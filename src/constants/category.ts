@@ -40,3 +40,13 @@ export const categoryFilterOptions = [
   { label: '동아리', value: 'CLUB' },
   { label: '기타', value: 'ETC' },
 ];
+
+export const InfoPostCategoryMap: Record<string, string> = {
+  CONTEST: '공모전',
+  CLUB: '동아리',
+  EXTERNAL_ACTIVITY: '외부활동',
+  INTERN: '인턴',
+  CAREER_ADVICE: '취업 조언',
+  CASUAL_TALK: '고민 ・ 잡담',
+  INFO_SHARING: '정보 공유',
+};

@@ -64,7 +64,12 @@ export function useChatMessageSubscribe(roomId: number) {
 
     const readSub = subscribeChatRoomRead(roomId, (frame: IMessage) => {
       const readEvent: ChatReadEvent = JSON.parse(frame.body);
-
+      console.log(
+        '🔵 READ 이벤트 수신:',
+        readEvent,
+        '| 내 userId:',
+        currentUserIdRef.current
+      );
       // 내가 보낸 읽음 이벤트는 반영하지 않음
       if (readEvent.userId === currentUserIdRef.current) return;
 
@@ -78,16 +83,24 @@ export function useChatMessageSubscribe(roomId: number) {
         ['chatMessages', 'anchor', roomId],
         (old) => {
           if (!old) return old;
-          return {
-            ...old,
-            // prevLastRead 초과 ~ lastReadMessageId 이하 구간만 +1
-            messages: old.messages.map((m) =>
-              m.chatMessageId > prevLastRead &&
-              m.chatMessageId <= readEvent.lastReadMessageId
-                ? { ...m, readCount: m.readCount + 1 }
-                : m
-            ),
-          };
+          const updated = old.messages.map((m) =>
+            m.chatMessageId > prevLastRead &&
+            m.chatMessageId <= readEvent.lastReadMessageId
+              ? { ...m, readCount: m.readCount + 1 }
+              : m
+          );
+          console.log(
+            '🟢 readCount 업데이트 대상 개수:',
+            updated.filter((m, i) => m.readCount !== old.messages[i].readCount)
+              .length
+          );
+          console.log(
+            '🟢 범위:',
+            prevLastRead,
+            '~',
+            readEvent.lastReadMessageId
+          );
+          return { ...old, messages: updated };
         }
       );
 

@@ -1,16 +1,28 @@
 'use client';
 
 import Card from '@/components/main/Card';
-import { ChevronLeft } from 'lucide-react';
-import { useState } from 'react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, X, Search, ImageIcon } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useState, useEffect } from 'react';
 import { useMyTeams } from '@/hooks/team/useTeamQuery';
-import { useMyInfoPosts } from '@/hooks/useInfoPostQuery';
+import { useInfoPosts } from '@/hooks/useInfoPostQuery';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
+import type {
+  InfoPostSummaryResponse,
+  InfoPostCategory,
+  GetInfoPostsParams,
+} from '@/types/infoPost';
 import {
   categoryMap,
   categoryColorMap,
-  categoryBorderColorMap,
   DEFAULT_CATEGORY_COLOR,
 } from '@/constants/category';
+import {
+  infoPostCategoryFilterOptions,
+  infoPostCategoryColorMap,
+  infoPostCategoryMap,
+} from '@/constants/infoPost';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useRouter } from 'next/navigation';
 import { darkenColor } from '@/utils/color/darkenColor';
@@ -20,6 +32,7 @@ export type RecruitmentFormData = {
   category: 'CONTEST' | 'STUDY' | 'CLUB' | 'PROJECT' | 'ETC';
   description: string;
   announcementId?: number;
+  announcementTitle?: string;
   teamId?: number;
   targetMemberCount: number | '';
   endAt: string;
@@ -31,6 +44,14 @@ type RecruitmentFormProps = {
   onSubmit: (data: RecruitmentFormData) => Promise<void>;
   onDelete?: () => void;
 };
+
+const INFO_POST_MODAL_SIZE = 9;
+const LINKABLE_INFO_POST_CATEGORIES: InfoPostCategory[] = [
+  'CONTEST',
+  'CLUB',
+  'EXTERNAL_ACTIVITY',
+  'INTERN',
+];
 
 export default function RecruitmentForm({
   mode,
@@ -47,6 +68,7 @@ export default function RecruitmentForm({
       category: 'ETC',
       description: '',
       announcementId: undefined,
+      announcementTitle: undefined,
       teamId: undefined,
       targetMemberCount: '',
       endAt: '',
@@ -57,22 +79,84 @@ export default function RecruitmentForm({
   const manageableTeams = myTeams.filter(
     (t) => t.teamRole === 'LEADER' || t.teamRole === 'MANAGER'
   );
-  const { data: myInfoPostsPage } = useMyInfoPosts({ size: 50 });
-  const linkableInfoPosts = (myInfoPostsPage?.content ?? []).filter(
-    (p) => p.linkable
-  );
 
   const onChange = (key: keyof RecruitmentFormData, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const currentColor =
     categoryColorMap[form.category] ?? DEFAULT_CATEGORY_COLOR;
-  const [isInfoPostDropdownOpen, setIsInfoPostDropdownOpen] = useState(false);
   const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
+
+  // ---- 공고(정보글) 연결 모달 ----
+  const [isInfoPostModalOpen, setIsInfoPostModalOpen] = useState(false);
+  useLockBodyScroll(isInfoPostModalOpen);
+  const [selectedInfoPostTitle, setSelectedInfoPostTitle] = useState(
+    initialData?.announcementTitle ?? ''
+  );
+
+  const [infoCategory, setInfoCategory] = useState<InfoPostCategory>(
+    LINKABLE_INFO_POST_CATEGORIES[0]
+  );
+  const [infoKeywordInput, setInfoKeywordInput] = useState('');
+  const [infoSearchKeyword, setInfoSearchKeyword] = useState('');
+  const [infoPage, setInfoPage] = useState(1);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setInfoSearchKeyword(infoKeywordInput.trim());
+      setInfoPage(1);
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [infoKeywordInput]);
+
+  const handleInfoCategoryChange = (category: InfoPostCategory) => {
+    setInfoCategory(category);
+    setInfoPage(1);
+  };
+
+  const infoQueryParams: GetInfoPostsParams = {
+    category: infoCategory,
+    keyword: infoSearchKeyword || undefined,
+    page: infoPage - 1,
+    size: INFO_POST_MODAL_SIZE,
+    sort: ['createdAt,DESC'],
+  };
+
+  const { data: connectInfoPostPage, isLoading: isConnectInfoPostsLoading } =
+    useInfoPosts(infoQueryParams);
+
+  const linkableInfoPostCategoryOptions = infoPostCategoryFilterOptions.filter(
+    (category) =>
+      LINKABLE_INFO_POST_CATEGORIES.includes(category.value as InfoPostCategory)
+  );
+
+  const connectInfoPosts: InfoPostSummaryResponse[] =
+    connectInfoPostPage?.content ?? [];
+
+  const connectTotalPages = connectInfoPostPage?.totalPages ?? 0;
+  const currentInfoPage =
+    connectTotalPages === 0 ? 1 : Math.min(infoPage, connectTotalPages);
+  const PAGE_WINDOW_SIZE = 5;
+  const currentBlockStart =
+    Math.floor((currentInfoPage - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
+  const currentBlockEnd = Math.min(
+    currentBlockStart + PAGE_WINDOW_SIZE - 1,
+    connectTotalPages
+  );
+  const visiblePageNumbers = Array.from(
+    { length: currentBlockEnd - currentBlockStart + 1 },
+    (_, i) => currentBlockStart + i
+  );
+
+  const handleSelectInfoPost = (post: InfoPostSummaryResponse) => {
+    if (!post.linkable) return;
+
+    setForm((prev) => ({ ...prev, announcementId: post.infoPostId }));
+    setSelectedInfoPostTitle(post.title);
+    setIsInfoPostModalOpen(false);
+  };
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
@@ -107,7 +191,6 @@ export default function RecruitmentForm({
                     제목
                   </span>
                 </div>
-
                 <input
                   value={form.title}
                   onChange={(e) => onChange('title', e.target.value)}
@@ -123,77 +206,21 @@ export default function RecruitmentForm({
                   </span>
                 </div>
 
-                <div className="relative flex items-end gap-3">
+                <div className="flex items-end gap-3">
                   <input
                     readOnly
-                    value={
-                      linkableInfoPosts.find(
-                        (p) => p.infoPostId === form.announcementId
-                      )?.title ?? ''
-                    }
+                    value={selectedInfoPostTitle}
                     placeholder="연결된 공고가 없습니다"
                     className="h-[42px] flex-1 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-0 focus:outline-none"
                   />
 
                   <button
                     type="button"
-                    onClick={() => setIsInfoPostDropdownOpen((prev) => !prev)}
+                    onClick={() => setIsInfoPostModalOpen(true)}
                     className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white"
                   >
                     공고 연결하기
                   </button>
-
-                  {isInfoPostDropdownOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setIsInfoPostDropdownOpen(false)}
-                      />
-                      <div className="absolute top-[50px] right-[-70px] z-20 w-[260px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-[2px_2px_15px_0px_rgba(149,157,165,0.20)]">
-                        <div className="thin-scrollbar flex max-h-[240px] flex-col overflow-y-auto">
-                          {linkableInfoPosts.map((post) => (
-                            <button
-                              key={post.infoPostId}
-                              type="button"
-                              onClick={() => {
-                                setForm((prev) => ({
-                                  ...prev,
-                                  announcementId: post.infoPostId,
-                                }));
-                                setIsInfoPostDropdownOpen(false);
-                              }}
-                              className={`flex items-center justify-between rounded-xl px-4 py-2 text-left transition hover:bg-[#F6F8FA] ${
-                                form.announcementId === post.infoPostId
-                                  ? 'bg-[#EEF1F5]'
-                                  : ''
-                              }`}
-                            >
-                              <p className="truncate font-semibold text-[#2C2C2C]">
-                                {post.title}
-                              </p>
-                              <div
-                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
-                                  form.announcementId === post.infoPostId
-                                    ? 'border-[#5E92F0]'
-                                    : 'border-[#D6DDE5]'
-                                }`}
-                              >
-                                {form.announcementId === post.infoPostId && (
-                                  <div className="h-2 w-2 rounded-full bg-[#5E92F0]" />
-                                )}
-                              </div>
-                            </button>
-                          ))}
-
-                          {linkableInfoPosts.length === 0 && (
-                            <p className="py-4 text-center text-sm text-[#989898]">
-                              연결 가능한 정보글이 없습니다
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
 
@@ -212,7 +239,6 @@ export default function RecruitmentForm({
                       myTeams.find((t) => t.teamId === form.teamId)?.name ?? ''
                     }
                     placeholder="연결된 팀이 없습니다"
-                    onChange={(e) => onChange('teamId', e.target.value)}
                     className="h-[42px] flex-1 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-0 focus:outline-none"
                   />
 
@@ -223,6 +249,7 @@ export default function RecruitmentForm({
                   >
                     팀 연결하기
                   </button>
+
                   {isTeamDropdownOpen && (
                     <>
                       <div
@@ -289,7 +316,6 @@ export default function RecruitmentForm({
                   <span className="text-sm font-bold tracking-wide text-[#B0B0B0]">
                     카테고리
                   </span>
-
                   <span className="text-xs text-[#9A9A9A]">
                     (팀 연결 시 자동 설정)
                   </span>
@@ -334,7 +360,6 @@ export default function RecruitmentForm({
                     마감일
                   </span>
                 </div>
-
                 <input
                   type="date"
                   value={form.endAt}
@@ -350,7 +375,6 @@ export default function RecruitmentForm({
                     모집 인원
                   </span>
                 </div>
-
                 <input
                   type="number"
                   value={form.targetMemberCount}
@@ -372,7 +396,6 @@ export default function RecruitmentForm({
                     상세요강
                   </span>
                 </div>
-
                 <textarea
                   value={form.description}
                   onChange={(e) => onChange('description', e.target.value)}
@@ -380,7 +403,6 @@ export default function RecruitmentForm({
                   className="min-h-[150px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
                   placeholder="ex. 우대사항, 면접 정보 등"
                 />
-
                 <div className="mt-1 text-right text-xs text-[#B0B0B0]">
                   {form.description.length}/500
                 </div>
@@ -402,22 +424,18 @@ export default function RecruitmentForm({
                       showErrorMessage('모집글 제목을 입력해주세요');
                       return;
                     }
-
                     if (!form.description.trim()) {
                       showErrorMessage('상세요강을 입력해주세요');
                       return;
                     }
-
                     if (!form.endAt) {
                       showErrorMessage('모집 마감일을 입력해주세요');
                       return;
                     }
-
                     if (!form.targetMemberCount) {
                       showErrorMessage('모집 인원을 입력해주세요');
                       return;
                     }
-
                     if (!form.teamId) {
                       showErrorMessage('연결할 팀을 선택해주세요');
                       return;
@@ -441,6 +459,223 @@ export default function RecruitmentForm({
           </div>
         </Card>
       </section>
+
+      {/* 공고 연결하기 모달 */}
+      {isInfoPostModalOpen && (
+        <div
+          onClick={() => setIsInfoPostModalOpen(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="animate-modal-pop flex h-[85vh] w-full max-w-[720px] flex-col overflow-hidden rounded-3xl bg-white"
+          >
+            {/* 헤더 */}
+            <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] px-6 py-5">
+              <h2 className="text-xl font-bold text-[#2C2C2C]">
+                공고 연결하기
+              </h2>
+            </div>
+
+            {/* 카테고리 탭 */}
+            <div className="relative flex border-b-[0.5px] border-[#D6DDE5]">
+              {linkableInfoPostCategoryOptions.map((category) => {
+                const isActive = infoCategory === category.value;
+
+                return (
+                  <button
+                    key={category.value}
+                    type="button"
+                    onClick={() =>
+                      handleInfoCategoryChange(
+                        category.value as InfoPostCategory
+                      )
+                    }
+                    className={`relative z-50 flex-1 cursor-pointer py-3.5 text-center text-[18px] font-bold whitespace-nowrap transition ${
+                      isActive
+                        ? 'text-[#5E92F0]'
+                        : 'text-[#CBD2DA] hover:text-[#5E92F0]'
+                    }`}
+                  >
+                    {category.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="infoPostConnectCategoryIndicator"
+                        className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 600,
+                          damping: 50,
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 검색 */}
+            <div className="flex w-100 items-center gap-3 px-6 py-3">
+              <div className="flex h-10 flex-1 items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-3">
+                <Search size={16} className="shrink-0 text-[#989898]" />
+                <input
+                  value={infoKeywordInput}
+                  onChange={(e) => setInfoKeywordInput(e.target.value)}
+                  placeholder="제목을 입력하세요"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-[#2C2C2C] outline-none placeholder:text-[#989898]"
+                />
+              </div>
+            </div>
+
+            {/* 리스트 */}
+            <div
+              className="thin-scrollbar flex-1 overflow-y-auto px-6 pb-4"
+              style={{ scrollbarGutter: 'stable' }}
+            >
+              {isConnectInfoPostsLoading && (
+                <div className="flex h-[240px] items-center justify-center text-sm text-[#989898]">
+                  불러오는 중입니다
+                </div>
+              )}
+
+              {!isConnectInfoPostsLoading && connectInfoPosts.length === 0 && (
+                <div className="flex h-[240px] items-center justify-center text-sm text-[#989898]">
+                  연결 가능한 공고가 없습니다
+                </div>
+              )}
+
+              {!isConnectInfoPostsLoading && connectInfoPosts.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-3">
+                  {connectInfoPosts.map((post) => {
+                    const isSelected = form.announcementId === post.infoPostId;
+                    const isDisabled = !post.linkable;
+
+                    return (
+                      <div
+                        key={post.infoPostId}
+                        className={`flex flex-col overflow-hidden rounded-2xl border-[0.5px] transition ${
+                          isSelected
+                            ? 'border-[#5E92F0] ring-2 ring-[#5E92F0]/30'
+                            : 'border-[#D6DDE5]'
+                        } ${isDisabled ? 'opacity-50' : ''}`}
+                      >
+                        <div className="relative aspect-[4/3] w-full bg-[#F6F8FA]">
+                          {post.thumbnailUrl ? (
+                            <Image
+                              src={post.thumbnailUrl}
+                              alt={`${post.title} 썸네일`}
+                              fill
+                              sizes="200px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-[#B8C0CA]">
+                              <ImageIcon size={22} strokeWidth={1.7} />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-1 flex-col gap-1.5 p-3">
+                          <span
+                            style={{
+                              backgroundColor:
+                                infoPostCategoryColorMap[post.category],
+                              color: darkenColor(
+                                infoPostCategoryColorMap[post.category],
+                                140
+                              ),
+                            }}
+                            className="w-fit rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                          >
+                            {infoPostCategoryMap[post.category]}
+                          </span>
+
+                          <p className="line-clamp-2 text-[15px] font-semibold text-[#2C2C2C]">
+                            {post.title}
+                          </p>
+
+                          <p className="mt-auto text-[12px] text-[#989898]">
+                            연결된 모집글 {post.recruitmentCount}개
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => handleSelectInfoPost(post)}
+                            disabled={isDisabled}
+                            className={`mt-1 h-8 shrink-0 rounded-lg text-[13px] font-semibold transition ${
+                              isDisabled
+                                ? 'cursor-not-allowed bg-[#EEF1F5] text-[#B0B0B0]'
+                                : isSelected
+                                  ? 'cursor-pointer bg-[#EEF1F5] text-[#5E92F0]'
+                                  : 'cursor-pointer bg-[#5E92F0] text-white hover:bg-[#4F84E5]'
+                            }`}
+                          >
+                            {isDisabled
+                              ? '연결 불가'
+                              : isSelected
+                                ? '선택됨'
+                                : '공고 선택하기'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {/* 페이지네이션 */}
+              {connectTotalPages > 0 && (
+                <div className="flex items-center justify-center gap-2 py-4">
+                  {/* 이전 블록 */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setInfoPage(
+                        Math.max(1, currentBlockStart - PAGE_WINDOW_SIZE)
+                      )
+                    }
+                    disabled={currentBlockStart === 1}
+                    className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
+                  >
+                    <ChevronLeft size={22} strokeWidth={2.5} />
+                  </button>
+
+                  {visiblePageNumbers.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setInfoPage(n)}
+                      className={`flex items-center justify-center px-1 text-[16px] font-semibold transition-all duration-150 active:scale-90 ${
+                        currentInfoPage === n
+                          ? 'text-[#5E92F0]'
+                          : 'cursor-pointer text-[#2c2c2c]/50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+
+                  {/* 다음 블록 */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setInfoPage(
+                        Math.min(
+                          connectTotalPages,
+                          currentBlockStart + PAGE_WINDOW_SIZE
+                        )
+                      )
+                    }
+                    disabled={currentBlockEnd === connectTotalPages}
+                    className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
+                  >
+                    <ChevronRight size={22} strokeWidth={2.5} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {mode === 'create' && isConfirmOpen && (
         <div

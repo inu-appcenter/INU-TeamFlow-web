@@ -32,6 +32,7 @@ export interface ChatMessageResponse {
   imageUrl: string | null;
   createdAt: string;
   readCount: number; // 이 메시지를 읽은 인원 수
+  visibleMemberCount: number; // 이 메시지를 볼 수 있는 인원 수
 }
 
 // GET /chat-rooms?type=TEAM|DIRECT
@@ -72,15 +73,21 @@ export interface GroupChatRoomCreateRequest {
   teamId: number;
   roomName?: string | null; // 생략 시 참여자 이름으로 자동 표시
   memberIds: number[]; // 본인은 자동 포함되므로 안 넣어도 됨
+  imageKey?: string | null;
 }
 
 // POST /chat-rooms/images/presigned-url
 export type ChatImagePresignedUrlRequest = PresignedUrlRequest;
 export type ChatImagePresignedUrlResponse = PresignedUrlResponse;
 
-// PATCH /chat-rooms/{roomId}/image — 팀 채팅방 이미지 설정 (리더만 가능)
-export interface ChatRoomImageUpdateRequest {
-  imageKey: string | null; // null이면 기본 콜라주로 리셋
+// PATCH /chat-rooms/{roomId}/my-name
+export interface ChatRoomMyNameUpdateRequest {
+  roomName: string | null; // null이면 공유 기본값으로 리셋
+}
+
+// PATCH /chat-rooms/{roomId}/my-image
+export interface ChatRoomMyImageUpdateRequest {
+  imageKey: string | null; // null이면 공유 기본값으로 리셋
 }
 
 // STOMP PUB /pub/chat-rooms/{roomId}/messages

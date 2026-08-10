@@ -16,6 +16,7 @@ export interface InfoPostSummaryResponse {
   title: string;
   thumbnailUrl: string | null;
   recruitmentCount: number;
+  createdAt: string;
 }
 
 export interface InfoPostAuthor {
