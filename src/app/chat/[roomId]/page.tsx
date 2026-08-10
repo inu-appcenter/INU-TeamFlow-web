@@ -36,7 +36,10 @@ export default function ChatRoomPage() {
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [roomInfo, setRoomInfo] = useState({
+  const [roomInfo, setRoomInfo] = useState<{
+    roomName: string;
+    roomImageUrl: string | null;
+  }>({
     roomName: searchParams.get('roomName') ?? '',
     roomImageUrl: searchParams.get('roomImageUrl') || null,
   });
@@ -68,8 +71,6 @@ export default function ChatRoomPage() {
   const { mutateAsync: uploadImage, isPending: isUploading } =
     useChatImageUpload();
   const { mutate: markAsRead } = useMarkChatAsRead(roomId);
-  const { data: members } = useChatRoomMembers(roomId);
-  const totalMemberCount = members?.length ?? 0;
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   useChatMessageSubscribe(roomId);
@@ -194,7 +195,7 @@ export default function ChatRoomPage() {
             </button>
             <div
               className={`relative h-10 w-10 shrink-0 overflow-hidden bg-[#D6DDE5] ${
-                roomType === 'TEAM' ? 'rounded-xl' : 'rounded-full'
+                roomType === 'DIRECT' ? 'rounded-full' : 'rounded-xl'
               }`}
             >
               {roomInfo.roomImageUrl ? (
@@ -245,7 +246,7 @@ export default function ChatRoomPage() {
                 const nextMessage = allMessages[index + 1];
                 const unreadCount = Math.max(
                   0,
-                  totalMemberCount - 1 - message.readCount
+                  message.visibleMemberCount - message.readCount
                 );
 
                 const showDateDivider =

@@ -4,34 +4,47 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/lib/axiosInstance';
 import { uploadImageToS3 } from '@/utils/uploadImageToS3';
 
-export function useUpdateChatRoomName(roomId: number) {
+/**
+ * GROUP 채팅방 개인 커스텀 이름 수정
+ * null이면 공유 기본값으로 리셋
+ */
+export function useUpdateMyChatRoomName(roomId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (roomName: string) => {
-      await axiosInstance.patch(`/chat-rooms/${roomId}/name`, { roomName });
-      return roomName;
+    mutationFn: async (roomName: string | null) => {
+      const { data } = await axiosInstance.patch(
+        `/chat-rooms/${roomId}/my-name`,
+        { roomName }
+      );
+
+      return data.roomName as string | null;
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatRooms'] });
     },
   });
 }
 
-export function useUpdateChatRoomImage(roomId: number) {
+/**
+ * GROUP 채팅방 개인 커스텀 이미지 수정
+ * null이면 공유 기본값으로 리셋
+ */
+export function useUpdateMyChatRoomImage(roomId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (file: File | null) => {
       if (file === null) {
-        // null 보내면 백엔드가 멤버 프로필 콜라주로 자동 세팅
         const { data } = await axiosInstance.patch(
-          `/chat-rooms/${roomId}/image`,
+          `/chat-rooms/${roomId}/my-image`,
           {
             imageKey: null,
           }
         );
-        return data.imageUrl as string;
+
+        return data.imageUrl as string | null;
       }
 
       const { data: presigned } = await axiosInstance.post(
@@ -40,16 +53,19 @@ export function useUpdateChatRoomImage(roomId: number) {
           fileName: file.name,
         }
       );
+
       await uploadImageToS3(presigned.uploadUrl, file);
 
       const { data } = await axiosInstance.patch(
-        `/chat-rooms/${roomId}/image`,
+        `/chat-rooms/${roomId}/my-image`,
         {
           imageKey: presigned.imageKey,
         }
       );
-      return data.imageUrl as string;
+
+      return data.imageUrl as string | null;
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatRooms'] });
     },
