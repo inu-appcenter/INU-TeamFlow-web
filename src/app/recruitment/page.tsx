@@ -19,8 +19,8 @@ const pageName = '모집';
 const isSearch = true;
 //검색 필터를 입력해주세요
 const searchFilter = [
-  //예시 { value: 'title', label: '제목' },
   { value: 'title', label: '제목' },
+  { value: 'announcementTitle', label: '정보글' },
 ];
 
 //3. 글 작성 기능 있어야돼요? 답변은 true와 false로 해주세요
@@ -70,7 +70,9 @@ export default function Recruitment() {
     const matchesKeyword =
       searchType === 'title'
         ? title.includes(normalizedKeyword)
-        : announcementTitle.includes(normalizedKeyword);
+        : searchType === 'announcementTitle'
+          ? announcementTitle.includes(normalizedKeyword)
+          : true;
 
     return matchesCategory && matchesKeyword;
   });
@@ -112,6 +114,7 @@ export default function Recruitment() {
             const isClosed = endDate < today || recruitment.status === 'CLOSED';
             return (
               <ContentCard
+                key={recruitment.recruitmentId}
                 cardType="recruitment"
                 category={recruitment.category}
                 title={recruitment.title}

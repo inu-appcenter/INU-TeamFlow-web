@@ -6,7 +6,9 @@ import {
   statusBorderColorMap,
   categoryMap,
   categoryBorderColorMap,
+  categoryColorMap,
 } from '@/constants/contentCard';
+import { darkenColor } from '@/utils/color/darkenColor';
 
 interface BaseCardProps {
   category: string;
@@ -68,12 +70,18 @@ export default function ContentCard(props: CardProps) {
       {/* 리스트 */}
       <div
         className="cursor-pointer rounded-2xl border-l-15 bg-white p-6"
-        style={{ borderColor: categoryBorderColorMap[props.category] }}
+        style={{ borderColor: categoryColorMap[props.category] }}
         onClick={() => router.push(`${props.path}`)}
       >
         <div className="flex items-center gap-2">
-          <span className="truncate text-lg font-bold text-[#2C2C2C]">
-            [ {categoryMap[props.category]} ]
+          <span
+            className="shrink-0 truncate rounded-full px-2.5 py-1 text-xs font-semibold"
+            style={{
+              backgroundColor: categoryColorMap[props.category],
+              color: darkenColor(categoryColorMap[props.category], 140),
+            }}
+          >
+            {categoryMap[props.category]}
           </span>
 
           <h2 className="truncate text-lg font-bold text-[#2C2C2C]">
