@@ -113,7 +113,7 @@ export default function Header({
                 <select
                   value={searchType}
                   onChange={(e) => onSearchTypeChange?.(e.target.value)}
-                  className="h-full appearance-none rounded-l-full border-r-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
+                  className="h-full appearance-none rounded-l-xl border-r-[0.5px] border-[#D6DDE5] px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
                 >
                   {searchFilter?.map((filter) => (
                     <option key={filter.value} value={filter.value}>

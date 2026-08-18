@@ -217,7 +217,7 @@ export default function RecruitmentForm({
                   <button
                     type="button"
                     onClick={() => setIsInfoPostModalOpen(true)}
-                    className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white"
+                    className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white transition-all duration-150 active:scale-90"
                   >
                     공고 연결하기
                   </button>
@@ -245,7 +245,7 @@ export default function RecruitmentForm({
                   <button
                     type="button"
                     onClick={() => setIsTeamDropdownOpen((prev) => !prev)}
-                    className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white"
+                    className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white transition-all duration-150 active:scale-90"
                   >
                     팀 연결하기
                   </button>
