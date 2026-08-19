@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState, useEffect } from 'react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
+import Header from '@/components/common/Header';
+import NotificationSettings from '@/components/mypage/NotificationSettings';
 import { colleges } from '@/constants/departments';
 import {
   useDeleteUser,
@@ -28,7 +30,6 @@ import {
   Settings,
   LayoutDashboard,
 } from 'lucide-react';
-import Header from '@/components/common/Header';
 
 //이걸 복붙해서 사용해주세요
 //Header 연결을 위한 입력 공간
@@ -706,6 +707,8 @@ export default function MyPage() {
 
               <div className="flex-1 overflow-y-auto p-5 sm:p-8">
                 <section className="mx-auto max-w-[720px]">
+                  <NotificationSettings showErrorMessage={showErrorMessage} />
+
                   <div className="mb-4">
                     <h3 className="text-[18px] font-bold text-[#2C2C2C]">
                       계정 관리
