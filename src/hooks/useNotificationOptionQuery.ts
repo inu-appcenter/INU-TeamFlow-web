@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { getHttpStatus } from '@/utils/httpError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createNotificationOptions,
@@ -27,15 +27,11 @@ const getOrCreateNotificationOptions =
     try {
       return await getNotificationOptions();
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
+      if (getHttpStatus(error) === 404) {
         try {
           return await createNotificationOptions(DEFAULT_NOTIFICATION_OPTIONS);
         } catch (createError) {
-          // 동시에 다른 요청에서 생성됐을 가능성
-          if (
-            axios.isAxiosError(createError) &&
-            createError.response?.status === 409
-          ) {
+          if (getHttpStatus(createError) === 409) {
             return await getNotificationOptions();
           }
 
@@ -51,19 +47,7 @@ export const useNotificationOptions = () =>
   useQuery({
     queryKey: notificationOptionKeys.all,
     queryFn: getOrCreateNotificationOptions,
-
-    retry: (failureCount, error) => {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status;
-
-        if (status && status >= 400 && status < 500) {
-          return false;
-        }
-      }
-
-      return failureCount < 1;
-    },
-
+    staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
 
@@ -72,6 +56,36 @@ export const useUpdateNotificationOptions = () => {
 
   return useMutation({
     mutationFn: updateNotificationOptions,
+
+    onMutate: async (request) => {
+      await queryClient.cancelQueries({
+        queryKey: notificationOptionKeys.all,
+      });
+
+      const previous = queryClient.getQueryData<NotificationOptionResponse>(
+        notificationOptionKeys.all
+      );
+
+      const optimisticData: NotificationOptionResponse = {
+        ...request,
+        allEnabled:
+          request.noticeEnabled &&
+          request.inviteEnabled &&
+          request.applicationEnabled &&
+          request.calendarEnabled &&
+          request.chatEnabled,
+      };
+
+      queryClient.setQueryData(notificationOptionKeys.all, optimisticData);
+
+      return { previous };
+    },
+
+    onError: (_error, _request, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(notificationOptionKeys.all, context.previous);
+      }
+    },
 
     onSuccess: (data) => {
       queryClient.setQueryData(notificationOptionKeys.all, data);

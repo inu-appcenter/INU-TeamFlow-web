@@ -10,6 +10,7 @@ import type { NotificationOptionRequest } from '@/types/notificationOption';
 
 interface NotificationSettingsProps {
   showErrorMessage: (message: string) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 interface NotificationToggleProps {
@@ -80,6 +81,7 @@ function NotificationToggle({
 
 export default function NotificationSettings({
   showErrorMessage,
+  onDirtyChange,
 }: NotificationSettingsProps) {
   const {
     data: notificationOptions,
@@ -120,6 +122,10 @@ export default function NotificationSettings({
       draft.applicationEnabled !== notificationOptions.applicationEnabled ||
       draft.calendarEnabled !== notificationOptions.calendarEnabled ||
       draft.chatEnabled !== notificationOptions.chatEnabled);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleAllToggle = (enabled: boolean) => {
     setDraft({

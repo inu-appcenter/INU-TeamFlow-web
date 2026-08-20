@@ -1,5 +1,5 @@
 'use client';
-import axios from 'axios';
+import { getHttpStatus } from '@/utils/httpError';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useEffect } from 'react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
@@ -102,6 +102,12 @@ export default function MyPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDeleteUserConfirmOpen, setIsDeleteUserConfirmOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [hasUnsavedNotificationChanges, setHasUnsavedNotificationChanges] =
+    useState(false);
+
+  const [isSettingsCloseConfirmOpen, setIsSettingsCloseConfirmOpen] =
+    useState(false);
+
   const { mutateAsync: deleteUser, isPending: isDeleteUserPending } =
     useDeleteUser();
   const isAdmin = profileData?.role === 'ADMIN';
@@ -113,6 +119,14 @@ export default function MyPage() {
 
   const isImagePending = isPresignedPending || isUploadPending;
 
+  const requestCloseSettings = () => {
+    if (hasUnsavedNotificationChanges) {
+      setIsSettingsCloseConfirmOpen(true);
+      return;
+    }
+
+    setIsSettingsOpen(false);
+  };
   const openDeleteUserConfirm = () => {
     setDeleteConfirmText('');
     setIsDeleteUserConfirmOpen(true);
@@ -124,6 +138,22 @@ export default function MyPage() {
     setDeleteConfirmText('');
     setIsDeleteUserConfirmOpen(false);
   };
+
+  const previewUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    previewUrlRef.current = editProfileImage.startsWith('blob:')
+      ? editProfileImage
+      : null;
+  }, [editProfileImage]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const isOverlayOpen =
@@ -150,7 +180,18 @@ export default function MyPage() {
         return;
       }
 
-      setIsSettingsOpen(false);
+      if (isSettingsCloseConfirmOpen) {
+        setIsSettingsCloseConfirmOpen(false);
+        return;
+      }
+
+      if (isSettingsOpen) {
+        if (hasUnsavedNotificationChanges) {
+          setIsSettingsCloseConfirmOpen(true);
+        } else {
+          setIsSettingsOpen(false);
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -160,9 +201,11 @@ export default function MyPage() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [
+    hasUnsavedNotificationChanges,
     isDeleteUserConfirmOpen,
     isDeleteUserPending,
     isProfileImageMenuOpen,
+    isSettingsCloseConfirmOpen,
     isSettingsOpen,
   ]);
 
@@ -224,14 +267,14 @@ export default function MyPage() {
       ...(password ? { password } : {}),
     };
 
+    setModify(false);
+    setPassword('');
+    setCheckPassword('');
+
     updateMyProfileMutate(request, {
       onSuccess: () => {
-        showErrorMessage('프로필이 수정되었습니다');
-        setPassword('');
-        setCheckPassword('');
         setEditImageKey(null);
         setIsDefaultImageSelected(false);
-        setModify(false);
       },
       onError: () => {
         showErrorMessage('프로필 수정에 실패했습니다');
@@ -245,6 +288,12 @@ export default function MyPage() {
     if (!file) return;
 
     e.currentTarget.value = '';
+
+    const previousImage = editProfileImage;
+    const previewUrl = URL.createObjectURL(file);
+
+    setEditProfileImage(previewUrl);
+    setIsDefaultImageSelected(false);
 
     presignedUrlMutate(
       {
@@ -260,17 +309,19 @@ export default function MyPage() {
             },
             {
               onSuccess: () => {
-                setEditProfileImage(URL.createObjectURL(file));
                 setEditImageKey(imageKey);
-                setIsDefaultImageSelected(false);
               },
               onError: () => {
+                URL.revokeObjectURL(previewUrl);
+                setEditProfileImage(previousImage);
                 showErrorMessage('이미지 업로드에 실패했습니다');
               },
             }
           );
         },
         onError: () => {
+          URL.revokeObjectURL(previewUrl);
+          setEditProfileImage(previousImage);
           showErrorMessage('이미지 업로드 URL 발급에 실패했습니다');
         },
       }
@@ -293,9 +344,7 @@ export default function MyPage() {
   };
 
   const handleDeleteUser = async () => {
-    if (isDeleteUserPending || deleteConfirmText !== profileData?.username) {
-      return;
-    }
+    if (isDeleteUserPending) return;
 
     try {
       await deleteUser();
@@ -309,18 +358,12 @@ export default function MyPage() {
       localStorage.removeItem('accessToken');
       router.replace('/login');
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        closeDeleteUserConfirm();
+      const status = getHttpStatus(error);
+
+      if (status === 403) {
         showErrorMessage(
           '팀장 권한을 보유하고 있거나 진행 중인 투표가 있어 탈퇴할 수 없습니다'
         );
-        return;
-      }
-
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        showErrorMessage('로그인이 만료되었습니다');
-        localStorage.removeItem('accessToken');
-        router.replace('/login');
         return;
       }
 
@@ -330,31 +373,41 @@ export default function MyPage() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5]">
-        <p className="text-[15px] text-[#989898]">프로필을 불러오는 중...</p>
-      </main>
-    );
-  }
+      <section>
+        <div className="mb-4">
+          <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
 
-  if (isError || !profileData) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F0F2F5] px-4">
-        <div className="flex flex-col items-center">
-          <p className="text-[15px] text-[#989898]">
-            프로필 정보를 불러오지 못했습니다
+          <p className="mt-1 text-[14px] leading-6 text-[#989898]">
+            받고 싶은 알림을 선택할 수 있어요
           </p>
-
-          <button
-            type="button"
-            onClick={() => refetchProfile()}
-            className="mt-4 cursor-pointer rounded-xl bg-[#D9DEE7] px-4 py-2.5 text-[13px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95"
-          >
-            다시 시도
-          </button>
         </div>
-      </main>
+
+        <div className="flex min-h-[180px] items-center justify-center rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white">
+          <p className="text-[14px] text-[#989898]">
+            알림 설정을 불러오는 중...
+          </p>
+        </div>
+      </section>
     );
   }
+
+  if (isError) {
+    return (
+      <section>
+        <div className="mb-4">
+          <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
+        </div>
+
+        <div className="flex min-h-[180px] items-center justify-center rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white">
+          <p className="text-[14px] text-[#989898]">
+            알림 설정을 불러오지 못했습니다
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (!profileData) return null;
 
   return (
     <main className="min-h-screen px-3 pt-6 pb-36 sm:px-6 lg:pb-24">
@@ -486,9 +539,8 @@ export default function MyPage() {
 
                   <input
                     value={profileData.username}
-                    disabled
+                    readOnly
                     aria-label="아이디"
-                    placeholder="아이디"
                     className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-[#F5F5F5] p-2.5 pl-4 text-[#989898] outline-none"
                   />
 
@@ -549,7 +601,7 @@ export default function MyPage() {
                       disabled={isUpdatePending || isImagePending}
                       className="flex-1 cursor-pointer rounded-xl bg-[#A7ECA7] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#D6DDE5]"
                     >
-                      {isUpdatePending ? '저장 중...' : '완료'}
+                      완료
                     </button>
 
                     <button
@@ -593,7 +645,7 @@ export default function MyPage() {
               </div>
             </section>
 
-            <div className="mt-4 flex items-center justify-end gap-3 lg:absolute lg:right-0 lg:-bottom-14 lg:mt-0">
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3 lg:absolute lg:right-0 lg:-bottom-14 lg:mt-0">
               {isAdmin && (
                 <button
                   type="button"
@@ -682,11 +734,10 @@ export default function MyPage() {
         )}
         {isSettingsOpen && (
           <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-8">
-            <button
-              type="button"
+            <div
               aria-label="설정 닫기"
-              className="absolute inset-0 cursor-default bg-black/40"
-              onClick={() => setIsSettingsOpen(false)}
+              className="absolute inset-0 bg-black/40"
+              onClick={requestCloseSettings}
             />
 
             <section className="animate-modal-pop relative z-10 flex h-[calc(100dvh-2rem)] max-h-[760px] w-full max-w-[860px] flex-col overflow-hidden rounded-3xl border-[0.5px] border-[#D6DDE5] bg-[#F0F2F5] shadow-2xl sm:h-[calc(100dvh-4rem)]">
@@ -698,7 +749,7 @@ export default function MyPage() {
                 <button
                   type="button"
                   aria-label="설정 닫기"
-                  onClick={() => setIsSettingsOpen(false)}
+                  onClick={requestCloseSettings}
                   className="cursor-pointer rounded-full p-2 text-[#2C2C2C] transition-colors hover:bg-[#F0F2F5] active:scale-90"
                 >
                   <X size={22} />
@@ -707,7 +758,10 @@ export default function MyPage() {
 
               <div className="flex-1 overflow-y-auto p-5 sm:p-8">
                 <section className="mx-auto max-w-[720px]">
-                  <NotificationSettings showErrorMessage={showErrorMessage} />
+                  <NotificationSettings
+                    showErrorMessage={showErrorMessage}
+                    onDirtyChange={setHasUnsavedNotificationChanges}
+                  />
 
                   <div className="mb-4">
                     <h3 className="text-[18px] font-bold text-[#2C2C2C]">
@@ -816,6 +870,43 @@ export default function MyPage() {
                   className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-150 hover:bg-[#DC3636] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#F6A5A5]"
                 >
                   {isDeleteUserPending ? '탈퇴 중...' : '탈퇴'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isSettingsCloseConfirmOpen && (
+          <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/45 px-4">
+            <div className="animate-modal-pop w-full max-w-[400px] rounded-3xl bg-white p-6 shadow-xl">
+              <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
+                변경사항이 저장되지 않았습니다
+              </h2>
+
+              <p className="mt-2 text-center text-[14px] leading-6 text-[#989898]">
+                알림 설정을 변경했지만 아직 완료하지 않았어요
+                <br />
+                저장하지 않고 설정을 닫을까요
+              </p>
+
+              <div className="mt-5 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsCloseConfirmOpen(false)}
+                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#EEF1F5] active:scale-95"
+                >
+                  계속 수정
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSettingsCloseConfirmOpen(false);
+                    setHasUnsavedNotificationChanges(false);
+                    setIsSettingsOpen(false);
+                  }}
+                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-150 hover:bg-[#DC3636] active:scale-95"
+                >
+                  저장하지 않고 닫기
                 </button>
               </div>
             </div>
