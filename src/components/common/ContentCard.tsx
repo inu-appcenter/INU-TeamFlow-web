@@ -101,7 +101,7 @@ export default function ContentCard(props: CardProps) {
           {props.cardType === 'recruitment' && (
             <div className="flex items-center gap-2">
               <p className="text-[13px] text-[#989898]">
-                기간 {props.startAt} ~ {props.endAt}
+                {props.startAt} ~ {props.endAt}
               </p>
               <span className="text-[13px] font-medium text-[#5E92F0]">
                 {props.dDay}

@@ -18,7 +18,8 @@ const searchFilter = [{ value: 'title', label: '제목' }];
 const isCreate = true;
 const isCategory = true;
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 20;
+const PAGE_WINDOW_SIZE = 5;
 
 export default function InfoPost() {
   const queryClient = useQueryClient();
@@ -45,6 +46,13 @@ export default function InfoPost() {
   const infoPosts = infoPostData?.content ?? [];
   const totalPages = infoPostData?.totalPages ?? 0;
   const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
+  const blockStart =
+    Math.floor((currentPage - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
+  const blockEnd = Math.min(blockStart + PAGE_WINDOW_SIZE - 1, totalPages);
+  const visiblePages = Array.from(
+    { length: Math.max(blockEnd - blockStart + 1, 0) },
+    (_, i) => blockStart + i
+  );
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -83,7 +91,7 @@ export default function InfoPost() {
     }, 300);
 
     return () => window.clearTimeout(timer);
-  }, [infoPostData, page, queryClient, searchKeyword, selectedCategory]);
+  }, [keyword]);
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
@@ -123,34 +131,36 @@ export default function InfoPost() {
           <div className="mt-8 flex items-center justify-center gap-2">
             <button
               type="button"
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+              onClick={() =>
+                setPage(Math.max(1, blockStart - PAGE_WINDOW_SIZE))
+              }
+              disabled={blockStart === 1}
               className="flex items-center justify-center text-[#2C2C2C]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
             >
               <ChevronLeft size={22} strokeWidth={2.5} />
             </button>
 
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (pageNumber) => (
-                <button
-                  key={pageNumber}
-                  type="button"
-                  onClick={() => setPage(pageNumber)}
-                  className={`flex items-center justify-center px-1 text-base font-semibold transition-all duration-150 active:scale-90 ${
-                    currentPage === pageNumber
-                      ? 'text-[#5E92F0]'
-                      : 'cursor-pointer text-[#2C2C2C]/50'
-                  }`}
-                >
-                  {pageNumber}
-                </button>
-              )
-            )}
+            {visiblePages.map((pageNumber) => (
+              <button
+                key={pageNumber}
+                type="button"
+                onClick={() => setPage(pageNumber)}
+                className={`flex items-center justify-center px-1 text-base font-semibold transition-all duration-150 active:scale-90 ${
+                  currentPage === pageNumber
+                    ? 'text-[#5E92F0]'
+                    : 'cursor-pointer text-[#2C2C2C]/50'
+                }`}
+              >
+                {pageNumber}
+              </button>
+            ))}
 
             <button
               type="button"
-              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
+              onClick={() =>
+                setPage(Math.min(totalPages, blockStart + PAGE_WINDOW_SIZE))
+              }
+              disabled={blockEnd === totalPages}
               className="flex items-center justify-center text-[#2C2C2C]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
             >
               <ChevronRight size={22} strokeWidth={2.5} />

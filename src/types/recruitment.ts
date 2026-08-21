@@ -14,7 +14,7 @@ export type ApplicationStatus =
 export interface RecruitmentSummaryResponse {
   recruitmentId: number;
   title: string;
-  status: RecruitmentStatus;
+  isOpened: boolean;
   category: RecruitmentCategory;
   announcementTitle: string | null;
   recruiterName: string;
@@ -25,7 +25,7 @@ export interface RecruitmentSummaryResponse {
 export interface RecruitmentDetailResponse {
   recruitmentId: number;
   title: string;
-  status: RecruitmentStatus;
+  isOpened: boolean;
   category: RecruitmentCategory;
   description: string;
   targetMemberCount: number;
@@ -39,6 +39,7 @@ export interface RecruitmentDetailResponse {
   recruiterName: string;
   isRecruiter: boolean;
   hasApplied: boolean;
+  isScrap: boolean; 
   createdAt: string;
   updatedAt: string;
 }
@@ -47,7 +48,7 @@ export interface RecruitmentCreateRequest {
   title: string;
   category: RecruitmentCategory;
   description: string;
-  announcementId?: number;
+  infoPostId?: number;
   teamId?: number;
   targetMemberCount: number;
   endAt: string;
