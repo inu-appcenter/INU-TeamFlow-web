@@ -121,8 +121,7 @@ export default function InfoPost() {
                 title={infoPost.title}
                 path={`/infoPost/${infoPost.infoPostId}`}
                 createdAt={formatDate(infoPost.createdAt)}
-                content=""
-                cardStatus="WAITING"
+                thumbnailUrl={infoPost.thumbnailUrl}
               />
             ))}
         </section>
