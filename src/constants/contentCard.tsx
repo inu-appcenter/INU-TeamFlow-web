@@ -53,6 +53,8 @@ export const categoryTextColorMap: Record<string, string> = {
 export const DEFAULT_CATEGORY_COLOR = '#E9E9E9';
 
 export const statusBorderColorMap: Record<string, string> = {
+  ONGOING: '#DDF7E5',
+  ENDED: '#EEF1F5',
   OPEN: '#DDF7E5',
   CLOSED: '#EEF1F5',
   WAITING: '#E8F1FF',
@@ -64,6 +66,8 @@ export const statusBorderColorMap: Record<string, string> = {
 };
 
 export const statusTextColorMap: Record<string, string> = {
+  ONGOING: '#2E7845',
+  ENDED: '#646B75',
   OPEN: '#2E7845',
   CLOSED: '#646B75',
   WAITING: '#416AAB',

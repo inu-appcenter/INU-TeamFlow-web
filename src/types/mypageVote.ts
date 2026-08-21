@@ -1,21 +1,26 @@
-export interface VoteMember {
-  name: string;
-  department: string;
-}
+import type { RecruitmentCategory } from '@/types/recruitment';
+
+export type VoteTab = 'ALL' | 'ONGOING' | 'ENDED';
 
 export interface MyVote {
   voteId: number;
   teamId: number;
+  teamName: string;
+  teamCategory: RecruitmentCategory;
+
   title: string;
   description: string;
-  createdDate: string;
+
   isOpened: boolean;
-  isAllDay: boolean;
-  isVoter: boolean;
-  isCreator: boolean;
+
+  createdDate: string;
+
+  completedVoterList: unknown[];
+  uncompletedVoterList: unknown[];
+
   dates: string[];
+
+  isAllDay: boolean;
   dailyTimeStart: string | null;
   dailyTimeEnd: string | null;
-  completedVoterList: VoteMember[];
-  uncompletedVoterList: VoteMember[];
 }

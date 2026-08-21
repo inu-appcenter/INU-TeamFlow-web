@@ -4,7 +4,12 @@ import type {
   RecruitmentCategory,
 } from '@/types/recruitment';
 
-export type MyPostType = 'ALL' | 'RECRUIT' | 'INFO' | 'APPLY' | 'NOTICE';
+export type MyPostType =
+  | 'ALL'
+  | 'RECRUITMENT'
+  | 'INFOPOST'
+  | 'APPLICATION'
+  | 'NOTICE';
 
 export interface MyRecruitmentResponse {
   recruitmentId: number;
@@ -29,6 +34,7 @@ export interface MyTeamNoticeResponse {
   noticeId: number;
   teamId: number;
   teamName: string;
+  teamCategory: RecruitmentCategory;
   title: string;
   isPinned: boolean;
   isRead: boolean;
@@ -39,7 +45,7 @@ export interface MyTeamNoticeResponse {
 }
 
 export type MyPost =
-  | (MyRecruitmentResponse & { type: 'RECRUIT' })
-  | (InfoPostSummaryResponse & { type: 'INFO' })
-  | (MyApplicationResponse & { type: 'APPLY' })
+  | (MyRecruitmentResponse & { type: 'RECRUITMENT' })
+  | (InfoPostSummaryResponse & { type: 'INFOPOST' })
+  | (MyApplicationResponse & { type: 'APPLICATION' })
   | (MyTeamNoticeResponse & { type: 'NOTICE' });
