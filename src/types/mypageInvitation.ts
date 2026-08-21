@@ -1,10 +1,6 @@
 export type InvitationTab = 'RECEIVED' | 'SENT';
 
-export type InvitationStatus =
-  | 'WAITING'
-  | 'ACCEPTED'
-  | 'REJECTED'
-  | 'CANCELED';
+export type InvitationStatus = 'WAITING' | 'ACCEPTED' | 'DECLINED' | 'CANCELED';
 
 export interface InvitationResponse {
   invitationId: number;
@@ -14,14 +10,11 @@ export interface InvitationResponse {
   receiverName: string;
   createdAt: string;
   respondedAt: string | null;
+  teamCategory: string;
 }
 
 export interface UpdateInvitationStatusRequest {
-  status: 'ACCEPTED' | 'REJECTED';
+  status: 'ACCEPTED' | 'DECLINED';
 }
 
 export type UpdateInvitationStatusResponse = InvitationResponse;
-
-export interface Invitation extends InvitationResponse {
-  type: InvitationTab;
-}

@@ -15,12 +15,6 @@ const pageName = '스크랩';
 
 //2. 글 검색 기능 있어야돼요? 답변은 true와 false로 해주세요
 const isSearch = false;
-//검색 필터를 입력해주세요
-const searchFilter = [
-  //{ value: 'title', label: '제목' },
-  { value: 'title', label: '제목' },
-  { value: 'announcementTitle', label: '정보글' },
-];
 
 //3. 글 작성 기능 있어야돼요? 답변은 true와 false로 해주세요
 const isCreate = false;
@@ -163,7 +157,6 @@ export default function Scrap() {
           isSearch={isSearch}
           isCreate={isCreate}
           isCategory={isCategory}
-          searchFilter={searchFilter}
           categories={categories}
           keyword={keyword}
           searchType={searchType}
