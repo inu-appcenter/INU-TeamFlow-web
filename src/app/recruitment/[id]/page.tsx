@@ -3,6 +3,7 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
 import Card from '@/components/main/Card';
 import RecruitmentDetailSkeleton from '@/components/skeleton/RecruitmentDetailSkeleton';
 import {
@@ -15,6 +16,7 @@ import { getDday } from '@/utils/date/getDday';
 import { categoryMap, categoryColorMap } from '@/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
+import ReportModal from '@/components/report/ReportModal';
 
 export default function RecruitmentDetail() {
   const router = useRouter();
@@ -28,7 +30,11 @@ export default function RecruitmentDetail() {
     useDeleteRecruitment();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrapped, setIsScrapped] = useState(false);
+  const [scrapSyncedFor, setScrapSyncedFor] = useState<number | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
 
@@ -49,6 +55,11 @@ export default function RecruitmentDetail() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (recruitment && scrapSyncedFor !== recruitment.recruitmentId) {
+    setScrapSyncedFor(recruitment.recruitmentId);
+    setIsScrapped(recruitment.isScrap);
+  }
 
   if (isLoading) {
     return (
@@ -78,7 +89,7 @@ export default function RecruitmentDetail() {
     recruitment.announcementTitle;
 
   const isClosed =
-    new Date(recruitment.endAt) < new Date() || recruitment.status === 'CLOSED';
+    new Date(recruitment.endAt) < new Date() || !recruitment.isOpened;
 
   const isRecruiter = recruitment.isRecruiter;
 
@@ -91,6 +102,27 @@ export default function RecruitmentDetail() {
         router.push('/recruitment');
       },
     });
+  };
+
+  // TODO: 실제 신고 API 연동 필요 (예: useReportRecruitment 훅으로 교체)
+  const handleSubmitReport = async ({
+    reason,
+    content,
+  }: {
+    reason: string;
+    content: string;
+  }) => {
+    setIsReportSubmitting(true);
+    try {
+      console.log('모집글 신고:', { recruitmentId, reason, content });
+      setIsReportModalOpen(false);
+      showErrorMessage('신고가 접수되었습니다');
+    } catch (error) {
+      console.error('모집글 신고 실패', error);
+      showErrorMessage('신고 접수에 실패했습니다');
+    } finally {
+      setIsReportSubmitting(false);
+    }
   };
 
   return (
@@ -117,56 +149,89 @@ export default function RecruitmentDetail() {
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
-            <div className="relative">
+            <div className="flex items-center gap-3">
               {isRecruiter ? (
-                <button
-                  onClick={() => setIsMenuOpen((prev) => !prev)}
-                  className="cursor-pointer pt-1.5 text-[#2C2C2C]"
-                >
-                  <EllipsisVertical size={20} />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsScrapped((prev) => !prev)}
-                  className="iems-center cursor-pointer pt-2 text-[#2C2C2C]"
-                >
-                  <Bookmark
-                    size={22}
-                    strokeWidth={2}
-                    fill={isScrapped ? 'currentColor' : 'none'}
-                    className={isScrapped ? 'text-[#5E92F0]' : ''}
-                  />
-                </button>
-              )}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                    className="cursor-pointer pt-1.5 text-[#2C2C2C]"
+                  >
+                    <EllipsisVertical size={20} />
+                  </button>
 
-              {isMenuOpen && isRecruiter && (
+                  {isMenuOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsMenuOpen(false)}
+                      />
+                      <div className="absolute top-6 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
+                        {!isClosed && (
+                          <button
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              router.push(`/recruitment/${recruitmentId}/edit`);
+                            }}
+                            className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                          >
+                            수정하기
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsDeleteConfirmOpen(true);
+                          }}
+                          disabled={isDeleting}
+                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA] disabled:opacity-50"
+                        >
+                          삭제하기
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
                 <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsMenuOpen(false)}
-                  />
-                  <div className="absolute top-6 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
-                    {!isClosed && (
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          router.push(`/recruitment/${recruitmentId}/edit`);
-                        }}
-                        className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
-                      >
-                        수정하기
-                      </button>
-                    )}
+                  <button
+                    onClick={() => setIsScrapped((prev) => !prev)}
+                    className="iems-center cursor-pointer text-[#2C2C2C]"
+                  >
+                    <Bookmark
+                      size={22}
+                      strokeWidth={2}
+                      fill={isScrapped ? 'currentColor' : 'none'}
+                      className={isScrapped ? 'text-[#5E92F0]' : ''}
+                    />
+                  </button>
+
+                  <div className="relative">
                     <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setIsDeleteConfirmOpen(true);
-                      }}
-                      disabled={isDeleting}
-                      className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA] disabled:opacity-50"
+                      onClick={() => setIsReportMenuOpen((prev) => !prev)}
+                      className="cursor-pointer pt-1.5 text-[#2C2C2C]"
                     >
-                      삭제하기
+                      <EllipsisVertical size={20} />
                     </button>
+
+                    {isReportMenuOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setIsReportMenuOpen(false)}
+                        />
+                        <div className="absolute top-6 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
+                          <button
+                            onClick={() => {
+                              setIsReportMenuOpen(false);
+                              setIsReportModalOpen(true);
+                            }}
+                            className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
+                          >
+                            신고하기
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </>
               )}
@@ -325,6 +390,20 @@ export default function RecruitmentDetail() {
             </div>
           </div>
         )}
+
+        <AnimatePresence>
+          {isReportModalOpen && (
+            <ReportModal
+              targetLabel="이 모집글"
+              isSubmitting={isReportSubmitting}
+              onClose={() => {
+                if (isReportSubmitting) return;
+                setIsReportModalOpen(false);
+              }}
+              onSubmit={handleSubmitReport}
+            />
+          )}
+        </AnimatePresence>
       </section>
     </main>
   );

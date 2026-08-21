@@ -26,6 +26,8 @@ const statusColorMap: Record<ApplicationStatus, string> = {
   CANCELLED: 'bg-[#EEF1F5] text-[#989898]',
 };
 
+const PAGE_WINDOW_SIZE = 5;
+
 export default function RecruitmentApplications() {
   const router = useRouter();
   const params = useParams();
@@ -38,6 +40,14 @@ export default function RecruitmentApplications() {
     10
   );
   const applications = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const blockStart =
+    Math.floor((page - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
+  const blockEnd = Math.min(blockStart + PAGE_WINDOW_SIZE - 1, totalPages);
+  const visiblePages = Array.from(
+    { length: Math.max(blockEnd - blockStart + 1, 0) },
+    (_, i) => blockStart + i
+  );
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
@@ -118,36 +128,36 @@ export default function RecruitmentApplications() {
               <div className="mt-8 mb-6 flex items-center justify-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
+                  onClick={() =>
+                    setPage(Math.max(1, blockStart - PAGE_WINDOW_SIZE))
+                  }
+                  disabled={blockStart === 1}
                   className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
                 >
                   <ChevronLeft size={22} strokeWidth={2.5} />
                 </button>
 
-                {Array.from({ length: data.totalPages }, (_, i) => i + 1).map(
-                  (n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setPage(n)}
-                      className={`flex items-center justify-center px-1 text-[16px] font-semibold transition-all duration-150 active:scale-90 ${
-                        page === n
-                          ? 'text-[#5E92F0]'
-                          : 'cursor-pointer text-[#2c2c2c]/50'
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  )
-                )}
+                {visiblePages.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setPage(n)}
+                    className={`flex items-center justify-center px-1 text-[16px] font-semibold transition-all duration-150 active:scale-90 ${
+                      page === n
+                        ? 'text-[#5E92F0]'
+                        : 'cursor-pointer text-[#2c2c2c]/50'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
 
                 <button
                   type="button"
                   onClick={() =>
-                    setPage((p) => Math.min(data.totalPages, p + 1))
+                    setPage(Math.min(totalPages, blockStart + PAGE_WINDOW_SIZE))
                   }
-                  disabled={page === data.totalPages}
+                  disabled={blockEnd === totalPages}
                   className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
                 >
                   <ChevronRight size={22} strokeWidth={2.5} />

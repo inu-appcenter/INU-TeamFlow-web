@@ -24,7 +24,7 @@ export function AppCenterCreditSlide() {
 
         <div className="flex min-w-0 flex-col justify-center gap-1">
           <p className="truncate text-base font-semibold text-white">
-            TeamFlow는 인천대학교 IT동아리
+            모이미는 인천대학교 IT동아리
           </p>
           <div className="flex items-center gap-1.5">
             <Image

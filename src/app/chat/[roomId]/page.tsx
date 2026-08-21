@@ -17,18 +17,26 @@ import NotificationButton from '@/components/common/notification/NotificationBut
 import { formatChatMessageTime } from '@/utils/date/formatChatMessageTime';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
 import { useSendChatMessage } from '@/hooks/chat/useSendChatMessage';
-import { useChatMessageSubscribe } from '@/hooks/chat/useChatRoomSubscription';
+import { useChatMessageSubscription } from '@/hooks/chat/useChatMessageSubscription';
+import { useChatReadEventSubscription } from '@/hooks/chat/useChatReadEventSubscription';
+import { useMarkRoomRead } from '@/hooks/chat/useMarkRoomRead';
 import { useChatImageUpload } from '@/hooks/chat/useChatImageUpload';
 import { useMyInfo } from '@/hooks/useAuthQuery';
-import { useMarkChatAsRead } from '@/hooks/chat/useMarkChatAsRead';
 import type { ChatMessageResponse } from '@/types/chat';
 import ChatRoomDrawer from '@/components/chat/ChatRoomDrawer';
 
 export default function ChatRoomPage() {
-  const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const roomId = Number(params.roomId);
+
+  // roomId가 바뀔 때마다(다른 방으로 이동) 이 페이지의 모든 로컬 state/ref를
+  // 새로 마운트된 것처럼 초기화하기 위해 key를 준다.
+  return <ChatRoomPageInner key={roomId} roomId={roomId} />;
+}
+
+function ChatRoomPageInner({ roomId }: { roomId: number }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const { data: anchor, isLoading } = useChatMessageAnchor(roomId);
   const [draft, setDraft] = useState('');
@@ -70,10 +78,34 @@ export default function ChatRoomPage() {
   const { sendMessage } = useSendChatMessage(roomId);
   const { mutateAsync: uploadImage, isPending: isUploading } =
     useChatImageUpload();
-  const { mutate: markAsRead } = useMarkChatAsRead(roomId);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
-  useChatMessageSubscribe(roomId);
+  // --- 읽음 표시 로직 (요구사항 4단계) ---
+  // 2) 새 메시지 소켓 수신 -> anchor 캐시에 append
+  useChatMessageSubscription(roomId);
+  // 3) 상대방의 읽음 이벤트 소켓 수신 -> readCount/lastReadMessageId 반영
+  useChatReadEventSubscription(roomId);
+  // 1)/2)/4) 방 진입, 실시간 수신, 화면 이탈/백그라운드 전환 시 내 읽음 상태를 서버로 전송
+  const lastMessageId =
+    anchor?.messages[anchor.messages.length - 1]?.chatMessageId;
+  useMarkRoomRead(roomId, lastMessageId);
+
+  // 방에 "진입한 시점"의 읽음 위치를 고정해서 보여주기 위한 스냅샷.
+  // anchor.lastReadMessageId를 그대로 쓰면 내 읽음 처리로 쿼리가 갱신되는 순간
+  // 구분선이 화면을 보고 있는 도중에 사라져 버리므로, 진입 시점 값만 한 번 캡처해서
+  // 이 화면에 머무는 동안은 고정해둔다. (roomId 변경 시엔 key로 인해 컴포넌트가
+  // 통째로 리마운트되므로 별도의 리셋 처리가 필요 없다)
+  const [frozenLastReadMessageId, setFrozenLastReadMessageId] = useState<
+    number | null
+  >(null);
+  const hasFrozenReadDividerRef = useRef(false);
+
+  useEffect(() => {
+    if (anchor && !hasFrozenReadDividerRef.current) {
+      setFrozenLastReadMessageId(anchor.lastReadMessageId);
+      hasFrozenReadDividerRef.current = true;
+    }
+  }, [anchor]);
 
   // 위로 스크롤 시 이전 메시지 로드
   const prevScrollHeightRef = useRef(0);
@@ -138,14 +170,6 @@ export default function ChatRoomPage() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [anchor?.messages.length]);
-
-  // 읽음 처리
-  useEffect(() => {
-    if (!anchor?.messages.length) return;
-    const lastMessageId =
-      anchor.messages[anchor.messages.length - 1].chatMessageId;
-    markAsRead(lastMessageId);
-  }, [anchor?.messages.length, roomId]);
 
   const handleSend = () => {
     if (!draft.trim()) return;
@@ -264,9 +288,9 @@ export default function ChatRoomPage() {
                   !isSameMinute(message.createdAt, nextMessage.createdAt);
 
                 const showReadDivider =
-                  anchor.lastReadMessageId !== null &&
-                  prevMessage?.chatMessageId === anchor.lastReadMessageId &&
-                  message.chatMessageId !== anchor.lastReadMessageId;
+                  frozenLastReadMessageId !== null &&
+                  prevMessage?.chatMessageId === frozenLastReadMessageId &&
+                  message.chatMessageId !== frozenLastReadMessageId;
 
                 return (
                   <div key={message.chatMessageId}>

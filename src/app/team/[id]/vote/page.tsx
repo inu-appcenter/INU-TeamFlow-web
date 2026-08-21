@@ -10,6 +10,7 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import { useMemo, useState } from 'react';
 
 const ITEMS_PER_PAGE = 8;
+const PAGE_WINDOW_SIZE = 5;
 
 export default function TeamVotePage() {
   const router = useRouter();
@@ -32,6 +33,14 @@ export default function TeamVotePage() {
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / ITEMS_PER_PAGE));
   const currentPage = Math.min(page, totalPages);
+
+  const blockStart =
+    Math.floor((currentPage - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
+  const blockEnd = Math.min(blockStart + PAGE_WINDOW_SIZE - 1, totalPages);
+  const visiblePages = Array.from(
+    { length: blockEnd - blockStart + 1 },
+    (_, i) => blockStart + i
+  );
 
   const paged = sorted.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -161,34 +170,36 @@ export default function TeamVotePage() {
               <div className="flex items-center justify-center gap-2 py-6">
                 <button
                   type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() =>
+                    setPage(Math.max(1, blockStart - PAGE_WINDOW_SIZE))
+                  }
+                  disabled={blockStart === 1}
                   className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
                 >
                   <ChevronLeft size={22} strokeWidth={2.5} />
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setPage(n)}
-                      className={`flex items-center justify-center px-1 text-[16px] font-semibold transition-all duration-150 active:scale-90 ${
-                        currentPage === n
-                          ? 'text-[#5E92F0]'
-                          : 'cursor-pointer text-[#2c2c2c]/50'
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  )
-                )}
+                {visiblePages.map((n) => (
+                  <button
+                    type="button"
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className={`flex items-center justify-center px-1 text-[16px] font-semibold transition-all duration-150 active:scale-90 ${
+                      currentPage === n
+                        ? 'text-[#5E92F0]'
+                        : 'cursor-pointer text-[#2c2c2c]/50'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
 
                 <button
                   type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() =>
+                    setPage(Math.min(totalPages, blockStart + PAGE_WINDOW_SIZE))
+                  }
+                  disabled={blockEnd === totalPages}
                   className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
                 >
                   <ChevronRight size={22} strokeWidth={2.5} />
