@@ -6,14 +6,15 @@ import Card from '@/components/main/Card';
 import { BannerCarousel } from '@/components/main/banner/Banner';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
-
+import { Ganpan, cafe24Nyangi, chab, sinchon } from '@/fonts/logoFonts';
 import { useInfoPosts } from '@/hooks/useInfoPostQuery';
 import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { darkenColor } from '@/utils/color/darkenColor';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { useCalendarGrid } from '@/hooks/calendar/useCalendarGrid';
 import { useMonthSchedules } from '@/hooks/calendar/useMonthSchedules';
 import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
@@ -142,20 +143,48 @@ export default function Main() {
     };
   }, []);
 
+  // 로고 폰트 후보: 팀원들과 상의 후 최종 폰트 하나만 남길 예정이라 그대로 둠
+  const logoCandidates = [
+    // { label: '간판체', className: Ganpan.className },
+    { label: 'Cafe24 냥이체', className: cafe24Nyangi.className },
+    // { label: '차칸체', className: chab.className },
+    // { label: '신촌체', className: sinchon.className },
+  ];
+
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto max-w-[1180px]">
         {/* 상단 */}
-        <section className="relative mb-10 pt-4 md:min-h-[160px]">
-          <div className="h-12 w-40 rounded-full bg-white"></div>
-          <div className="absolute top-4 left-1/2 hidden h-40 w-[50%] max-w-3xl -translate-x-1/2 rounded-3xl md:block">
+        <section className="relative mb-8 pt-4 md:min-h-[160px]">
+          {/* 로고: 알림버튼과 동일하게 fixed로 화면 왼쪽 끝에 고정, M만 사용 */}
+          <div className="fixed top-4 left-10 z-80 flex flex-col items-center">
+            {logoCandidates.map((font) => (
+              <motion.span
+                key={font.label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className={`${font.className} text-[55px]`}
+                style={{
+                  color: '#5E92F0',
+                  WebkitTextStroke: `0.5px ${darkenColor('#5E92F0', 30)}`,
+                }}
+              >
+                M
+              </motion.span>
+            ))}
+          </div>
+
+          {/* 배너: 가로 길이 확장 */}
+          <div className="absolute top-4 left-1/2 hidden h-40 w-[60%] max-w-4xl -translate-x-1/2 rounded-3xl md:block">
             <BannerCarousel />
           </div>
+
           <NotificationButton />
         </section>
 
         {/* 캘린더 + 공지사항 */}
-        <section className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <section className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* 캘린더 */}
           <div className="lg:col-span-7">
             <Card className="h-[400px] overflow-hidden px-4 pt-6 lg:p-6">
@@ -240,7 +269,7 @@ export default function Main() {
         </section>
 
         {/* 모집 게시판 + 정보 게시판 */}
-        <section className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <section className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-12">
           {/* 모집 게시판 */}
           <div className="xl:col-span-6">
             <Card className="h-[345px] overflow-hidden p-6 sm:h-[350px]">

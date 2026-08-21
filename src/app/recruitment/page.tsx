@@ -2,32 +2,26 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
 import { getDday } from '@/utils/date/getDday';
-
 import { formatDate } from '@/utils/date/formatDate';
 import { categoryFilterOptions } from '@/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import Header from '@/components/common/Header';
 import ContentCard from '@/components/common/ContentCard';
 
-//Header 연결을 위한 입력 공간
-//1. 페이지 이름을 입력해주세요
 const pageName = '모집';
-
-//2. 글 검색 기능 있어야돼요? 답변은 true와 false로 해주세요
 const isSearch = true;
-//검색 필터를 입력해주세요
 const searchFilter = [
   { value: 'title', label: '제목' },
   { value: 'announcementTitle', label: '정보글' },
 ];
-
-//3. 글 작성 기능 있어야돼요? 답변은 true와 false로 해주세요
 const isCreate = true;
-
-//4. 카테고리 기능 있어야돼요? 답변은 true와 false로 해주세요
 const isCategory = true;
+
+const PAGE_SIZE = 20;
+const PAGE_WINDOW_SIZE = 5;
 
 export default function Recruitment() {
   const router = useRouter();
@@ -35,6 +29,8 @@ export default function Recruitment() {
   const [keyword, setKeyword] = useState('');
   const [searchType, setSearchType] = useState('title');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [page, setPage] = useState(1); // 화면 표시는 1-based
+
   const { errorMessage, setErrorMessage } = useErrorToast(
     1800,
     searchParams.get('error') === 'school-verification-required'
@@ -52,10 +48,36 @@ export default function Recruitment() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setPage(1);
+  };
+
+  const handleSearchTypeChange = (type: string) => {
+    setSearchType(type);
+    setPage(1);
+  };
+
+  const handleKeywordChange = (value: string) => {
+    setKeyword(value);
+    setPage(1);
+  };
+
   const normalizedKeyword = keyword.replace(/\s/g, '');
 
-  const { data: recruitmentData } = useRecruitments(0, 20);
+  // 백엔드는 0-based page, 화면 표시는 1-based라 -1 해서 넘김
+  const { data: recruitmentData } = useRecruitments(page - 1, PAGE_SIZE);
   const recruitments = recruitmentData?.content ?? [];
+  const totalPages = recruitmentData?.totalPages ?? 0;
+  const currentPage = page;
+
+  const blockStart =
+    Math.floor((currentPage - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
+  const blockEnd = Math.min(blockStart + PAGE_WINDOW_SIZE - 1, totalPages);
+  const visiblePages = Array.from(
+    { length: Math.max(blockEnd - blockStart + 1, 0) },
+    (_, i) => blockStart + i
+  );
 
   const filtered = recruitments.filter((recruitment) => {
     const title = recruitment.title.replace(/\s/g, '');
@@ -77,6 +99,9 @@ export default function Recruitment() {
     return matchesCategory && matchesKeyword;
   });
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       {errorMessage && (
@@ -86,7 +111,6 @@ export default function Recruitment() {
       )}
 
       <div className="mx-auto mb-20 max-w-[1180px]">
-        {/* 헤더 */}
         <Header
           pageName={pageName}
           isSearch={isSearch}
@@ -97,28 +121,24 @@ export default function Recruitment() {
           keyword={keyword}
           searchType={searchType}
           selectedCategory={selectedCategory}
-          onKeywordChange={setKeyword}
-          onSearchTypeChange={setSearchType}
-          onCategoryChange={setSelectedCategory}
+          onKeywordChange={handleKeywordChange}
+          onSearchTypeChange={handleSearchTypeChange}
+          onCategoryChange={handleCategoryChange}
         />
 
-        {/* 리스트 */}
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {filtered.map((recruitment) => {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
             const endDate = new Date(recruitment.endAt);
             endDate.setHours(0, 0, 0, 0);
+            const isClosed = endDate < today || !recruitment.isOpened;
 
-            const isClosed = endDate < today || recruitment.status === 'CLOSED';
             return (
               <ContentCard
                 key={recruitment.recruitmentId}
                 cardType="recruitment"
                 category={recruitment.category}
                 title={recruitment.title}
-                content={recruitment.status}
+                content={recruitment.announcementTitle ?? ''}
                 cardStatus={isClosed ? 'CLOSED' : 'OPEN'}
                 path={`/recruitment/${recruitment.recruitmentId}`}
                 startAt={formatDate(recruitment.createdAt)}
@@ -128,6 +148,48 @@ export default function Recruitment() {
             );
           })}
         </section>
+
+        {/* 페이지네이션 */}
+        {totalPages > 0 && (
+          <div className="mt-4 flex items-center justify-center gap-2 py-4">
+            <button
+              type="button"
+              onClick={() =>
+                setPage(Math.max(1, blockStart - PAGE_WINDOW_SIZE))
+              }
+              disabled={blockStart === 1}
+              className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
+            >
+              <ChevronLeft size={20} strokeWidth={2.5} />
+            </button>
+
+            {visiblePages.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPage(n)}
+                className={`flex items-center justify-center px-1 text-[15px] font-semibold transition-all duration-150 active:scale-90 ${
+                  currentPage === n
+                    ? 'text-[#5E92F0]'
+                    : 'cursor-pointer text-[#2c2c2c]/50'
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              onClick={() =>
+                setPage(Math.min(totalPages, blockStart + PAGE_WINDOW_SIZE))
+              }
+              disabled={blockEnd === totalPages}
+              className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
+            >
+              <ChevronRight size={20} strokeWidth={2.5} />
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

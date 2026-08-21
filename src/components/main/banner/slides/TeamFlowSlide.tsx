@@ -71,7 +71,7 @@ export function TeamFlowLaunchSlide() {
 
         <div className="z-10 flex">
           <p className="truncate text-lg font-bold text-[#5E92F0] md:text-2xl">
-            팀 플로우
+            모이미
           </p>
           <p className="truncate text-lg font-bold text-[#2C2C2C] md:text-2xl">
             로 팀 활동을 한 곳에서

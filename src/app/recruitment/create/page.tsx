@@ -30,7 +30,7 @@ export default function RecruitmentCreatePage() {
         title: form.title,
         category: form.category,
         description: form.description,
-        announcementId: form.announcementId || undefined,
+        infoPostId: form.announcementId || undefined,
         teamId: form.teamId || undefined,
         targetMemberCount: form.targetMemberCount,
         endAt: form.endAt,

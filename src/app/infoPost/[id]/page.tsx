@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
 
 import Card from '@/components/main/Card';
 import { useDeleteInfoPost, useInfoPostDetail } from '@/hooks/useInfoPostQuery';
@@ -13,6 +14,7 @@ import { formatDate } from '@/utils/date/formatDate';
 
 import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import ReportModal from '@/components/report/ReportModal';
 export default function InfoPostDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -23,6 +25,9 @@ export default function InfoPostDetailPage() {
   const { mutateAsync: deleteInfoPost } = useDeleteInfoPost();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrapped, setIsScrapped] = useState(false);
+  const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const { errorMessage, showErrorMessage } = useErrorToast();
   const handleDelete = async () => {
     const confirmed = window.confirm('정보글을 삭제하시겠습니까?');
@@ -35,6 +40,27 @@ export default function InfoPostDetailPage() {
     } catch (error) {
       console.error('정보글 삭제 실패', error);
       showErrorMessage('정보글 삭제에 실패했습니다');
+    }
+  };
+
+  // TODO: 실제 신고 API 연동 필요 (예: useReportInfoPost 훅으로 교체)
+  const handleSubmitReport = async ({
+    reason,
+    content,
+  }: {
+    reason: string;
+    content: string;
+  }) => {
+    setIsReportSubmitting(true);
+    try {
+      console.log('정보글 신고:', { infoPostId, reason, content });
+      setIsReportModalOpen(false);
+      showErrorMessage('신고가 접수되었습니다');
+    } catch (error) {
+      console.error('정보글 신고 실패', error);
+      showErrorMessage('신고 접수에 실패했습니다');
+    } finally {
+      setIsReportSubmitting(false);
     }
   };
 
@@ -74,57 +100,95 @@ export default function InfoPostDetailPage() {
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
-            <div className="relative">
+            <div className="flex items-center gap-3">
               {infoPost.isAuthor ? (
-                <button
-                  type="button"
-                  onClick={() => setIsMenuOpen((prev) => !prev)}
-                  className="cursor-pointer pt-1.5 text-[#2C2C2C]"
-                >
-                  <EllipsisVertical size={20} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsScrapped((prev) => !prev)}
-                  className="iems-center cursor-pointer pt-2 text-[#2C2C2C]"
-                >
-                  <Bookmark
-                    size={22}
-                    strokeWidth={2}
-                    fill={isScrapped ? 'currentColor' : 'none'}
-                    className={isScrapped ? 'text-[#5E92F0]' : ''}
-                  />
-                </button>
-              )}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                    className="cursor-pointer pt-1.5 text-[#2C2C2C]"
+                  >
+                    <EllipsisVertical size={20} />
+                  </button>
 
-              {isMenuOpen && infoPost.isAuthor && (
+                  {isMenuOpen && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="메뉴 닫기"
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsMenuOpen(false)}
+                      />
+
+                      <div className="absolute top-7 right-0 z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            router.push(`/infoPost/${infoPostId}/edit`)
+                          }
+                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                        >
+                          수정하기
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleDelete}
+                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
+                        >
+                          삭제하기
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
                 <>
                   <button
                     type="button"
-                    aria-label="메뉴 닫기"
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsMenuOpen(false)}
-                  />
+                    onClick={() => setIsScrapped((prev) => !prev)}
+                    className="iems-center cursor-pointer text-[#2C2C2C]"
+                  >
+                    <Bookmark
+                      size={22}
+                      strokeWidth={2}
+                      fill={isScrapped ? 'currentColor' : 'none'}
+                      className={isScrapped ? 'text-[#5E92F0]' : ''}
+                    />
+                  </button>
 
-                  <div className="absolute top-7 right-0 z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
+                  <div className="relative">
                     <button
                       type="button"
-                      onClick={() =>
-                        router.push(`/infoPost/${infoPostId}/edit`)
-                      }
-                      className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
+                      onClick={() => setIsReportMenuOpen((prev) => !prev)}
+                      className="cursor-pointer pt-1.5 text-[#2C2C2C]"
                     >
-                      수정하기
+                      <EllipsisVertical size={20} />
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
-                    >
-                      삭제하기
-                    </button>
+                    {isReportMenuOpen && (
+                      <>
+                        <button
+                          type="button"
+                          aria-label="메뉴 닫기"
+                          className="fixed inset-0 z-10"
+                          onClick={() => setIsReportMenuOpen(false)}
+                        />
+
+                        <div className="absolute top-7 right-0 z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsReportMenuOpen(false);
+                              setIsReportModalOpen(true);
+                            }}
+                            className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
+                          >
+                            신고하기
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </>
               )}
@@ -179,6 +243,20 @@ export default function InfoPostDetailPage() {
             )}
           </div>
         </Card>
+
+        <AnimatePresence>
+          {isReportModalOpen && (
+            <ReportModal
+              targetLabel="이 정보글"
+              isSubmitting={isReportSubmitting}
+              onClose={() => {
+                if (isReportSubmitting) return;
+                setIsReportModalOpen(false);
+              }}
+              onSubmit={handleSubmitReport}
+            />
+          )}
+        </AnimatePresence>
       </section>
     </main>
   );
