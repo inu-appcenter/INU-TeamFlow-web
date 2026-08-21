@@ -177,7 +177,7 @@ export default function MyPostPage() {
                       title={post.title}
                       path={`/infoPost/${post.infoPostId}`}
                       createdAt={formatDate(post.createdAt)}
-                      content={post.type}
+                      thumbnailUrl={post.thumbnailUrl}
                     />
                   );
                 }
@@ -191,7 +191,7 @@ export default function MyPostPage() {
                       path={`/application/${post.applicationId}`}
                       createdAt={formatDate(post.createdAt)}
                       cardStatus={post.applicationStatus}
-                      content={post.recruiterName ?? ''}
+                      content={`받는 사람 : ${post.recruiterName ?? ''}`}
                     />
                   );
                 }
@@ -206,7 +206,7 @@ export default function MyPostPage() {
                       path={`/team/${post.teamId}/notice/${post.noticeId}`}
                       createdAt={formatDate(post.createdAt)}
                       updatedAt={formatDate(post.updatedAt)}
-                      content={post.teamName}
+                      content={`작성 위치 : ${post.teamName}`}
                       cardStatus={post.isRead ? 'READ' : 'UNREAD'}
                     />
                   );

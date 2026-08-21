@@ -1,17 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-
+import { darkenColor } from '@/utils/color/darkenColor';
 import {
   statusTextColorMap,
   statusBorderColorMap,
   categoryMap,
   categoryColorMap,
-  categoryBorderColorMap,
-  categoryTextColorMap,
-  DEFAULT_CATEGORY_COLOR,
 } from '@/constants/contentCard';
-import { useErrorToast } from '@/hooks/useErrorToast';
+
 interface BaseCardProps {
   category: string;
   title: string;
@@ -31,6 +28,7 @@ interface RecruitmentCardProps extends BaseCardProps {
 interface InfoPostCardProps extends BaseCardProps {
   cardType: 'infoPost';
   createdAt: string;
+  thumbnailUrl?: string | null;
 }
 
 interface ApplicationCardProps extends BaseCardProps {
@@ -95,17 +93,6 @@ export default function ContentCard(props: CardProps) {
     ? cardStatusMap[props.cardStatus]
     : undefined;
 
-  const categoryBackgroundColor =
-    categoryColorMap[props.category] ?? DEFAULT_CATEGORY_COLOR;
-
-  const categoryBorderColor =
-    categoryBorderColorMap[props.category] ??
-    categoryBorderColorMap.ETC ??
-    DEFAULT_CATEGORY_COLOR;
-
-  const categoryTextColor = categoryTextColorMap[props.category] ?? '#616161';
-
-  const categoryLabel = categoryMap[props.category] ?? '기타';
   const handleCardClick = () => {
     if (props.onClick) {
       props.onClick();
@@ -120,9 +107,9 @@ export default function ContentCard(props: CardProps) {
   return (
     <article className="h-full">
       <div
-        className="flex h-full min-h-[154px] cursor-pointer flex-col rounded-2xl border-l-15 bg-white p-6"
+        className="relative flex h-full min-h-[154px] cursor-pointer flex-col rounded-2xl border-l-15 bg-white p-6"
         style={{
-          borderColor: categoryBorderColor,
+          borderColor: categoryColorMap[props.category] ?? categoryColorMap.ETC,
         }}
         onClick={handleCardClick}
       >
@@ -130,11 +117,15 @@ export default function ContentCard(props: CardProps) {
           <span
             className="shrink-0 truncate rounded-full px-2.5 py-1 text-xs font-semibold"
             style={{
-              backgroundColor: categoryBackgroundColor,
-              color: categoryTextColor,
+              backgroundColor:
+                categoryColorMap[props.category] ?? categoryColorMap.ETC,
+              color: darkenColor(
+                categoryColorMap[props.category] ?? categoryColorMap.ETC,
+                140
+              ),
             }}
           >
-            {categoryLabel}
+            {categoryMap[props.category] ?? '기타'}
           </span>
 
           <h2 className="min-w-0 truncate text-lg font-bold text-[#2C2C2C]">
@@ -152,7 +143,7 @@ export default function ContentCard(props: CardProps) {
           </p>
         )}
 
-        <div className="mt-auto flex items-end justify-between gap-4 pt-6">
+        <div className="mt-auto pt-4 pr-32">
           {props.cardType === 'recruitment' && (
             <div className="flex min-w-0 items-center gap-2">
               <p className="truncate text-[13px] text-[#989898]">
@@ -209,7 +200,15 @@ export default function ContentCard(props: CardProps) {
               </div>
             </div>
           )}
-
+          {props.cardType === 'infoPost' && props.thumbnailUrl && (
+            <div className="absolute top-1/2 right-6 h-[88px] w-[88px] -translate-y-1/2 overflow-hidden rounded-xl">
+              <img
+                src={props.thumbnailUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
           {props.cardType === 'invitation' && (
             <div className="flex min-w-0 flex-col gap-1">
               <p className="truncate text-[13px] text-[#989898]">
@@ -223,85 +222,77 @@ export default function ContentCard(props: CardProps) {
               </p>
             </div>
           )}
-
-          {props.cardType === 'invitation' &&
-          props.direction === 'RECEIVED' &&
-          props.cardStatus === 'WAITING' ? (
-            <div className="flex shrink-0 flex-col items-end gap-2">
-              <span
-                className="rounded-full px-3 py-1 text-[13px] font-medium"
-                style={{
-                  backgroundColor: statusBorderColorMap.WAITING,
-                  color: statusTextColorMap.WAITING,
-                }}
-              >
-                {cardStatusMap.WAITING}
-              </span>
-
-              <div className="flex gap-2">
+          <div className="absolute right-6 bottom-6 flex h-[60px] items-end justify-end">
+            {props.cardType === 'invitation' &&
+            props.direction === 'RECEIVED' &&
+            props.cardStatus === 'WAITING' ? (
+              <div className="flex shrink-0 flex-col items-end gap-2">
                 <span
-                  className="inline-flex items-center rounded-full bg-[#5E92F0] px-3 py-1 text-[13px] font-medium text-white disabled:bg-[#B0B8C1]"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    props.onAccept?.();
+                  className="rounded-full px-3 py-1 text-[13px] font-medium"
+                  style={{
+                    backgroundColor: statusBorderColorMap[props.cardStatus],
+                    color: statusTextColorMap[props.cardStatus],
                   }}
                 >
-                  수락
+                  {cardStatusMap[props.cardStatus]}
                 </span>
+
+                <div className="flex gap-2">
+                  <span
+                    className="inline-flex items-center rounded-full bg-[#DDF7E5] px-3 py-1 text-[13px] font-medium text-[#2E7845] disabled:bg-[#B0B8C1]"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      props.onAccept?.();
+                    }}
+                  >
+                    수락
+                  </span>
+
+                  <span
+                    className="inline-flex items-center rounded-full bg-[#EEF1F5] px-3 py-1 text-[13px] font-medium text-[#646B75]"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      props.onReject?.();
+                    }}
+                  >
+                    거절
+                  </span>
+                </div>
+              </div>
+            ) : props.cardType === 'application' &&
+              props.cardStatus === 'WAITING' ? (
+              <div className="relative shrink-0">
                 <span
-                  className="inline-flex items-center rounded-full bg-[#5E92F0] px-3 py-1 text-[13px] font-medium text-white disabled:bg-[#B0B8C1]"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    props.onAccept?.();
+                  className="absolute right-0 bottom-full mb-2 rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap"
+                  style={{
+                    backgroundColor: statusBorderColorMap[props.cardStatus],
+                    color: statusTextColorMap[props.cardStatus],
                   }}
                 >
-                  수락
+                  {cardStatusMap[props.cardStatus]}
                 </span>
 
                 <span
                   className="inline-flex items-center rounded-full bg-[#EEF1F5] px-3 py-1 text-[13px] font-medium text-[#646B75]"
                   onClick={(event) => {
                     event.stopPropagation();
-                    props.onReject?.();
                   }}
                 >
-                  거절
+                  신청취소
                 </span>
               </div>
-            </div>
-          ) : props.cardType === 'application' &&
-            props.cardStatus === 'WAITING' ? (
-            <div className="relative shrink-0">
+            ) : props.cardStatus && statusLabel ? (
               <span
-                className="absolute right-0 bottom-full mb-2 rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap"
+                className="inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[13px] font-medium"
                 style={{
-                  backgroundColor: statusBorderColorMap.WAITING,
-                  color: statusTextColorMap.WAITING,
+                  backgroundColor: statusBorderColorMap[props.cardStatus],
+                  color: statusTextColorMap[props.cardStatus],
                 }}
               >
-                {cardStatusMap.WAITING}
+                {statusLabel}
               </span>
-
-              <span
-                className="inline-flex items-center rounded-full bg-[#EEF1F5] px-3 py-1 text-[13px] font-medium text-[#646B75]"
-                onClick={(event) => {
-                  event.stopPropagation();
-                }}
-              >
-                신청취소
-              </span>
-            </div>
-          ) : props.cardStatus && statusLabel ? (
-            <span
-              className="inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[13px] font-medium"
-              style={{
-                backgroundColor: statusBorderColorMap[props.cardStatus],
-                color: statusTextColorMap[props.cardStatus],
-              }}
-            >
-              {statusLabel}
-            </span>
-          ) : null}
+            ) : null}
+          </div>
         </div>
       </div>
     </article>

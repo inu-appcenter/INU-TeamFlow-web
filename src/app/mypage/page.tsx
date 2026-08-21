@@ -72,10 +72,9 @@ export default function MyPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { unregisterFcmToken } = useFcm();
-
+  const isLoading = false;
   const {
     data: profileData,
-    isLoading,
     isError,
     refetch: refetchProfile,
   } = useMyProfile();
