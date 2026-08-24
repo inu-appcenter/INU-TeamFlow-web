@@ -92,7 +92,7 @@ export default function Notice() {
 
         {/* 안읽은 공지 배너 */}
         {unreadCount > 0 && (
-          <div className="mb-3 flex items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0]/5 px-6 py-4">
+          <div className="mb-3 flex items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0]/5 px-6 py-4">
             <Mail size={20} strokeWidth={2.5} className="text-[#5E92F0]" />
             <p className="text-base font-semibold text-[#2C2C2C]">
               아직 읽지 않은 공지가{' '}
@@ -111,8 +111,8 @@ export default function Notice() {
               <div
                 className={`rounded-xl border-[0.5px] bg-white px-4 py-4 transition hover:bg-[#FAFAFA] ${
                   notice.isRead
-                    ? 'border-[#D6DDE5]'
-                    : 'border-l-10 border-[#D6DDE5] border-l-[#5e92f0]'
+                    ? 'border-[#D6DDE5]/40'
+                    : 'border-l-10 border-[#D6DDE5]/40 border-l-[#5e92f0]'
                 }`}
               >
                 <div className="flex items-center gap-2">

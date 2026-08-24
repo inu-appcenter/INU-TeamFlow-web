@@ -117,7 +117,7 @@ export default function RecruitmentApplyPage() {
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="rounded-xl bg-[#5E92F0] px-6 py-2 text-base text-white transition hover:bg-[#4F84E8] disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
+                className="rounded-xl bg-[#5E92F0] px-8 py-2 text-base text-white transition hover:bg-[#4F84E8] disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">

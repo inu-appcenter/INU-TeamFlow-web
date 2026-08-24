@@ -207,7 +207,7 @@ export default function GroupChatCreateModal({ onClose }: Props) {
 
         {step === 'members' && (
           <>
-            <div className="mb-2 flex shrink-0 items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-3 py-2">
+            <div className="mb-2 flex shrink-0 items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-3 py-2">
               <Search size={14} className="shrink-0 text-[#989898]" />
               <input
                 value={keyword}

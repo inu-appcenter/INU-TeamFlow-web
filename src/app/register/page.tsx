@@ -1,7 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import {
+  ChevronLeft,
+  Eye,
+  EyeOff,
+  Loader2,
+  ChevronRight,
+  ChevronDown,
+} from 'lucide-react';
 import { useState } from 'react';
 import type { ComponentProps } from 'react';
 
@@ -110,23 +117,21 @@ export default function Register() {
       <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5">
         <Card className="animate-modal-pop overflow-hidden p-0 transition-all duration-200">
           <form onSubmit={handleSubmit} className="flex flex-col">
-            <button
-              type="button"
-              onClick={() => router.push(ROUTES.LOGIN)}
-              aria-label="로그인 페이지로 돌아가기"
-              className="mt-4 ml-2 w-7 cursor-pointer text-[#2C2C2C] transition-all duration-150 active:scale-90"
-            >
-              <ChevronLeft
-                size={24}
-                strokeWidth={2.5}
-                className="relative sm:h-7 sm:w-7"
-              />
-            </button>
+            <div className="">
+              <button
+                type="button"
+                onClick={() => router.push(ROUTES.LOGIN)}
+                aria-label="로그인 페이지로 돌아가기"
+                className="cursor-pointer pt-5 pl-5 text-[#b0b0b0] transition-all duration-150 active:scale-90"
+              >
+                <ChevronLeft size={28} strokeWidth={2.5} />
+              </button>
 
-            <div className="mb-6 flex items-center">
-              <h1 className="relative left-1/2 -translate-x-1/2 text-[28px] font-semibold max-[640px]:text-[24px]">
-                {REGISTER_TEXT.TITLE}
-              </h1>
+              <div className="-mt-4 mb-6 flex items-center">
+                <h1 className="relative left-1/2 -translate-x-1/2 text-[28px] font-semibold max-[640px]:text-[24px]">
+                  {REGISTER_TEXT.TITLE}
+                </h1>
+              </div>
             </div>
 
             <InputField
@@ -155,7 +160,7 @@ export default function Register() {
                   aria-label={
                     isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'
                   }
-                  className="flex cursor-pointer items-center justify-center text-[#A0A7B2] transition-all duration-150 hover:text-[#5E92F0] active:scale-90"
+                  className="flex cursor-pointer items-center justify-center text-[#989898] transition-all duration-150 hover:text-[#5E92F0] active:scale-90"
                 >
                   {isPasswordVisible ? (
                     <Eye className="size-5" />
@@ -198,7 +203,7 @@ export default function Register() {
 
             {hasCheckPassword && (
               <div
-                className={`mx-7.5 -mt-3 mb-4 flex items-center gap-2 text-[14px] ${
+                className={`mx-7.5 -mt-2 mb-4 flex items-center gap-2 text-[14px] ${
                   isPasswordMatched ? 'text-[#22A06B]' : 'text-[#EF4444]'
                 }`}
               >
@@ -246,46 +251,76 @@ export default function Register() {
               isInput={true}
             />
 
-            <div className="mx-auto mb-5 grid w-[88%] grid-cols-1 gap-2 max-[640px]:w-[90%] sm:grid-cols-2">
-              <select
-                value={college}
-                onChange={(e) => {
-                  setCollege(e.target.value);
-                  setDepartment('');
-                }}
-                className="min-w-0 rounded-xl border border-[#D6DDE5] bg-white px-3 py-2.5 text-[14px] text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0] active:scale-[0.99]"
-              >
-                <option value="">단과대 선택</option>
+            <label className="mx-7.5 mb-1 block text-[14px] font-medium text-[#989898] max-[640px]:text-[12px]">
+              학과
+            </label>
 
-                {colleges.map((college: College) => (
-                  <option key={college.id} value={college.id}>
-                    {college.name}
-                  </option>
-                ))}
-              </select>
+            <div className="mx-7.5 mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="relative">
+                <select
+                  value={college}
+                  onChange={(e) => {
+                    setCollege(e.target.value);
+                    setDepartment('');
+                  }}
+                  className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
+                >
+                  <option value="">단과대 선택</option>
+                  {colleges.map((college: College) => (
+                    <option key={college.id} value={college.id}>
+                      {college.name}
+                    </option>
+                  ))}
+                </select>
 
-              <select
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                disabled={!college}
-                className="min-w-0 rounded-xl border border-[#D6DDE5] bg-white px-3 py-2.5 text-[14px] text-[#2C2C2C] transition-all duration-150 outline-none focus:border-[#5E92F0] active:scale-[0.99] disabled:bg-[#F5F5F5] disabled:text-[#B0B8C1]"
-              >
-                <option value="">학과 선택</option>
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#989898]"
+                />
+              </div>
 
-                {currentCollege?.departments.map((department) => (
-                  <option key={department.value} value={department.value}>
-                    {department.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  disabled={!college}
+                  className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] disabled:text-[#B0B8C1] max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
+                >
+                  <option value="">학과 선택</option>
+                  {currentCollege?.departments.map((department) => (
+                    <option key={department.value} value={department.value}>
+                      {department.name}
+                      {department.note ? ` ${department.note}` : ''}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#989898]"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={isSignupPending}
-              className="relative left-1/2 mb-7 w-[45%] min-w-28 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[14px] text-nowrap text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] disabled:active:scale-100 sm:w-[25%]"
+              className="group relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
             >
-              {isSignupPending ? '가입 중...' : REGISTER_TEXT.REGISTER_BUTTON}
+              <span className="inline-flex items-center justify-center">
+                {REGISTER_TEXT.REGISTER_BUTTON}
+                {isSignupPending ? (
+                  <Loader2 className="ml-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <span className="ml-0 inline-flex w-0 items-center justify-center overflow-hidden opacity-0 transition-all duration-200 group-hover:ml-1.5 group-hover:w-4 group-hover:opacity-100">
+                    <ChevronRight
+                      size={20}
+                      className="-mr-1 shrink-0"
+                      strokeWidth={2.5}
+                    />
+                  </span>
+                )}
+              </span>
             </button>
           </form>
         </Card>

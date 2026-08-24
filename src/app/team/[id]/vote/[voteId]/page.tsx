@@ -423,7 +423,7 @@ export default function VoteDetailPage() {
                           setIsParticipantListOpen(true);
                           refetchVote();
                         }}
-                        className="ml-auto flex cursor-pointer items-center gap-1 rounded-full border-[0.5] border-[#D6DDE5] bg-[#EEF1F5] py-1 pr-2 pl-4 text-sm font-bold text-[#2c2c2c]/60 transition hover:text-[#5c5c5c]"
+                        className="ml-auto flex cursor-pointer items-center gap-1 rounded-full border-[0.5] border-[#D6DDE5]/40 bg-[#EEF1F5] py-1 pr-2 pl-4 text-sm font-bold text-[#2c2c2c]/60 transition hover:text-[#5c5c5c]"
                       >
                         참여자 목록보기
                         <ChevronRight size={20} strokeWidth={2.5} />
@@ -436,7 +436,7 @@ export default function VoteDetailPage() {
                           vote.isOpened && vote.isVoter && setIsVoting(true)
                         }
                         disabled={!vote.isOpened || !vote.isVoter}
-                        className={`h-10 w-30 rounded-xl font-semibold transition-all ${
+                        className={`h-10 w-30 rounded-xl font-medium transition-all ${
                           vote.isOpened && vote.isVoter
                             ? 'cursor-pointer bg-[#5E92F0] text-white active:scale-95'
                             : 'cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
@@ -458,7 +458,7 @@ export default function VoteDetailPage() {
                           disabled={!vote.isOpened}
                           className={`rounded-xl text-center font-semibold transition-all ${
                             vote.isOpened
-                              ? 'h-10 w-30 cursor-pointer border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] py-2 pl-0.5 text-[15px] text-[#5E92F0] active:scale-95'
+                              ? 'h-10 w-30 cursor-pointer border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] py-2 pl-0.5 text-[15px] text-[#5E92F0] active:scale-95'
                               : 'h-10 w-30 cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
                           }`}
                         >

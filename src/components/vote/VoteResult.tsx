@@ -240,7 +240,7 @@ export default function VoteResult({
               <button
                 disabled={!selectedEnd}
                 onClick={() => setIsConfirmModalOpen(true)}
-                className={`mx-auto rounded-xl px-8 py-2 font-semibold transition ${
+                className={`mx-auto rounded-xl px-8 py-2 font-medium transition ${
                   selectedEnd
                     ? 'cursor-pointer bg-[#5E92F0] text-white duration-200 active:scale-95'
                     : 'bg-[#EEF1F5] text-[#989898]'

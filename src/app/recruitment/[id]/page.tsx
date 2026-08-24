@@ -335,7 +335,7 @@ export default function RecruitmentDetail() {
                   if (!checkVerified()) return;
                   router.push(`/recruitment/${recruitmentId}/apply`);
                 }}
-                className={`rounded-xl px-5 py-2 text-[14px] transition sm:px-6 sm:text-base ${
+                className={`rounded-xl px-8 py-2 text-base transition ${
                   !isRecruiter && isDisabled
                     ? 'cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
                     : 'cursor-pointer bg-[#5E92F0] text-white hover:bg-[#5C86EB]'

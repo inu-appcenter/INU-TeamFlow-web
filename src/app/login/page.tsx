@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ChevronRight, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { ComponentProps } from 'react';
 
@@ -86,17 +86,9 @@ export default function Login() {
 
       <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5">
         <Card className="animate-modal-pop flex flex-col overflow-hidden p-0 transition-all duration-200">
-          <button
-            type="button"
-            onClick={() => router.push(ROUTES.MAIN)}
-            className="mt-4 ml-2 w-7 cursor-pointer text-[#2C2C2C] transition-all duration-150 active:scale-90"
-          >
-            <ChevronLeft size={24} strokeWidth={2.5} />
-          </button>
-
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div className="mb-6 flex items-center">
-              <h1 className="relative left-1/2 -translate-x-1/2 text-[28px] font-semibold max-[640px]:text-[24px]">
+              <h1 className="relative left-1/2 -translate-x-1/2 pt-8 text-[28px] font-semibold max-[640px]:text-[24px]">
                 {LOGIN_TEXT.TITLE}
               </h1>
             </div>
@@ -127,7 +119,7 @@ export default function Login() {
                   aria-label={
                     isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'
                   }
-                  className="flex size-6 items-center justify-center text-[#9C9C9C] transition-all duration-150 hover:text-[#5E92F0] active:scale-90"
+                  className="flex size-6 items-center justify-center text-[#989898] transition-all duration-150 hover:text-[#5E92F0] active:scale-90"
                 >
                   {isPasswordVisible ? (
                     <Eye className="block size-5" />
@@ -139,7 +131,7 @@ export default function Login() {
             />
 
             {isCapsLockOn && (
-              <div className="mx-7.5 -mt-3 mb-4 flex items-center gap-2 text-sm text-[#EF4444]">
+              <div className="mx-7.5 -mt-2 mb-4 flex items-center gap-2 text-sm text-[#EF4444]">
                 <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#FDECEC] text-xs font-bold">
                   !
                 </span>
@@ -149,7 +141,7 @@ export default function Login() {
             )}
 
             <span
-              className="mx-7.5 mb-4 line-clamp-2 text-ellipsis text-[#9c9c9c] max-[320px]:cursor-pointer"
+              className="mx-7.5 mb-4 line-clamp-2 text-sm font-medium text-ellipsis text-[#989898] max-[320px]:cursor-pointer"
               onClick={() => {
                 if (window.innerWidth <= 320) {
                   router.push(ROUTES.REGISTER);
@@ -159,7 +151,7 @@ export default function Login() {
               {LOGIN_TEXT.NO_ACCOUNT}
               <span
                 onClick={() => router.push(ROUTES.REGISTER)}
-                className="cursor-pointer text-nowrap text-[#5E92F0]"
+                className="relative cursor-pointer font-semibold text-nowrap text-[#5E92F0] after:absolute after:-bottom-0.5 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#5E92F0] after:transition-transform after:duration-300 hover:after:scale-x-100"
               >
                 {LOGIN_TEXT.REGISTER}
               </span>
@@ -168,9 +160,22 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoginPending}
-              className="relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2 text-[16px] text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+              className="group relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
             >
-              {isLoginPending ? '로그인 중...' : LOGIN_TEXT.TITLE}
+              <span className="inline-flex items-center justify-center">
+                {LOGIN_TEXT.TITLE}
+                {isLoginPending ? (
+                  <Loader2 className="ml-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <span className="ml-0 inline-flex w-0 items-center justify-center overflow-hidden opacity-0 transition-all duration-200 group-hover:ml-1.5 group-hover:w-4 group-hover:opacity-100">
+                    <ChevronRight
+                      size={20}
+                      className="-mr-1 shrink-0"
+                      strokeWidth={2.5}
+                    />
+                  </span>
+                )}
+              </span>
             </button>
           </form>
         </Card>

@@ -16,6 +16,7 @@ import {
   categoryFilterOptions,
 } from '@/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { darkenColor } from '@/utils/color/darkenColor';
 
 export default function Team() {
   const router = useRouter();
@@ -124,7 +125,16 @@ export default function Team() {
                       </p>
 
                       <div className="flex items-center justify-between pr-5">
-                        <span className="rounded-full bg-[#D6DDE5] px-3 py-1 text-xs font-semibold text-[#3F4852]">
+                        <span
+                          className="rounded-full px-3 py-1 text-xs font-semibold text-[#3F4852]"
+                          style={{
+                            backgroundColor: categoryColorMap[team.category],
+                            color: darkenColor(
+                              categoryColorMap[team.category],
+                              140
+                            ),
+                          }}
+                        >
                           {categoryMap[team.category]}
                         </span>
 

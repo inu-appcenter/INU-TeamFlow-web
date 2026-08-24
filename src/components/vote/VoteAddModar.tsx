@@ -237,7 +237,7 @@ export default function VoteAddModal({
                   </button>
 
                   {isColorOpen && (
-                    <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
+                    <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2">
                       {SCHEDULE_COLORS.map((color) => {
                         const isSelected = form.color === color;
 
@@ -388,7 +388,7 @@ export default function VoteAddModal({
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="이름 검색"
-                      className="w-[70%] rounded-lg border-[0.5] border-[#D6DDE5] bg-white px-3 py-2 text-sm outline-none"
+                      className="w-[70%] rounded-lg border-[0.5] border-[#D6DDE5]/40 bg-white px-3 py-2 text-sm outline-none"
                     />
                   </div>
                   {filteredMembers.map((member) => (
@@ -474,7 +474,7 @@ export default function VoteAddModal({
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="absolute left-0 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+              className="absolute left-0 h-10 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-6 font-medium text-[#2C2C2C] transition-all duration-200 active:scale-95"
             >
               이전
             </button>
@@ -484,7 +484,7 @@ export default function VoteAddModal({
             <button
               type="button"
               onClick={handleNext}
-              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-6 font-medium text-[#2C2C2C] transition-all duration-200 active:scale-95"
             >
               다음
             </button>
@@ -492,7 +492,7 @@ export default function VoteAddModal({
             <button
               type="button"
               onClick={handleCreate}
-              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 font-semibold text-white transition-all duration-200 active:scale-95"
+              className="mb-16 h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-6 font-medium text-white transition-all duration-200 active:scale-95"
             >
               등록
             </button>
@@ -555,7 +555,7 @@ export default function VoteAddModal({
                   {form.dates.slice(0, 5).map((date) => (
                     <span
                       key={date}
-                      className="rounded-full border-[0.5] border-[#D6DDE5] bg-white px-3 py-1 text-[13px] font-medium text-[#2C2C2C]"
+                      className="rounded-full border-[0.5] border-[#D6DDE5]/60 bg-white px-3 py-1 text-[13px] font-medium text-[#2C2C2C]"
                     >
                       {date}
                     </span>
@@ -623,13 +623,13 @@ export default function VoteAddModal({
             {/* 버튼 — 모달 안으로 이동 */}
             <div className="flex gap-2 px-6 py-5">
               <button
-                className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] py-2.5 text-sm font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
+                className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] py-2.5 text-sm font-medium text-[#E22222] transition-all duration-200 active:scale-95"
                 onClick={() => setIsConfirmOpen(false)}
               >
                 취소
               </button>
               <button
-                className="flex-[2] cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] py-2.5 text-sm font-semibold text-white transition-all duration-200 active:scale-95"
+                className="flex-[2] cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] py-2.5 text-sm font-medium text-white transition-all duration-200 active:scale-95"
                 onClick={() => {
                   setIsConfirmOpen(false);
                   submitCreate();

@@ -311,7 +311,7 @@ export default function CalendarAddModal({
               </button>
 
               {isColorOpen && (
-                <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
+                <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2">
                   {SCHEDULE_COLORS.map((color) => {
                     const isSelected = form.color === color;
 
@@ -352,7 +352,7 @@ export default function CalendarAddModal({
                 className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
                   scheduleType === type
                     ? 'border-[0.5px] border-[#5E92F0] bg-[#5E92F0] text-white'
-                    : 'border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] text-[#2C2C2C]'
+                    : 'border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] text-[#2C2C2C]'
                 }`}
               >
                 {type === 'NORMAL'
@@ -554,7 +554,7 @@ export default function CalendarAddModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
+                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-200 active:scale-95"
               >
                 삭제
               </button>
@@ -563,7 +563,7 @@ export default function CalendarAddModal({
             <button
               type="button"
               onClick={handleSave}
-              className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+              className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
             >
               저장
             </button>

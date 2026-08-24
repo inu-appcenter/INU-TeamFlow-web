@@ -68,7 +68,7 @@ export default function CalendarDatePicker({
       </button>
 
       {isOpen && (
-        <div className="absolute top-[60px] left-0 z-[120] w-full rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F8F9FB] p-3">
+        <div className="absolute top-[60px] left-0 z-[120] w-full rounded-2xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F8F9FB] p-3">
           <div className="mb-2 flex items-center justify-between px-2">
             <h3 className="text-[18px] font-bold text-[#2C2C2C]">
               {month + 1}월

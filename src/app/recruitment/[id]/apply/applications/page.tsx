@@ -96,7 +96,7 @@ export default function RecruitmentApplications() {
                           `/recruitment/${recruitmentId}/apply/applications/${application.applicationId}`
                         )
                       }
-                      className="w-full cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]/60 px-5 py-4 text-left"
+                      className="w-full cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA]/60 px-5 py-4 text-left"
                     >
                       <div className="flex items-center gap-2">
                         <span

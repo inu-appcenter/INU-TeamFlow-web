@@ -161,7 +161,7 @@ export default function TeamNoticeDetail() {
               </h1>
             </div>
 
-            <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="mt-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5]">
                   {notice.author.profileUrl && (

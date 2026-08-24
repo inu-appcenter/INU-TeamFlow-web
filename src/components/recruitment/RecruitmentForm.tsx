@@ -194,7 +194,7 @@ export default function RecruitmentForm({
                 <input
                   value={form.title}
                   onChange={(e) => onChange('title', e.target.value)}
-                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+                  className="border-[#D6DDE5]/40/40 h-[42px] w-full rounded-xl border-[0.5px] bg-[#F6F8FA] px-4 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
                 />
               </div>
 
@@ -211,13 +211,18 @@ export default function RecruitmentForm({
                     readOnly
                     value={selectedInfoPostTitle}
                     placeholder="연결된 공고가 없습니다"
-                    className="h-[42px] flex-1 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-0 focus:outline-none"
+                    className="h-[42px] flex-1 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 focus:ring-0 focus:outline-none"
                   />
 
                   <button
                     type="button"
                     onClick={() => setIsInfoPostModalOpen(true)}
-                    className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white transition-all duration-150 active:scale-90"
+                    disabled={mode === 'edit'}
+                    className={`h-[42px] shrink-0 rounded-xl px-4 text-[15px] text-white transition-all duration-150 ${
+                      mode === 'edit'
+                        ? 'cursor-not-allowed bg-[#C7CDD5]/80'
+                        : 'cursor-pointer bg-[#5E92F0] active:scale-90'
+                    }`}
                   >
                     공고 연결하기
                   </button>
@@ -239,13 +244,18 @@ export default function RecruitmentForm({
                       myTeams.find((t) => t.teamId === form.teamId)?.name ?? ''
                     }
                     placeholder="연결된 팀이 없습니다"
-                    className="h-[42px] flex-1 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-0 focus:outline-none"
+                    className="h-[42px] flex-1 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 focus:ring-0 focus:outline-none"
                   />
 
                   <button
                     type="button"
                     onClick={() => setIsTeamDropdownOpen((prev) => !prev)}
-                    className="h-[42px] shrink-0 cursor-pointer rounded-xl bg-[#5E92F0] px-4 text-[15px] text-white transition-all duration-150 active:scale-90"
+                    disabled={mode === 'edit'}
+                    className={`h-[42px] shrink-0 rounded-xl px-4 text-[15px] text-white transition-all duration-150 ${
+                      mode === 'edit'
+                        ? 'cursor-not-allowed bg-[#C7CDD5]/80'
+                        : 'cursor-pointer bg-[#5E92F0] active:scale-90'
+                    }`}
                   >
                     팀 연결하기
                   </button>
@@ -256,7 +266,7 @@ export default function RecruitmentForm({
                         className="fixed inset-0 z-10"
                         onClick={() => setIsTeamDropdownOpen(false)}
                       />
-                      <div className="absolute top-[50px] right-[-70px] z-20 w-[260px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-[2px_2px_15px_0px_rgba(149,157,165,0.20)]">
+                      <div className="absolute top-[50px] right-[-70px] z-20 w-[260px] rounded-2xl border-[0.5px] border-[#D6DDE5]/40 bg-white p-2 shadow-[2px_2px_15px_0px_rgba(149,157,165,0.20)]">
                         <div className="thin-scrollbar flex max-h-[240px] flex-col overflow-y-auto">
                           {manageableTeams.map((team) => (
                             <button
@@ -288,7 +298,7 @@ export default function RecruitmentForm({
                                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
                                   form.teamId === team.teamId
                                     ? 'border-[#5E92F0]'
-                                    : 'border-[#D6DDE5]'
+                                    : 'border-[#D6DDE5]/40'
                                 }`}
                               >
                                 {form.teamId === team.teamId && (
@@ -364,7 +374,7 @@ export default function RecruitmentForm({
                   type="date"
                   value={form.endAt}
                   onChange={(e) => onChange('endAt', e.target.value)}
-                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
                 />
               </div>
 
@@ -385,7 +395,7 @@ export default function RecruitmentForm({
                         e.target.value === '' ? '' : Number(e.target.value),
                     }))
                   }
-                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
                 />
               </div>
 
@@ -400,7 +410,7 @@ export default function RecruitmentForm({
                   value={form.description}
                   onChange={(e) => onChange('description', e.target.value)}
                   maxLength={500}
-                  className="min-h-[150px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+                  className="min-h-[150px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
                   placeholder="ex. 우대사항, 면접 정보 등"
                 />
                 <div className="mt-1 text-right text-xs text-[#B0B0B0]">
@@ -412,7 +422,7 @@ export default function RecruitmentForm({
                 {mode === 'edit' && onDelete && (
                   <button
                     onClick={onDelete}
-                    className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-8 py-2 font-semibold text-[#E22222]"
+                    className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-8 py-2 font-semibold text-[#E22222]"
                   >
                     삭제
                   </button>
@@ -450,7 +460,7 @@ export default function RecruitmentForm({
                       });
                     }
                   }}
-                  className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-semibold text-white transition hover:bg-[#5C86EB]"
+                  className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0] px-10 py-2 text-base font-medium text-white transition hover:bg-[#5C86EB]"
                 >
                   {mode === 'create' ? '등록' : '수정'}
                 </button>
@@ -471,14 +481,14 @@ export default function RecruitmentForm({
             className="animate-modal-pop flex h-[85vh] w-full max-w-[720px] flex-col overflow-hidden rounded-3xl bg-white"
           >
             {/* 헤더 */}
-            <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] px-6 py-5">
+            <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5]/40 px-6 py-5">
               <h2 className="text-xl font-bold text-[#2C2C2C]">
                 공고 연결하기
               </h2>
             </div>
 
             {/* 카테고리 탭 */}
-            <div className="relative flex border-b-[0.5px] border-[#D6DDE5]">
+            <div className="relative flex border-b-[0.5px] border-[#D6DDE5]/40">
               {linkableInfoPostCategoryOptions.map((category) => {
                 const isActive = infoCategory === category.value;
 
@@ -516,7 +526,7 @@ export default function RecruitmentForm({
 
             {/* 검색 */}
             <div className="flex w-100 items-center gap-3 px-6 py-3">
-              <div className="flex h-10 flex-1 items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-3">
+              <div className="flex h-10 flex-1 items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-3">
                 <Search size={16} className="shrink-0 text-[#989898]" />
                 <input
                   value={infoKeywordInput}
@@ -556,7 +566,7 @@ export default function RecruitmentForm({
                         className={`flex flex-col overflow-hidden rounded-2xl border-[0.5px] transition ${
                           isSelected
                             ? 'border-[#5E92F0] ring-2 ring-[#5E92F0]/30'
-                            : 'border-[#D6DDE5]'
+                            : 'border-[#D6DDE5]/40'
                         } ${isDisabled ? 'opacity-50' : ''}`}
                       >
                         <div className="relative aspect-[4/3] w-full bg-[#F6F8FA]">
@@ -693,7 +703,7 @@ export default function RecruitmentForm({
             <div className="mt-4 flex gap-3">
               <button
                 onClick={() => setIsConfirmOpen(false)}
-                className="flex-1 rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
+                className="flex-1 rounded-xl border border-[#D6DDE5]/40 bg-[#F6F8FA] py-2 font-semibold"
               >
                 취소
               </button>

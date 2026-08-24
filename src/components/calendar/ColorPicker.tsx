@@ -41,7 +41,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2 shadow-sm">
+        <div className="absolute top-[62px] right-0 z-20 w-[100px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white p-2">
           {SCHEDULE_COLORS.map((color) => {
             const isSelected = value === color;
             return (
