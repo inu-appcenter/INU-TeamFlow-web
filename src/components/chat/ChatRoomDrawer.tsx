@@ -107,13 +107,6 @@ export default function ChatRoomDrawer({
     }
   };
 
-  const handleKickMember = () => {
-    if (!confirmKickTarget) return;
-    // TODO: 백엔드 멤버 내보내기 API 완성되면 실제 mutation 연결
-    console.warn('내보내기 API 미구현:', confirmKickTarget.userId);
-    setConfirmKickTarget(null);
-  };
-
   const handleImageMenuSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     e.target.value = '';
@@ -493,15 +486,6 @@ export default function ChatRoomDrawer({
                                     >
                                       1:1 채팅
                                     </button>
-                                    <button
-                                      onClick={() => {
-                                        setOpenMemberMenuId(null);
-                                        setConfirmKickTarget(member);
-                                      }}
-                                      className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#E22222] hover:bg-[#FDEEEE]"
-                                    >
-                                      내보내기
-                                    </button>
                                   </div>
                                 </>
                               )}
@@ -553,35 +537,6 @@ export default function ChatRoomDrawer({
                     className="flex-1 rounded-xl bg-[#E22222] py-3 font-semibold text-white disabled:opacity-50"
                   >
                     나가기
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {confirmKickTarget && (
-            <div
-              onClick={() => setConfirmKickTarget(null)}
-              className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
-            >
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
-              >
-                <h2 className="text-center text-xl font-bold">
-                  {confirmKickTarget.userNickname}님을 내보낼까요?
-                </h2>
-                <div className="mt-4 flex gap-3">
-                  <button
-                    onClick={() => setConfirmKickTarget(null)}
-                    className="flex-1 rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
-                  >
-                    취소
-                  </button>
-                  <button
-                    onClick={handleKickMember}
-                    className="flex-1 rounded-xl bg-[#E22222] py-3 font-semibold text-white"
-                  >
-                    내보내기
                   </button>
                 </div>
               </div>

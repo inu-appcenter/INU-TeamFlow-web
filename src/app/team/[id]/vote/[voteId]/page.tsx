@@ -14,7 +14,7 @@ import VoteForm from '@/components/vote/VoteForm';
 import VoteResult from '@/components/vote/VoteResult';
 import { ChevronLeft, ChevronRight, EllipsisVertical } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 
 export default function VoteDetailPage() {
@@ -32,7 +32,18 @@ export default function VoteDetailPage() {
   const [isSelectingResult, setIsSelectingResult] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const tabRefs = useRef<{
+    completed: HTMLButtonElement | null;
+    uncompleted: HTMLButtonElement | null;
+  }>({ completed: null, uncompleted: null });
+  const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
 
+  useEffect(() => {
+    const el = tabRefs.current[participantTab];
+    if (el) {
+      setTabIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+    }
+  }, [participantTab, isParticipantListOpen]);
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const {
     data: vote,
@@ -251,13 +262,16 @@ export default function VoteDetailPage() {
                         뒤로가기
                       </button>
 
-                      <div className="border-b-[0.5px] border-[#D6DDE5]">
+                      <div className="relative border-b-[0.5px] border-[#D6DDE5]">
                         <div className="flex">
                           <button
+                            ref={(el) => {
+                              tabRefs.current.completed = el;
+                            }}
                             onClick={() => setParticipantTab('completed')}
-                            className={`px-5 pb-3 text-lg font-bold ${
+                            className={`px-5 pb-3 text-lg font-bold transition-colors ${
                               participantTab === 'completed'
-                                ? 'border-b-2 border-[#5E92F0] text-[#5E92F0]'
+                                ? 'text-[#5E92F0]'
                                 : 'text-[#D6DDE5]'
                             }`}
                           >
@@ -265,16 +279,27 @@ export default function VoteDetailPage() {
                           </button>
 
                           <button
+                            ref={(el) => {
+                              tabRefs.current.uncompleted = el;
+                            }}
                             onClick={() => setParticipantTab('uncompleted')}
-                            className={`px-5 pb-3 text-lg font-bold ${
+                            className={`px-5 pb-3 text-lg font-bold transition-colors ${
                               participantTab === 'uncompleted'
-                                ? 'border-b-2 border-[#5E92F0] text-[#5E92F0]'
+                                ? 'text-[#5E92F0]'
                                 : 'text-[#D6DDE5]'
                             }`}
                           >
                             미참여자
                           </button>
                         </div>
+
+                        <div
+                          className="absolute bottom-0 h-[2px] bg-[#5E92F0] transition-all duration-300 ease-in-out"
+                          style={{
+                            left: tabIndicator.left,
+                            width: tabIndicator.width,
+                          }}
+                        />
                       </div>
 
                       <div className="mt-6">
@@ -433,7 +458,7 @@ export default function VoteDetailPage() {
                           disabled={!vote.isOpened}
                           className={`rounded-xl text-center font-semibold transition-all ${
                             vote.isOpened
-                              ? 'h-10 w-30 cursor-pointer border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-4 py-2 text-[#5E92F0] active:scale-95'
+                              ? 'h-10 w-30 cursor-pointer border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] py-2 pl-0.5 text-[15px] text-[#5E92F0] active:scale-95'
                               : 'h-10 w-30 cursor-not-allowed bg-[#EEF1F5] text-[#989898]'
                           }`}
                         >

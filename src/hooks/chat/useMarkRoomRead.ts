@@ -43,8 +43,23 @@ interface HistoryData {
  *    - flushViaKeepalive: 화면을 벗어나는 순간(백그라운드 전환/탭 종료/언마운트). 일반 요청은
  *      페이지가 unload되면서 취소될 수 있어서 keepalive로 대체한다.
  *    "이미 보낸 값보다 큰 id에 대해서만" 전송하는 가드로 역행/중복 전송을 막는다.
+ *
+ * initialLastReadMessageId (새로고침 시 배지가 틀어지던 버그의 수정):
+ *    이 훅은 예전엔 lastLocallyReadIdRef를 항상 0에서 시작했다. 그래서 페이지를
+ *    새로고침(리마운트)할 때마다 "0부터 lastMessageId까지 전부 상대 메시지 readCount +1"을
+ *    다시 실행했는데, 문제는 서버가 내려주는 anchor의 readCount는 "내가 예전에 이미 읽은 것"이
+ *    이미 반영된 값이라는 점이다. 즉 새로고침할 때마다 내 몫이 이미 반영된 메시지에
+ *    로컬에서 또 +1을 얹어 실제보다 부풀려진(그래서 배지가 안 보이거나 이상해지는) 값이
+ *    잠깐 나왔다가, 이후 별다른 재검증 없이 그대로 남아있었다.
+ *    서버는 "내가 어디까지 읽었는지"를 anchor.lastReadMessageId로 이미 알려주고 있으므로,
+ *    마운트 시 lastLocallyReadIdRef의 시작값을 0이 아니라 이 값으로 seed해서, 이미
+ *    서버에 반영된 구간은 다시 카운트하지 않도록 한다.
  */
-export function useMarkRoomRead(roomId: number, lastMessageId?: number) {
+export function useMarkRoomRead(
+  roomId: number,
+  lastMessageId?: number,
+  initialLastReadMessageId?: number
+) {
   const { mutate: markAsRead } = useMarkChatAsRead(roomId);
   const { data: me } = useMyInfo();
   const queryClient = useQueryClient();
@@ -71,10 +86,19 @@ export function useMarkRoomRead(roomId: number, lastMessageId?: number) {
     queryClientRef.current = queryClient;
   }, [queryClient]);
 
+  // 서버가 알려주는 "내가 이전에 이미 읽은 위치". 최초 1회 seed에만 쓰이므로 ref로만 보관.
+  const initialLastReadMessageIdRef = useRef(initialLastReadMessageId);
+  useEffect(() => {
+    initialLastReadMessageIdRef.current = initialLastReadMessageId;
+  }, [initialLastReadMessageId]);
+
   // 서버로 마지막에 "전송"한 읽음 위치. 이 값 이하는 다시 보내지 않는다.
   const lastSentIdRef = useRef(0);
   // 내 화면에 마지막으로 "읽음"으로 반영한 위치. 이 값 이하는 다시 반영(중복 카운트)하지 않는다.
+  // 최초 마운트 시 아래 effect에서 initialLastReadMessageId로 한 번 seed된다 (0으로 시작하면
+  // 서버가 이미 반영해둔 과거 읽음 상태를 새로고침할 때마다 또 카운트하게 됨).
   const lastLocallyReadIdRef = useRef(0);
+  const hasSeededInitialPositionRef = useRef(false);
   const pendingIdRef = useRef(0);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -150,7 +174,17 @@ export function useMarkRoomRead(roomId: number, lastMessageId?: number) {
 
   // 1) 방 진입 + 2) 실시간 메시지 수신
   useEffect(() => {
-    if (!lastMessageId || lastMessageId <= lastLocallyReadIdRef.current) return;
+    if (!lastMessageId) return;
+
+    // 이 훅이 마운트된 후 처음으로 lastMessageId를 받는 순간(방 진입/새로고침 직후)에는,
+    // 0이 아니라 서버가 알려준 "내가 이전에 이미 읽은 위치"부터 시작한다.
+    // 그 이전 구간은 서버의 readCount에 이미 반영돼 있으므로 여기서 또 +1 하면 안 된다.
+    if (!hasSeededInitialPositionRef.current) {
+      hasSeededInitialPositionRef.current = true;
+      lastLocallyReadIdRef.current = initialLastReadMessageIdRef.current ?? 0;
+    }
+
+    if (lastMessageId <= lastLocallyReadIdRef.current) return;
 
     // A) 내 화면 반영: 네트워크/visibility와 무관하게 즉시 처리
     applyLocalReadBump(lastLocallyReadIdRef.current, lastMessageId);
