@@ -121,12 +121,12 @@ export default function TeamNotice() {
           <div className="flex-1 overflow-y-auto px-6 sm:px-6">
             <header className="my-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex w-full items-center justify-between gap-2">
-                <div className="flex h-10 w-full items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] sm:w-[350px]">
+                <div className="flex h-10 w-full items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] sm:w-[350px]">
                   <div className="relative h-full">
                     <select
                       value={searchType}
                       onChange={(e) => handleSearchTypeChange(e.target.value)}
-                      className="h-full appearance-none rounded-l-full border-r-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
+                      className="h-full appearance-none rounded-l-full border-r-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
                     >
                       <option value="title">제목</option>
                       <option value="author">작성자</option>
@@ -163,7 +163,7 @@ export default function TeamNotice() {
             </header>
 
             {unreadCount > 0 && (
-              <div className="mb-3 flex items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0]/10 px-6 py-4">
+              <div className="mb-3 flex items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0]/10 px-6 py-4">
                 <Mail size={20} strokeWidth={2.5} className="text-[#5E92F0]" />
                 <p className="text-base font-semibold text-[#2C2C2C]">
                   아직 읽지 않은 공지가{' '}
@@ -182,10 +182,10 @@ export default function TeamNotice() {
                   href={`/team/${teamId}/notice/${notice.noticeId}?from=team`}
                 >
                   <div
-                    className={`h-[85px] items-center rounded-xl border-[0.5px] bg-[#F6F8FA]/60 py-4 ${
+                    className={`h-[85px] items-center rounded-xl border-[0.5px] bg-[#F6F8FA] py-4 ${
                       notice.isRead
-                        ? 'border-[#D6DDE5] px-5'
-                        : 'border-l-10 border-[#D6DDE5] border-l-[#5E92F0] px-4'
+                        ? 'border-[#D6DDE5]/40 px-5'
+                        : 'border-l-10 border-[#D6DDE5]/40 border-l-[#5E92F0] px-4'
                     }`}
                   >
                     <div className="flex items-center gap-2">

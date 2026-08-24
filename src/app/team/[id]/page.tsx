@@ -275,7 +275,7 @@ export default function TeamDetail() {
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <section className="flex flex-col gap-4 sm:flex-row sm:gap-6">
               <div className="flex items-start justify-between">
-                <div className="relative h-[150px] w-[150px] rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]">
+                <div className="relative h-[150px] w-[150px] rounded-2xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA]">
                   {team.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -298,7 +298,7 @@ export default function TeamDetail() {
                 <button
                   type="button"
                   onClick={() => setIsMemberDrawerOpen(true)}
-                  className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border-[0.5px] border-[#D6DDE5] bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:hidden"
+                  className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border-[0.5px] border-[#D6DDE5]/40 bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:hidden"
                 >
                   <Menu size={18} className="text-[#2C2C2C]" />
                 </button>
@@ -605,7 +605,7 @@ export default function TeamDetail() {
         >
           <aside
             onClick={(e) => e.stopPropagation()}
-            className="animate-modal-pop flex h-[70vh] w-full max-w-[365px] flex-col rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
+            className="animate-modal-pop flex h-[50vh] w-full max-w-[365px] flex-col rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
           >
             <div className="mb-2 flex shrink-0 items-center justify-between">
               <h2 className="text-[24px] font-bold text-[#2C2C2C]">

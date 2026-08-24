@@ -368,7 +368,7 @@ export default function CalendarEditModal({
                       value={participantSearch}
                       onChange={(e) => setParticipantSearch(e.target.value)}
                       placeholder="이름 검색"
-                      className="w-[70%] rounded-lg border-[0.5] border-[#D6DDE5] bg-white px-3 py-2 text-sm outline-none"
+                      className="w-[70%] rounded-lg border-[0.5] border-[#D6DDE5]/40 bg-white px-3 py-2 text-sm outline-none"
                     />
                   </div>
 
@@ -573,7 +573,7 @@ export default function CalendarEditModal({
               <button
                 type="button"
                 onClick={() => setIsDeleteConfirmOpen(true)}
-                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-6 font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
               >
                 삭제
               </button>
@@ -581,7 +581,7 @@ export default function CalendarEditModal({
               <button
                 type="button"
                 onClick={handleSave}
-                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
+                className="h-10 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-6 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#E3E7EC] active:scale-95"
               >
                 저장
               </button>
@@ -647,7 +647,7 @@ export default function CalendarEditModal({
                 <button
                   type="button"
                   onClick={() => handleScopeSelect('THIS_INSTANCE')}
-                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
+                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
                 >
                   이 일정만
                 </button>
@@ -655,7 +655,7 @@ export default function CalendarEditModal({
                 <button
                   type="button"
                   onClick={() => handleScopeSelect('THIS_AND_FOLLOWING')}
-                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
+                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
                 >
                   이 일정부터 이후 일정 모두
                 </button>
@@ -663,7 +663,7 @@ export default function CalendarEditModal({
                 <button
                   type="button"
                   onClick={() => handleScopeSelect('ALL_SERIES')}
-                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2c2c2c] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
+                  className="w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3 font-semibold text-[#2c2c2c] transition-all duration-200 hover:bg-[#EEF1F5] active:scale-95"
                 >
                   전체 반복 일정
                 </button>

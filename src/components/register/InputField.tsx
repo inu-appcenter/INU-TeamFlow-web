@@ -56,12 +56,12 @@ export default function InputField({
 
   return (
     <div className="w-full">
-      <label className="mx-7.5 mb-2 block text-[14px] text-[#9C9C9C] max-[640px]:text-[12px]">
+      <label className="mx-7.5 mb-1 block text-[14px] font-medium text-[#989898] max-[640px]:text-[12px]">
         {fieldName}
       </label>
 
       {isInput ? (
-        <div className="mx-7.5 mb-6">
+        <div className="mx-7.5 mb-4">
           <div className="relative">
             <input
               value={value}
@@ -71,7 +71,7 @@ export default function InputField({
               onBlur={onBlur}
               type={typeOption}
               placeholder={placeHolder}
-              className={`h-13.25 w-full rounded-full bg-[#F6F8FA] px-6 text-[15px] text-[#2C2C2C] outline-none placeholder:text-[#2C2C2C] max-[640px]:p-2 max-[640px]:text-[13px] ${
+              className={`h-13.25 w-full rounded-full bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C] outline-none placeholder:text-[#989898] max-[640px]:p-2 max-[640px]:text-[13px] ${
                 rightElement || check ? 'pr-14' : ''
               }`}
             />

@@ -108,12 +108,12 @@ export default function Header({
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           {isSearch && (
-            <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white md:w-100 md:flex-none">
+            <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-white md:w-100 md:flex-none">
               <div className="relative h-full">
                 <select
                   value={searchType}
                   onChange={(e) => onSearchTypeChange?.(e.target.value)}
-                  className="h-full appearance-none rounded-l-xl border-r-[0.5px] border-[#D6DDE5] px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
+                  className="h-full appearance-none rounded-l-xl border-r-[0.5px] border-[#D6DDE5]/60 px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
                 >
                   {searchFilter?.map((filter) => (
                     <option key={filter.value} value={filter.value}>

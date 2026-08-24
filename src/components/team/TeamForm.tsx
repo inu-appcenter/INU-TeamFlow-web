@@ -65,7 +65,7 @@ const InputField = ({
     </div>
 
     <input
-      className="mb-3 w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-2 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+      className="mb-3 w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 py-2 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -92,7 +92,7 @@ const TextAreaField = ({
     </div>
 
     <textarea
-      className="min-h-[90px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+      className="min-h-[90px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -207,7 +207,7 @@ export default function TeamForm({
                   <div className="relative">
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="mb-2 flex h-[160px] w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
+                      className="mb-2 flex h-[160px] w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#D6DDE5]/60 bg-[#F6F8FA]"
                     >
                       {previewUrl ? (
                         <img
@@ -275,7 +275,7 @@ export default function TeamForm({
                         type="button"
                         onClick={() => onChange('category', typedKey)}
                         className={`cursor-pointer rounded-2xl border-[0.5px] px-4 py-2 text-sm transition-all duration-150 ${
-                          isSelected ? '' : 'border-[#D6DDE5] bg-[#EEF1F5]'
+                          isSelected ? '' : 'border-[#D6DDE5]/40 bg-[#EEF1F5]'
                         }`}
                         style={
                           isSelected
@@ -344,7 +344,7 @@ export default function TeamForm({
                           await onSubmit(form);
                         }
                       }}
-                      className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-semibold text-white"
+                      className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-10 py-2 text-base font-medium text-white"
                     >
                       {mode === 'create' ? '생성' : '수정'}
                     </button>

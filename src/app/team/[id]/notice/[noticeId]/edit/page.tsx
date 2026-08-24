@@ -80,7 +80,7 @@ const InputField = ({
     </div>
 
     <input
-      className="mb-3 w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-2 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+      className="mb-3 w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 py-2 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -110,7 +110,7 @@ const TextAreaField = ({
 
     <textarea
       rows={rows}
-      className="w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+      className="w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 py-3 focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -326,7 +326,7 @@ function NoticeEditForm({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex h-[150px] w-[150px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] text-[#9C9C9C] transition hover:bg-[#EEF1F5]"
+                    className="flex h-[150px] w-[150px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-[#D6DDE5]/60 bg-[#F6F8FA] text-[#9C9C9C] transition hover:bg-[#EEF1F5]"
                   >
                     <Plus size={20} strokeWidth={2.5} />
                     <span className="text-[12px] font-semibold">추가</span>
@@ -348,7 +348,7 @@ function NoticeEditForm({
               </section>
 
               {/* 고정 여부 */}
-              <section className="mb-4 flex items-center gap-4">
+              <section className="mb-4 flex items-center gap-2">
                 <div className="text-sm tracking-wide text-[#B0B0B0]">
                   <p className="font-bold">고정 여부</p>
                 </div>
@@ -386,12 +386,12 @@ function NoticeEditForm({
               />
 
               <div className="mt-6 mb-16 flex justify-center">
-                <div className="flex gap-2">
+                <div className="flex gap-4">
                   <button
                     onClick={() =>
                       router.push(`/team/${teamId}/notice/${noticeId}`)
                     }
-                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-8 py-2 font-semibold text-[#2C2C2C]"
+                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] px-8 py-2 font-medium text-[#2C2C2C]"
                   >
                     취소
                   </button>
@@ -411,7 +411,7 @@ function NoticeEditForm({
                       setIsConfirmOpen(true);
                     }}
                     disabled={isSubmitting}
-                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-semibold text-white disabled:opacity-60"
+                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-medium text-white disabled:opacity-60"
                   >
                     수정
                   </button>

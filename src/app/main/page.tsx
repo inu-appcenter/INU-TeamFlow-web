@@ -6,7 +6,7 @@ import Card from '@/components/main/Card';
 import { BannerCarousel } from '@/components/main/banner/Banner';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
-import { Ganpan, cafe24Nyangi, chab, sinchon } from '@/fonts/logoFonts';
+import { cafe24Nyangi } from '@/fonts/logoFonts';
 import { useInfoPosts } from '@/hooks/useInfoPostQuery';
 import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -143,22 +143,15 @@ export default function Main() {
     };
   }, []);
 
-  // 로고 폰트 후보: 팀원들과 상의 후 최종 폰트 하나만 남길 예정이라 그대로 둠
-  const logoCandidates = [
-    // { label: '간판체', className: Ganpan.className },
-    { label: 'Cafe24 냥이체', className: cafe24Nyangi.className },
-    // { label: '차칸체', className: chab.className },
-    // { label: '신촌체', className: sinchon.className },
-  ];
+  const logoM = [{ label: 'Cafe24 냥이체', className: cafe24Nyangi.className }];
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto max-w-[1180px]">
         {/* 상단 */}
         <section className="relative mb-8 pt-4 md:min-h-[160px]">
-          {/* 로고: 알림버튼과 동일하게 fixed로 화면 왼쪽 끝에 고정, M만 사용 */}
           <div className="fixed top-4 left-10 z-80 flex flex-col items-center">
-            {logoCandidates.map((font) => (
+            {logoM.map((font) => (
               <motion.span
                 key={font.label}
                 initial={{ opacity: 0, y: 12 }}
