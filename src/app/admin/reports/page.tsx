@@ -83,7 +83,7 @@ const STATUS_TABS = [
 
 type StatusTabValue = (typeof STATUS_TABS)[number]['value'];
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 15;
 const PAGE_WINDOW_SIZE = 5;
 
 // ---- 더미 데이터 (백엔드 연동 시 useAdminReports 훅으로 교체) ----

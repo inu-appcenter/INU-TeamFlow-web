@@ -88,7 +88,14 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   // 1)/2)/4) 방 진입, 실시간 수신, 화면 이탈/백그라운드 전환 시 내 읽음 상태를 서버로 전송
   const lastMessageId =
     anchor?.messages[anchor.messages.length - 1]?.chatMessageId;
-  useMarkRoomRead(roomId, lastMessageId);
+  // anchor.lastReadMessageId = 서버가 기억하고 있는 "내가 이전에 이미 읽은 위치".
+  // 마운트 시 이 값을 알려줘야, 새로고침할 때마다 이미 서버 readCount에 반영된
+  // 과거 메시지들까지 로컬에서 또 한 번 +1 하는(이중 카운트) 걸 막을 수 있다.
+  useMarkRoomRead(
+    roomId,
+    lastMessageId,
+    anchor?.lastReadMessageId ?? undefined
+  );
 
   // 방에 "진입한 시점"의 읽음 위치를 고정해서 보여주기 위한 스냅샷.
   // anchor.lastReadMessageId를 그대로 쓰면 내 읽음 처리로 쿼리가 갱신되는 순간

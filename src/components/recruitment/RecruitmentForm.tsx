@@ -491,7 +491,7 @@ export default function RecruitmentForm({
                         category.value as InfoPostCategory
                       )
                     }
-                    className={`relative z-50 flex-1 cursor-pointer py-3.5 text-center text-[18px] font-bold whitespace-nowrap transition ${
+                    className={`relative z-50 flex-1 cursor-pointer py-3 text-center text-[20px] font-bold whitespace-nowrap transition ${
                       isActive
                         ? 'text-[#5E92F0]'
                         : 'text-[#CBD2DA] hover:text-[#5E92F0]'
