@@ -1,3 +1,5 @@
+import { infoPostCategoryColorMap } from '@/constants/infoPost';
+
 export const categoryMap: Record<string, string> = {
   CONTEST: '공모전',
   STUDY: '스터디',
@@ -11,17 +13,18 @@ export const categoryMap: Record<string, string> = {
   INFO_SHARING: '정보 공유',
 };
 
+// CONTEST~ETC는 팀(모집글) 카테고리라 이 파일이 색상 원본입니다.
+// 나머지(EXTERNAL_ACTIVITY~INFO_SHARING)는 정보글 전용 카테고리라
+// infoPostCategoryColorMap 값을 그대로 가져와 씁니다. 스프레드 뒤에
+// 오는 팀 카테고리 5개가 우선순위를 가지므로, CONTEST/CLUB이 두 맵에
+// 모두 있어도 여기 적힌 값이 이깁니다.
 export const categoryColorMap: Record<string, string> = {
+  ...infoPostCategoryColorMap,
   CONTEST: '#FBE4F8',
   STUDY: '#D8FAD8',
   PROJECT: '#DCEBFF',
   CLUB: '#FFF1CC',
   ETC: '#E9E9E9',
-  EXTERNAL_ACTIVITY: '#E2F3F8',
-  INTERN: '#EEEAF9',
-  CAREER_ADVICE: '#E9EEF7',
-  CASUAL_TALK: '#F9E9E2',
-  INFO_SHARING: '#E5F1ED',
 };
 
 export const categoryBorderColorMap: Record<string, string> = {

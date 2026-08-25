@@ -2,8 +2,16 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Check, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
-
+import {
+  Bell,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  ChevronDown,
+} from 'lucide-react';
+import { motion } from 'motion/react';
+import Checkbox from '@/components/common/Checkbox';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import {
   useDeleteNotifications,
@@ -197,7 +205,7 @@ export default function NotificationPage() {
         </header>
 
         {unreadCount > 0 && (
-          <div className="mb-3 flex items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0]/5 px-5 py-4 sm:px-6">
+          <div className="mb-3 flex items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0]/5 px-5 py-4 sm:px-6">
             <Bell
               size={20}
               strokeWidth={2.5}
@@ -213,7 +221,7 @@ export default function NotificationPage() {
         )}
 
         <section className="mb-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-4 pt-4 sm:px-6">
-          <div className="thin-scrollbar flex overflow-x-auto border-b-[0.5px] border-[#D6DDE5]">
+          <div className="relative flex border-b-[0.5px] border-[#D6DDE5]">
             {notificationTabs.map((tab) => {
               const isActive = activeTab === tab.value;
 
@@ -223,56 +231,65 @@ export default function NotificationPage() {
                   type="button"
                   onClick={() => handleTabChange(tab.value)}
                   disabled={isMutationPending}
-                  className={`cursor-pointer px-4 pb-4 text-base font-bold whitespace-nowrap transition sm:px-6 ${
+                  className={`relative flex-1 cursor-pointer pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:text-xl ${
                     isActive
-                      ? 'border-b-2 border-[#5E92F0] text-[#5E92F0]'
+                      ? 'text-[#5E92F0]'
                       : 'text-[#CBD2DA] hover:text-[#5E92F0]'
                   } disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   {tab.label}
+
+                  {isActive && (
+                    <motion.div
+                      layoutId="notificationTabIndicator"
+                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 600,
+                        damping: 50,
+                      }}
+                    />
+                  )}
                 </button>
               );
             })}
           </div>
 
           <div className="flex min-h-16 flex-wrap items-center gap-2 py-3">
-            <label
-              className={`mr-1 flex items-center gap-2 text-sm font-medium text-[#5C5C5C] ${
-                notifications.length > 0 && !isMutationPending
-                  ? 'cursor-pointer'
-                  : 'cursor-not-allowed opacity-50'
-              }`}
+            <div
+              className={
+                notifications.length === 0 || isMutationPending
+                  ? 'pointer-events-none opacity-50'
+                  : ''
+              }
             >
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={isAllSelected}
                 onChange={handleSelectAll}
-                disabled={notifications.length === 0 || isMutationPending}
-                className="h-5 w-5 cursor-pointer rounded border-[#D6DDE5] accent-[#5E92F0] disabled:cursor-not-allowed"
+                label="전체 선택"
+                size="sm"
+                className="mr-1 text-sm font-medium text-[#989898]"
               />
-              전체 선택
-            </label>
+            </div>
 
             <button
               type="button"
               onClick={handleMarkAsRead}
               disabled={selectedIds.length === 0 || isReadingSelected}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg border-[0.5px] border-[#D6DDE5] bg-white px-3 py-2 text-sm font-medium text-[#5C5C5C] transition-all duration-150 hover:border-[#5E92F0] hover:text-[#5E92F0] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex w-18 cursor-pointer items-center justify-center gap-1.5 rounded-lg border-[0.5px] border-[#D6DDE5] bg-white py-1.5 text-sm font-medium text-[#5c5c5c] transition-all duration-150 hover:border-[#5E92F0] hover:text-[#5E92F0] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Check size={16} strokeWidth={2.5} />
-
-              {isReadingSelected ? '처리 중' : '읽음'}
+              읽음
             </button>
 
             <button
               type="button"
               onClick={handleDelete}
               disabled={selectedIds.length === 0 || isDeletingSelected}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg border-[0.5px] border-[#D6DDE5] bg-white px-3 py-2 text-sm font-medium text-[#5C5C5C] transition-all duration-150 hover:border-[#FF7B8A] hover:text-[#FF7B8A] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex w-18 cursor-pointer items-center justify-center gap-1.5 rounded-lg border-[0.5px] border-[#D6DDE5] bg-white py-1.5 text-sm font-medium text-[#5c5c5c] transition-all duration-150 hover:border-[#FF7B8A] hover:text-[#FF7B8A] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Trash2 size={15} strokeWidth={2.5} />
-
-              {isDeletingSelected ? '삭제 중' : '삭제'}
+              삭제
             </button>
 
             {selectedIds.length > 0 && (
@@ -288,11 +305,11 @@ export default function NotificationPage() {
             <NotificationListSkeleton />
           ) : isError ? (
             <div className="flex h-[240px] items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5] bg-white text-sm text-[#989898]">
-              알림을 불러오지 못했습니다.
+              알림을 불러오지 못했습니다
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex h-[240px] items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5] bg-white text-sm text-[#989898]">
-              알림이 없습니다.
+              알림이 없습니다
             </div>
           ) : (
             notifications.map((notification) => {
@@ -309,16 +326,19 @@ export default function NotificationPage() {
                       : 'border-l-10 border-[#D6DDE5] border-l-[#5E92F0]'
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() =>
-                      handleSelectNotification(notification.notificationId)
+                  <div
+                    className={
+                      isMutationPending ? 'pointer-events-none opacity-50' : ''
                     }
-                    disabled={isMutationPending}
-                    aria-label={`${notification.title} 선택`}
-                    className="h-5 w-5 shrink-0 cursor-pointer rounded border-[#D6DDE5] accent-[#5E92F0] disabled:cursor-not-allowed disabled:opacity-50"
-                  />
+                  >
+                    <Checkbox
+                      checked={isSelected}
+                      onChange={() =>
+                        handleSelectNotification(notification.notificationId)
+                      }
+                      size="md"
+                    />
+                  </div>
 
                   <button
                     type="button"
@@ -349,11 +369,11 @@ export default function NotificationPage() {
                         )}
                       </div>
 
-                      <p className="mt-2 truncate px-1 text-sm text-[#5C5C5C]">
+                      <p className="mt-1 truncate px-1 text-sm text-[#989898]">
                         {notification.content}
                       </p>
 
-                      <time className="mt-2 block px-1 text-xs text-[#989898]">
+                      <time className="mt-1 block px-1 text-xs text-[#b0b0b0]">
                         {formatDate(notification.createdAt)}
                       </time>
                     </div>
@@ -361,7 +381,7 @@ export default function NotificationPage() {
                     <ChevronRight
                       size={22}
                       strokeWidth={2.5}
-                      className="shrink-0 text-[#2C2C2C]/60 transition-transform duration-150 group-hover:translate-x-0.5"
+                      className="shrink-0 text-[#989898]/60 transition-transform duration-150 group-hover:translate-x-0.5"
                     />
                   </button>
                 </article>
@@ -375,15 +395,23 @@ export default function NotificationPage() {
             type="button"
             onClick={handleFetchNextPage}
             disabled={isFetchingNextPage}
-            className="mx-auto mt-7 block cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-6 py-2.5 text-sm font-semibold text-[#5E92F0] transition-all duration-150 hover:bg-[#F8FAFF] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="group mx-auto mt-7 flex cursor-pointer items-center justify-center gap-0 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-white px-6 py-2.5 text-sm font-semibold text-[#5E92F0] transition-all duration-150 hover:bg-[#F8FAFF] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isFetchingNextPage ? '불러오는 중...' : '알림 더 보기'}
+
+            <span className="ml-0 inline-flex w-0 items-center justify-center overflow-hidden opacity-0 transition-all duration-200 group-hover:w-5.5 group-hover:opacity-100">
+              <ChevronDown
+                size={16}
+                className="mr-[-12px] shrink-0"
+                strokeWidth={2.5}
+              />
+            </span>
           </button>
         )}
 
         {!isLoading && !isError && notifications.length > 0 && !hasNextPage && (
           <p className="mt-7 text-center text-sm text-[#B0B8C1]">
-            모든 알림을 확인했어요.
+            모든 알림을 확인했어요
           </p>
         )}
       </div>

@@ -127,13 +127,13 @@ export default function Header({
                 </span>
               </div>
               <div className="flex flex-1 items-center gap-3 px-3">
-                <Search size={18} className="text-[#989898]" />
+                <Search size={18} className="text-[#b0b0b0]" />
 
                 <input
                   value={keyword}
                   onChange={(e) => onKeywordChange?.(e.target.value)}
                   placeholder="검색어를 입력하세요"
-                  className="w-full bg-transparent text-[#2C2C2C] outline-none placeholder:text-[#989898]"
+                  className="w-full bg-transparent text-[#2C2C2C] outline-none placeholder:text-[#b0b0b0]"
                 />
               </div>
             </div>

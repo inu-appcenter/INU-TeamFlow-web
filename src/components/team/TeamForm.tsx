@@ -9,9 +9,9 @@ import { useRouter } from 'next/navigation';
 import {
   categoryMap,
   categoryColorMap,
-  categoryBorderColorMap,
   DEFAULT_CATEGORY_COLOR,
 } from '@/constants/category';
+import { darkenColor } from '@/utils/color/darkenColor';
 
 export type TeamFormData = {
   name: string;
@@ -210,6 +210,7 @@ export default function TeamForm({
                       className="mb-2 flex h-[160px] w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#D6DDE5]/60 bg-[#F6F8FA]"
                     >
                       {previewUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={previewUrl}
                           alt="팀 이미지"
@@ -275,13 +276,22 @@ export default function TeamForm({
                         type="button"
                         onClick={() => onChange('category', typedKey)}
                         className={`cursor-pointer rounded-2xl border-[0.5px] px-4 py-2 text-sm transition-all duration-150 ${
-                          isSelected ? '' : 'border-[#D6DDE5]/40 bg-[#EEF1F5]'
+                          isSelected
+                            ? 'font-semibold opacity-100'
+                            : 'border-[#D6DDE5]/40 bg-[#EEF1F5]'
                         }`}
                         style={
                           isSelected
                             ? {
                                 backgroundColor: categoryColorMap[typedKey],
-                                borderColor: categoryBorderColorMap[typedKey],
+                                borderColor: darkenColor(
+                                  categoryColorMap[typedKey],
+                                  30
+                                ),
+                                color: darkenColor(
+                                  categoryColorMap[typedKey],
+                                  140
+                                ),
                               }
                             : undefined
                         }
@@ -321,7 +331,7 @@ export default function TeamForm({
                     {mode === 'edit' && onDelete && (
                       <button
                         onClick={onDelete}
-                        className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-8 py-2 font-semibold text-[#E22222]"
+                        className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-10 py-2 font-medium text-[#E22222]"
                       >
                         삭제
                       </button>

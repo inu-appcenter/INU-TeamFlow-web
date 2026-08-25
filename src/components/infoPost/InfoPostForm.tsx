@@ -7,13 +7,12 @@ import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ImagePlus, LoaderCircle, X } from 'lucide-react';
 
 import Card from '@/components/main/Card';
-import {
-  infoPostCategoryColorMap,
-  infoPostCategoryFilterOptions,
-} from '@/constants/infoPost';
+import { categoryColorMap } from '@/constants/contentCard';
+import { infoPostCategoryFilterOptions } from '@/constants/infoPost';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useUploadInfoPostImages } from '@/hooks/useInfoPostQuery';
 import type { InfoPostCategory } from '@/types/infoPost';
+import { darkenColor } from '@/utils/color/darkenColor';
 
 export interface InfoPostFormData {
   category: InfoPostCategory;
@@ -85,17 +84,25 @@ export default function InfoPostForm({
   const isBusy = isSubmitting || isUploading;
   const totalImageCount = existingImages.length + selectedImages.length;
 
-  useEffect(() => {
+  // initialData/initialImages는 부모(edit 페이지)에서 비동기로 조회된 뒤
+  // 나중에 채워지는 prop이라, 이펙트 대신 "렌더링 중 상태 조정" 패턴으로
+  // 동기화합니다. (https://react.dev/learn/you-might-not-need-an-effect)
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+
+  if (initialData !== prevInitialData) {
+    setPrevInitialData(initialData);
+
     if (initialData) {
       setForm(initialData);
     }
-  }, [initialData]);
+  }
 
-  useEffect(() => {
-    if (mode === 'edit') {
-      setExistingImages(initialImages);
-    }
-  }, [initialImages, mode]);
+  const [prevInitialImages, setPrevInitialImages] = useState(initialImages);
+
+  if (mode === 'edit' && initialImages !== prevInitialImages) {
+    setPrevInitialImages(initialImages);
+    setExistingImages(initialImages);
+  }
 
   useEffect(() => {
     selectedImagesRef.current = selectedImages;
@@ -272,8 +279,8 @@ export default function InfoPostForm({
 
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
-      <section className="mx-auto mt-8 max-w-[800px] sm:mt-12">
-        <Card className="relative overflow-hidden p-0">
+      <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
+        <Card className="relative flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           {errorMessage && (
             <div className="animate-modal-pop absolute top-32 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
               {errorMessage}
@@ -284,7 +291,7 @@ export default function InfoPostForm({
           <div
             className="flex h-[72px] items-center px-6"
             style={{
-              backgroundColor: infoPostCategoryColorMap[form.category],
+              backgroundColor: categoryColorMap[form.category],
             }}
           >
             <button
@@ -299,13 +306,13 @@ export default function InfoPostForm({
           </div>
 
           {/* 작성 영역 */}
-          <div className="px-8 py-6 sm:px-10">
+          <div className="flex-1 overflow-y-auto px-8 py-8 sm:px-10">
             <div className="mx-auto max-w-[600px]">
               {/* 제목 */}
               <div className="py-2">
                 <div className="mb-2">
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
-                    제목
+                    제목<span className="ml-0.5 text-[#EF4444]">*</span>
                   </span>
                 </div>
 
@@ -320,7 +327,7 @@ export default function InfoPostForm({
                     }))
                   }
                   placeholder="정보글 제목을 입력해주세요"
-                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 text-[#2C2C2C] placeholder:text-[#989898] focus:ring-2 focus:ring-[#5E92F0] focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
+                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 text-[#2C2C2C] placeholder:text-[#989898] focus:ring-2 focus:ring-[#5E92F0] focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
                 />
               </div>
 
@@ -328,43 +335,66 @@ export default function InfoPostForm({
               <div className="py-2">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
-                    카테고리
+                    카테고리<span className="ml-0.5 text-[#EF4444]">*</span>
                   </span>
 
                   {mode === 'edit' && (
                     <span className="text-xs text-[#9A9A9A]">
-                      수정할 수 없습니다
+                      (수정할 수 없습니다)
                     </span>
                   )}
                 </div>
 
-                <select
-                  value={form.category}
-                  disabled={mode === 'edit' || isBusy}
-                  onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      category: event.target.value as InfoPostCategory,
-                    }))
-                  }
-                  className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 text-[#2C2C2C] focus:ring-2 focus:ring-[#5E92F0] focus:outline-none disabled:cursor-not-allowed disabled:text-[#989898]"
-                >
-                  {infoPostCategoryOptions.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex flex-wrap gap-2.5">
+                  {infoPostCategoryOptions.map((category) => {
+                    const value = category.value as InfoPostCategory;
+                    const isSelected = form.category === value;
+
+                    return (
+                      <button
+                        key={category.value}
+                        type="button"
+                        disabled={mode === 'edit' || isBusy}
+                        onClick={() =>
+                          setForm((prev) => ({
+                            ...prev,
+                            category: value,
+                          }))
+                        }
+                        className={`cursor-pointer rounded-2xl border-[0.5px] px-4 py-2 text-sm transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+                          isSelected
+                            ? 'font-semibold opacity-100'
+                            : 'border-[#D6DDE5]/40 bg-[#EEF1F5]'
+                        }`}
+                        style={
+                          isSelected
+                            ? {
+                                backgroundColor: categoryColorMap[value],
+                                borderColor: darkenColor(
+                                  categoryColorMap[value],
+                                  30
+                                ),
+                                color: darkenColor(
+                                  categoryColorMap[value],
+                                  140
+                                ),
+                              }
+                            : undefined
+                        }
+                      >
+                        {category.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 이미지 */}
               <div className="py-2">
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-2">
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
                     이미지
                   </span>
-
-                  <span className="text-xs text-[#989898]">선택 사항</span>
                 </div>
 
                 <input
@@ -380,7 +410,7 @@ export default function InfoPostForm({
                   {existingImages.map((image) => (
                     <div
                       key={image.imageKey}
-                      className="relative aspect-video overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
+                      className="relative aspect-square overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA]"
                     >
                       <Image
                         src={image.imageUrl}
@@ -406,14 +436,14 @@ export default function InfoPostForm({
                   {selectedImages.map((image, index) => (
                     <div
                       key={image.previewUrl}
-                      className="relative aspect-video overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
+                      className="relative aspect-square overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA]"
                     >
                       <Image
                         src={image.previewUrl}
                         alt={image.file.name}
                         fill
                         unoptimized
-                        className="object-cover"
+                        className="h-full w-full object-cover"
                       />
 
                       <button
@@ -421,7 +451,7 @@ export default function InfoPostForm({
                         onClick={() => handleRemoveSelectedImage(index)}
                         disabled={isBusy}
                         aria-label="선택한 이미지 삭제"
-                        className="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[#989898]/50 text-white"
                       >
                         <X size={15} />
                       </button>
@@ -433,15 +463,14 @@ export default function InfoPostForm({
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isBusy}
-                      className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#B8C0CA] bg-[#F6F8FA] text-[#989898] hover:bg-[#EEF1F5] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed border-[#D6DDE5]/60 bg-[#F6F8FA] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <ImagePlus size={26} />
-                      <span className="text-sm font-semibold">이미지 추가</span>
+                      <ImagePlus size={26} className="text-[#9C9C9C]" />
                     </button>
                   )}
                 </div>
 
-                <p className="mt-2 text-xs text-[#989898]">
+                <p className="mt-2 text-[10px] text-[#b0b0b0]">
                   이미지 최대 3장 · 현재 {totalImageCount}장
                 </p>
               </div>
@@ -450,7 +479,7 @@ export default function InfoPostForm({
               <div className="py-2">
                 <div className="mb-2">
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
-                    내용
+                    내용<span className="ml-0.5 text-[#EF4444]">*</span>
                   </span>
                 </div>
 
@@ -464,18 +493,18 @@ export default function InfoPostForm({
                     }))
                   }
                   placeholder="공유할 정보를 입력해주세요"
-                  className="thin-scrollbar min-h-[280px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 text-[#2C2C2C] placeholder:text-[#989898] focus:ring-2 focus:ring-[#5E92F0] focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
+                  className="thin-scrollbar min-h-[280px] w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-4 py-3 text-[#2C2C2C] placeholder:text-[#989898] focus:ring-2 focus:ring-[#5E92F0] focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
                 />
               </div>
 
               {/* 하단 버튼 */}
-              <div className="mt-5 mb-4 flex justify-center gap-2">
+              <div className="mt-5 mb-15 flex justify-center gap-2">
                 {mode === 'edit' && onDelete && (
                   <button
                     type="button"
                     onClick={onDelete}
                     disabled={isBusy}
-                    className="cursor-pointer rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-8 py-2 font-semibold text-[#E22222] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-10 py-2 font-medium text-[#E22222] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     삭제
                   </button>
@@ -487,7 +516,7 @@ export default function InfoPostForm({
                     void handleSubmitClick();
                   }}
                   disabled={isBusy}
-                  className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
+                  className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0] px-10 py-2 font-medium text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
                 >
                   {isBusy ? (
                     <span className="flex items-center gap-2">
@@ -510,11 +539,11 @@ export default function InfoPostForm({
       {mode === 'create' && isConfirmOpen && (
         <div
           onClick={() => setIsConfirmOpen(false)}
-          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 px-4"
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
         >
           <div
             onClick={(event) => event.stopPropagation()}
-            className="animate-modal-pop w-full max-w-90 rounded-3xl bg-white p-6 shadow-xl"
+            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
           >
             <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
               정보글을 생성할까요?
