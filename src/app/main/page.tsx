@@ -6,7 +6,7 @@ import Card from '@/components/main/Card';
 import { BannerCarousel } from '@/components/main/banner/Banner';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
-import { cafe24Nyangi } from '@/fonts/logoFonts';
+import { cafe24Nyangi, circulat } from '@/fonts/logoFonts';
 import { useInfoPosts } from '@/hooks/useInfoPostQuery';
 import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -143,7 +143,7 @@ export default function Main() {
     };
   }, []);
 
-  const logoM = [{ label: 'Cafe24 냥이체', className: cafe24Nyangi.className }];
+  const logoM = [{ label: 'Circulat', className: circulat.className }];
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
@@ -154,16 +154,33 @@ export default function Main() {
             {logoM.map((font) => (
               <motion.span
                 key={font.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className={`${font.className} text-[55px]`}
-                style={{
-                  color: '#5E92F0',
-                  WebkitTextStroke: `0.5px ${darkenColor('#5E92F0', 30)}`,
-                }}
+                className={`${font.className} inline-flex text-[45px]`}
+                style={{ color: '#5E92F0' }}
               >
-                M
+                {'Moimi'.split('').map((char, index) => (
+                  <motion.span
+                    key={index}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{
+                      opacity: 1,
+                      y: [0, -10, 0],
+                    }}
+                    transition={{
+                      opacity: {
+                        duration: 0.4,
+                        delay: index * 0.09,
+                        ease: 'easeOut',
+                      },
+                      y: {
+                        duration: 0.75,
+                        ease: 'easeInOut',
+                        delay: index * 0.11,
+                      },
+                    }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}
               </motion.span>
             ))}
           </div>

@@ -204,6 +204,11 @@ export default function RecruitmentForm({
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
                     모집글 공고
                   </span>
+                  {mode === 'edit' && (
+                    <span className="text-xs text-[#9a9a9a]">
+                      (수정할 수 없습니다)
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-end gap-3">
@@ -235,6 +240,11 @@ export default function RecruitmentForm({
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
                     모집글 팀
                   </span>
+                  {mode === 'edit' && (
+                    <span className="text-xs text-[#9a9a9a]">
+                      (수정할 수 없습니다)
+                    </span>
+                  )}
                 </div>
 
                 <div className="relative flex items-end gap-3">
@@ -703,7 +713,7 @@ export default function RecruitmentForm({
             <div className="mt-4 flex gap-3">
               <button
                 onClick={() => setIsConfirmOpen(false)}
-                className="flex-1 rounded-xl border border-[#D6DDE5]/40 bg-[#F6F8FA] py-2 font-semibold"
+                className="flex-1 rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
               >
                 취소
               </button>

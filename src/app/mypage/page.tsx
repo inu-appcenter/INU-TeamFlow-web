@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState, useEffect } from 'react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
-import Header from '@/components/common/Header';
 import NotificationSettings from '@/components/mypage/NotificationSettings';
 import { colleges } from '@/constants/departments';
 import {
@@ -16,6 +15,8 @@ import {
 } from '@/hooks/useUserQuery';
 import { useFcm } from '@/hooks/useFcm';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { cafe24Nyangi, circulat } from '@/fonts/logoFonts';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Check,
   Vote,
@@ -30,20 +31,7 @@ import {
   Settings,
   LayoutDashboard,
 } from 'lucide-react';
-
-//이걸 복붙해서 사용해주세요
-//Header 연결을 위한 입력 공간
-//1. 페이지 이름을 입력해주세요
-const pageName = '마이페이지';
-
-//2. 글 검색 기능 있어야돼요? 답변은 true와 false로 해주세요
-const isSearch = false;
-
-//3. 글 작성 기능 있어야돼요? 답변은 true와 false로 해주세요
-const isCreate = false;
-
-//4. 카테고리 기능 있어야돼요? 답변은 true와 false로 해주세요
-const isCategory = false;
+import { darkenColor } from '@/utils/color/darkenColor';
 
 interface Department {
   value: string;
@@ -409,8 +397,8 @@ export default function MyPage() {
   if (!profileData) return null;
 
   return (
-    <main className="min-h-screen px-3 pt-6 pb-36 sm:px-6 lg:pb-24">
-      <div className="mx-auto mb-10 max-w-[1180px]">
+    <main className="flex min-h-screen flex-col justify-center px-3 py-6 pb-36 sm:px-6 xl:pb-24">
+      <div className="mx-auto mb-10 w-full max-w-[1180px]">
         <NotificationButton />
         {errorMessage && (
           <div className="fixed top-5 left-1/2 z-[500] -translate-x-1/2 rounded-xl bg-[#2C2C2C] px-5 py-3 text-[14px] font-medium text-white shadow-lg">
@@ -424,18 +412,32 @@ export default function MyPage() {
           onChange={handleProfileImageChange}
           className="hidden"
         />
-        <Header
-          pageName={pageName}
-          isSearch={isSearch}
-          isCreate={isCreate}
-          isCategory={isCategory}
-        />
 
         <section className="mx-auto grid max-w-[1180px] grid-cols-1 gap-6 lg:grid-cols-[420px_1fr]">
-          <section className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-6 transition-all duration-200 sm:p-7 lg:h-[650px]">
+          <section className="relative h-[630px] rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-6 transition-all duration-200 sm:p-6 2xl:h-[650px]">
+            {!modify && (
+              <span
+                className={`${circulat.className} absolute top-7 left-1/2 mb-2 -translate-x-1/2 text-[45px]`}
+                style={{
+                  color: '#5E92F0',
+                }}
+              >
+                Moimi
+              </span>
+            )}
+
             <div className="flex h-full flex-col">
-              <div className="flex flex-1 flex-col items-center justify-center">
-                <div className="relative h-36 w-36 shrink-0 transition-all duration-200 sm:h-44 sm:w-44">
+              <div
+                className={`flex flex-1 flex-col items-center transition-all duration-200 ${
+                  modify ? 'justify-start pt-6' : 'justify-center'
+                }`}
+              >
+                <div
+                  className={`relative h-36 w-36 shrink-0 transition-all duration-200 sm:h-44 sm:w-44 ${
+                    modify ? 'mt-0' : 'mt-10'
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={
                       modify
@@ -445,7 +447,6 @@ export default function MyPage() {
                     alt="프로필 이미지"
                     className="h-full w-full rounded-full object-cover transition-all duration-200"
                   />
-
                   {modify ? (
                     <button
                       type="button"
@@ -459,9 +460,10 @@ export default function MyPage() {
                   ) : profileData.isSchoolVerified ? (
                     <span
                       aria-label="학교 인증 완료"
-                      className="absolute right-1 bottom-1 flex h-9 w-9 items-center justify-center rounded-full bg-[#A7ECA7] text-[#2C2C2C] shadow-md"
+                      className="absolute right-1 bottom-1 flex h-9 w-9 items-center justify-center rounded-full bg-[#A7ECA7] shadow-md"
+                      style={{ color: darkenColor(`#A7ECA7`, 140) }}
                     >
-                      <Check size={21} />
+                      <Check size={21} className="mt-[2px]" strokeWidth={2} />
                     </span>
                   ) : (
                     <button
@@ -507,7 +509,7 @@ export default function MyPage() {
               </div>
 
               {!modify ? (
-                <div className="animate-modal-pop mb-5 w-full shrink-0">
+                <div className="animate-modal-pop mb-0 w-full shrink-0">
                   <div className="rounded-2xl bg-[#FBFBFB] px-5 py-4">
                     <p className="text-[15px] font-semibold text-[#2C2C2C]">
                       프로필 정보
@@ -520,9 +522,9 @@ export default function MyPage() {
                   <button
                     type="button"
                     onClick={startModify}
-                    className="mt-8 flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#D9DEE7] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95"
+                    className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#EEF1F5] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95"
                   >
-                    <Pen size={12} />
+                    <Pen size={13} />
                     수정하기
                   </button>
                 </div>
@@ -533,14 +535,14 @@ export default function MyPage() {
                     onChange={(e) => setEditName(e.target.value)}
                     aria-label="이름"
                     placeholder="이름"
-                    className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
+                    className="mb-2 w-full rounded-xl border border-[#D6DDE5]/60 bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
                   />
 
                   <input
                     value={profileData.username}
                     readOnly
                     aria-label="아이디"
-                    className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-[#F5F5F5] p-2.5 pl-4 text-[#989898] outline-none"
+                    className="mb-2 w-full rounded-xl border border-[#D6DDE5]/60 bg-[#F5F5F5] p-2.5 pl-4 text-[#989898] outline-none"
                   />
 
                   <input
@@ -548,7 +550,7 @@ export default function MyPage() {
                     onChange={(e) => setEditEmail(e.target.value)}
                     aria-label="이메일"
                     placeholder="이메일"
-                    className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
+                    className="mb-2 w-full rounded-xl border border-[#D6DDE5]/60 bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
                   />
 
                   <div className="mb-2">
@@ -556,7 +558,7 @@ export default function MyPage() {
                       value={editDepartment}
                       onChange={(e) => setEditDepartment(e.target.value)}
                       aria-label="학과"
-                      className="w-full rounded-xl border border-[#D6DDE5] bg-white px-3 py-2.5 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
+                      className="w-full rounded-xl border border-[#D6DDE5]/60 bg-white px-3 py-2.5 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
                     >
                       <option value="">학과 선택</option>
 
@@ -581,7 +583,7 @@ export default function MyPage() {
                     type="password"
                     aria-label="새 비밀번호"
                     placeholder="새 비밀번호"
-                    className="mb-2 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
+                    className="mb-2 w-full rounded-xl border border-[#D6DDE5]/60 bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
                   />
 
                   <input
@@ -590,7 +592,7 @@ export default function MyPage() {
                     type="password"
                     aria-label="새 비밀번호 확인"
                     placeholder="새 비밀번호 확인"
-                    className="mb-3 w-full rounded-xl border border-[#D6DDE5] bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
+                    className="mb-3 w-full rounded-xl border border-[#D6DDE5]/60 bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
                   />
 
                   <div className="flex gap-2">
@@ -616,11 +618,11 @@ export default function MyPage() {
               )}
             </div>
           </section>
-          <section className="relative h-full overflow-visible lg:h-[650px]">
+          <section className="relative h-[630px] overflow-visible 2xl:h-[650px]">
             <section className="flex h-full flex-col rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-5 sm:p-6">
               <h3 className="text-[20px] font-bold text-[#2C2C2C]">MY</h3>
 
-              <div className="mt-5 grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-5">
+              <div className="mt-4 grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-5">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
 
@@ -629,13 +631,13 @@ export default function MyPage() {
                       key={item.title}
                       type="button"
                       onClick={() => router.push(item.path)}
-                      className="flex min-h-[72px] w-full cursor-pointer items-center gap-4 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#FBFBFB] px-5 text-left text-[#2C2C2C] transition-all duration-150 hover:bg-white active:scale-[0.98] lg:h-full"
+                      className="flex min-h-[72px] w-full cursor-pointer items-center gap-4 rounded-2xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8Fa] px-5 text-left transition-all duration-150 hover:bg-[#F6F8Fa]/50 active:scale-[0.95] lg:h-full"
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white">
-                        <Icon size={18} strokeWidth={1.8} />
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#5E92F0]">
+                        <Icon size={18} strokeWidth={2} />
                       </span>
 
-                      <span className="text-[17px] font-normal">
+                      <span className="text-[17px] font-medium text-[#2C2C2C]">
                         {item.title}
                       </span>
                     </button>
@@ -644,7 +646,7 @@ export default function MyPage() {
               </div>
             </section>
 
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-3 lg:absolute lg:right-0 lg:-bottom-14 lg:mt-0">
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3 lg:absolute lg:right-0 2xl:-bottom-10 2xl:mt-0">
               {isAdmin && (
                 <button
                   type="button"
@@ -658,20 +660,40 @@ export default function MyPage() {
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
-                className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 hover:bg-[#CED5E0] active:scale-90"
+                className="group flex cursor-pointer items-center gap-1.5 border-r border-[#D6DDE5] pr-4 text-[12px] font-medium"
               >
-                <Settings size={14} />
-                설정
+                <Settings
+                  size={14}
+                  className="text-[#2C2C2C]/60 transition-colors duration-300 group-hover:text-[#2c2c2c]"
+                />
+
+                <span className="relative">
+                  <span className="text-[#2C2C2C]/50">설정</span>
+                  <span className="absolute inset-0 overflow-hidden text-[#2c2c2c] transition-[clip-path] duration-300 ease-out [clip-path:inset(0_100%_0_0)] group-hover:[clip-path:inset(0_0_0_0)]">
+                    설정
+                  </span>
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={logout}
                 disabled={isLoggingOut}
-                className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 hover:bg-[#CED5E0] active:scale-90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="group flex cursor-pointer items-center gap-1.5 pr-4 text-[12px] font-medium disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <LogOut size={14} />
-                {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+                <LogOut
+                  size={14}
+                  className="text-[#2C2C2C]/50 transition-colors duration-300 group-hover:text-[#2c2c2c]"
+                />
+
+                <span className="relative">
+                  <span className="text-[#2C2C2C]/60">
+                    {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+                  </span>
+                  <span className="absolute inset-0 overflow-hidden text-[#2c2c2c] transition-[clip-path] duration-300 ease-out [clip-path:inset(0_100%_0_0)] group-hover:[clip-path:inset(0_0_0_0)]">
+                    {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+                  </span>
+                </span>
               </button>
             </div>
           </section>

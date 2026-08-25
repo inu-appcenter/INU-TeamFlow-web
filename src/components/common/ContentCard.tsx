@@ -201,7 +201,8 @@ export default function ContentCard(props: CardProps) {
             </div>
           )}
           {props.cardType === 'infoPost' && props.thumbnailUrl && (
-            <div className="absolute top-1/2 right-6 h-[88px] w-[88px] -translate-y-1/2 overflow-hidden rounded-xl">
+            <div className="absolute top-1/2 right-6 h-[110px] w-[130px] -translate-y-1/2 overflow-hidden rounded-xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={props.thumbnailUrl}
                 alt=""
