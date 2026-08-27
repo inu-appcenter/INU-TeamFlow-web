@@ -9,12 +9,14 @@ import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
 import { LOGIN_TEXT } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLogin } from '@/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useFcm } from '@/hooks/useFcm';
 
 export default function Login() {
   const router = useRouter();
+  const { refetchUser } = useAuth();
 
   const { mutate: loginMutate, isPending: isLoginPending } = useLogin();
   const { registerFcmToken } = useFcm();
@@ -49,12 +51,18 @@ export default function Login() {
           localStorage.setItem('accessToken', data.accessToken);
 
           try {
+            await refetchUser();
+          } catch (error) {
+            console.error('사용자 정보 조회 실패:', error);
+          }
+
+          try {
             await registerFcmToken();
           } catch (error) {
             console.error('FCM 토큰 등록 실패:', error);
           }
 
-          router.push(ROUTES.MAIN);
+          router.replace(ROUTES.MAIN);
         },
         onError: () => {
           showErrorMessage('아이디 또는 비밀번호가 올바르지 않습니다');
