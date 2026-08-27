@@ -122,12 +122,12 @@ export default function Register() {
                 type="button"
                 onClick={() => router.push(ROUTES.LOGIN)}
                 aria-label="로그인 페이지로 돌아가기"
-                className="cursor-pointer pt-5 pl-5 text-[#b0b0b0] transition-all duration-150 active:scale-90"
+                className="cursor-pointer pt-6 pl-5 text-[#2C2C2C]/80 transition-all duration-150 hover:text-[#2C2C2C] active:scale-90"
               >
                 <ChevronLeft size={28} strokeWidth={2.5} />
               </button>
 
-              <div className="-mt-4 mb-6 flex items-center">
+              <div className="-mt-6 mb-6 flex items-center">
                 <h1 className="relative left-1/2 -translate-x-1/2 text-[28px] font-semibold max-[640px]:text-[24px]">
                   {REGISTER_TEXT.TITLE}
                 </h1>

@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
 
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
-import NotificationButton from '@/components/common/notification/NotificationButton';
 import ContentCard from '@/components/common/ContentCard';
 import Header from '@/components/common/Header';
 import { useErrorToast } from '@/hooks/useErrorToast';
@@ -214,14 +212,6 @@ export default function InvitationsPage() {
                 <h2 className="text-[22px] font-bold text-[#2C2C2C]">
                   초대 상세
                 </h2>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedInvitation(null)}
-                  className="cursor-pointer text-[#B0B8C1]"
-                >
-                  <X size={22} />
-                </button>
               </div>
 
               <div className="space-y-3 text-sm">
@@ -300,7 +290,7 @@ export default function InvitationsPage() {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-[#EDF1F5] pb-3">
+    <div className="flex justify-between gap-4 border-b-[0.5px] border-[#D6DDE5]/60 pb-3">
       <span className="shrink-0 font-semibold text-[#989898]">{label}</span>
 
       <span className="text-right text-[#2C2C2C]">{value}</span>

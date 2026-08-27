@@ -596,13 +596,13 @@ export default function CalendarEditModal({
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-4 shadow-xl"
             >
               <h3 className="text-center text-xl font-bold text-[#2C2C2C]">
                 일정을 삭제할까요?
               </h3>
 
-              <p className="mt-1 text-center text-[15px] text-[#989898]">
+              <p className="mt-2 text-center text-[15px] text-[#989898]">
                 삭제한 일정은 다시 복구할 수 없어요
               </p>
 
@@ -618,7 +618,7 @@ export default function CalendarEditModal({
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
                 >
                   삭제
                 </button>

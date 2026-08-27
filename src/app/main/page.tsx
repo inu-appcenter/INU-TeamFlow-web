@@ -12,7 +12,6 @@ import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { darkenColor } from '@/utils/color/darkenColor';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useCalendarGrid } from '@/hooks/calendar/useCalendarGrid';
@@ -93,7 +92,7 @@ export default function Main() {
   const mobileRecruitments = filteredRecruitments.slice(0, 4);
   const desktopRecruitments = filteredRecruitments.slice(0, 3);
 
-  const { data: infoPostData, isLoading: isInfoPostsLoading } = useInfoPosts({
+  const { data: infoPostData } = useInfoPosts({
     category:
       selectedInfoPostCategory === 'ALL' ? undefined : selectedInfoPostCategory,
     page: 0,
@@ -160,7 +159,7 @@ export default function Main() {
                 {'Moimi'.split('').map((char, index) => (
                   <motion.span
                     key={index}
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 1, y: 12 }}
                     animate={{
                       opacity: 1,
                       y: [0, -10, 0],
@@ -256,23 +255,35 @@ export default function Main() {
               </div>
 
               <div className="mt-0 flex flex-col sm:hidden">
-                {mobileNotices.map((notice) => (
-                  <NoticeListItem
-                    key={notice.noticeId}
-                    notice={notice}
-                    size="sm"
-                  />
-                ))}
+                {mobileNotices.length > 0 ? (
+                  mobileNotices.map((notice) => (
+                    <NoticeListItem
+                      key={notice.noticeId}
+                      notice={notice}
+                      size="sm"
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-[300px] items-center justify-center text-sm font-medium text-[#989898]">
+                    아직 등록된 공지사항이 없어요
+                  </div>
+                )}
               </div>
 
               <div className="mt-0 hidden flex-col sm:flex">
-                {desktopNotices.map((notice) => (
-                  <NoticeListItem
-                    key={notice.noticeId}
-                    notice={notice}
-                    size="lg"
-                  />
-                ))}
+                {desktopNotices.length > 0 ? (
+                  desktopNotices.map((notice) => (
+                    <NoticeListItem
+                      key={notice.noticeId}
+                      notice={notice}
+                      size="lg"
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-[300px] items-center justify-center text-sm font-medium text-[#989898]">
+                    아직 등록된 공지사항이 없어요
+                  </div>
+                )}
               </div>
             </Card>
           </div>
@@ -330,23 +341,35 @@ export default function Main() {
               </div>
 
               <div className="mt-0 flex flex-col sm:hidden">
-                {mobileRecruitments.map((recruitment) => (
-                  <RecruitmentListItem
-                    key={recruitment.recruitmentId}
-                    recruitment={recruitment}
-                    size="sm"
-                  />
-                ))}
+                {mobileRecruitments.length > 0 ? (
+                  mobileRecruitments.map((recruitment) => (
+                    <RecruitmentListItem
+                      key={recruitment.recruitmentId}
+                      recruitment={recruitment}
+                      size="sm"
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-[250px] items-center justify-center text-sm font-medium text-[#989898]">
+                    아직 등록된 모집글이 없어요
+                  </div>
+                )}
               </div>
 
               <div className="hidden flex-col sm:flex">
-                {desktopRecruitments.map((recruitment) => (
-                  <RecruitmentListItem
-                    key={recruitment.recruitmentId}
-                    recruitment={recruitment}
-                    size="lg"
-                  />
-                ))}
+                {desktopRecruitments.length > 0 ? (
+                  desktopRecruitments.map((recruitment) => (
+                    <RecruitmentListItem
+                      key={recruitment.recruitmentId}
+                      recruitment={recruitment}
+                      size="lg"
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-[210px] items-center justify-center text-sm font-medium text-[#989898]">
+                    아직 등록된 모집글이 없어요
+                  </div>
+                )}
               </div>
             </Card>
           </div>
@@ -408,11 +431,7 @@ export default function Main() {
 
               {/* 모바일 리스트 */}
               <div className="mt-0 flex flex-col sm:hidden">
-                {isInfoPostsLoading ? (
-                  <div className="flex h-[220px] items-center justify-center text-sm font-medium text-[#989898]">
-                    정보글을 불러오는 중입니다
-                  </div>
-                ) : mobileInfoPosts.length > 0 ? (
+                {mobileInfoPosts.length > 0 ? (
                   mobileInfoPosts.map((infoPost) => (
                     <InfoPostListItem
                       key={infoPost.infoPostId}
@@ -421,19 +440,15 @@ export default function Main() {
                     />
                   ))
                 ) : (
-                  <div className="flex h-[220px] items-center justify-center text-sm font-medium text-[#989898]">
-                    등록된 정보글이 없습니다
+                  <div className="flex h-[250px] items-center justify-center text-sm font-medium text-[#989898]">
+                    아직 등록된 정보글이 없어요
                   </div>
                 )}
               </div>
 
               {/* 데스크톱 리스트 */}
               <div className="hidden flex-col sm:flex">
-                {isInfoPostsLoading ? (
-                  <div className="flex h-[190px] items-center justify-center text-sm font-medium text-[#989898]">
-                    정보글을 불러오는 중입니다
-                  </div>
-                ) : desktopInfoPosts.length > 0 ? (
+                {desktopInfoPosts.length > 0 ? (
                   desktopInfoPosts.map((infoPost) => (
                     <InfoPostListItem
                       key={infoPost.infoPostId}
@@ -443,28 +458,32 @@ export default function Main() {
                   ))
                 ) : (
                   <div className="flex h-[190px] items-center justify-center text-sm font-medium text-[#989898]">
-                    등록된 정보글이 없습니다
+                    아직 등록된 정보글이 없어요
                   </div>
                 )}
               </div>
             </Card>
           </div>
         </section>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="mx-auto mb-40 w-fit"
-        >
-          <Image
-            src="/images/app-center-black.png"
-            alt="App Center 로고"
-            width={150}
-            height={150}
-            className="h-auto w-auto shrink-0 opacity-20"
-          />
-        </motion.div>
+
+        {/* 하단 정책 링크 */}
+        <footer className="mt-15 mb-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-[#EDEFF2] pt-2 text-xs text-[#989898] sm:text-sm">
+          <a href="#" className="hover:text-[#2C2C2C]">
+            이용약관
+          </a>
+          <span className="text-[#D6DDE5]">|</span>
+          <a href="#" className="font-semibold text-[#2C2C2C]">
+            개인정보처리방침
+          </a>
+          <span className="text-[#D6DDE5]">|</span>
+          <a href="#" className="hover:text-[#2C2C2C]">
+            커뮤니티 이용규칙
+          </a>
+          <span className="text-[#D6DDE5]">|</span>
+          <a href="#" className="hover:text-[#2C2C2C]">
+            청소년 보호정책
+          </a>
+        </footer>
       </div>
 
       <BottomNav />

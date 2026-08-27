@@ -96,6 +96,21 @@ export default function Team() {
           >
             {isLoading ? (
               <TeamListSkeleton />
+            ) : filteredTeams.length === 0 ? (
+              <div className="flex h-52 flex-col items-center justify-center gap-2 text-center">
+                <p className="text-sm text-[#9C9C9C]">
+                  아직 함께하는 팀이 없어요
+                </p>
+                <p className="text-sm text-[#9C9C9C]">
+                  지금 모집 중인 팀을 모집 게시판에서 확인해보세요
+                </p>
+                <button
+                  onClick={() => router.push('/recruitment')}
+                  className="z-50 mt-2 cursor-pointer rounded-lg bg-[#5E92F0] px-4 py-2 text-sm font-medium text-white transition transition-all duration-150 hover:bg-[#4C82E5] active:scale-90"
+                >
+                  모집 게시판 보러가기
+                </button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 pb-32 sm:grid-cols-2">
                 {filteredTeams.map((team) => (

@@ -84,9 +84,9 @@ export default function RecruitmentDetail() {
   };
 
   const hasAnnouncement =
-    recruitment.announcementId !== null &&
-    recruitment.announcementId !== undefined &&
-    recruitment.announcementTitle;
+    recruitment.infoPostId !== null &&
+    recruitment.infoPostId !== undefined &&
+    recruitment.infoPostTitle;
 
   const isClosed =
     new Date(recruitment.endAt) < new Date() || !recruitment.isOpened;
@@ -143,7 +143,7 @@ export default function RecruitmentDetail() {
             }}
           >
             <button
-              onClick={() => router.push('/recruitment')}
+              onClick={() => router.back()}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={24} strokeWidth={2.5} />
@@ -244,8 +244,13 @@ export default function RecruitmentDetail() {
             </h1>
 
             {hasAnnouncement ? (
-              <button className="mt-3 cursor-pointer rounded-xl bg-[#EEF1F5] px-3 py-1.5 text-[12px] text-[#2C2C2C] transition hover:bg-[#E3E7EB] sm:mt-4 sm:px-4 sm:text-sm">
-                &lt;{recruitment.announcementTitle}&gt; 바로가기
+              <button
+                onClick={() =>
+                  router.push(`/infoPost/${recruitment.infoPostId}`)
+                }
+                className="mt-3 cursor-pointer rounded-xl bg-[#EEF1F5] px-3 py-1.5 text-[12px] text-[#2C2C2C] transition transition-all duration-150 active:scale-90 sm:mt-4 sm:px-4 sm:text-sm"
+              >
+                &lt;{recruitment.infoPostTitle}&gt; 바로가기
               </button>
             ) : (
               <button
@@ -359,20 +364,20 @@ export default function RecruitmentDetail() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-4 shadow-xl"
             >
-              <h2 className="text-center text-xl font-bold">
+              <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
                 모집글을 삭제할까요?
               </h2>
 
-              <p className="mt-2 text-center text-sm text-[#989898]">
+              <p className="mt-2 text-center text-[15px] text-[#989898]">
                 삭제한 모집글은 복구할 수 없어요
               </p>
 
-              <div className="mt-4 flex gap-3">
+              <div className="mt-3 flex gap-3">
                 <button
                   onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
+                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
                 >
                   취소
                 </button>
@@ -382,7 +387,7 @@ export default function RecruitmentDetail() {
                     setIsDeleteConfirmOpen(false);
                     handleDeleteRecruitment();
                   }}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
                 >
                   삭제
                 </button>
