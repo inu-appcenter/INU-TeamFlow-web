@@ -16,7 +16,6 @@ import {
 import { useFcm } from '@/hooks/useFcm';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { cafe24Nyangi, circulat } from '@/fonts/logoFonts';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   Check,
   Vote,
@@ -434,7 +433,7 @@ export default function MyPage() {
               >
                 <div
                   className={`relative h-36 w-36 shrink-0 transition-all duration-200 sm:h-44 sm:w-44 ${
-                    modify ? 'mt-0' : 'mt-10'
+                    modify ? 'mt-0' : 'mt-14'
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
