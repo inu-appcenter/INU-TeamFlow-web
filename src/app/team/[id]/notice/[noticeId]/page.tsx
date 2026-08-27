@@ -242,12 +242,12 @@ export default function TeamNoticeDetail() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-4 shadow-xl"
           >
             <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
               공지를 삭제할까요?
             </h2>
-            <p className="mt-1 text-center text-[15px] text-[#989898]">
+            <p className="mt-2 text-center text-[15px] text-[#989898]">
               삭제한 공지는 복구할 수 없어요
             </p>
 

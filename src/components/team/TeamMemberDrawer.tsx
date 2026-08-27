@@ -464,11 +464,8 @@ export default function TeamMemberDrawer({
                       if (confirmTarget.type === 'kick') {
                         kickMember(confirmTarget.member.teamMemberId, {
                           onSuccess: () => setConfirmTarget(null),
-                          onError: (err) => {
-                            const message =
-                              (err as AxiosError<{ message?: string }>).response
-                                ?.data?.message ?? '멤버 제거에 실패했어요';
-                            showErrorMessage(message);
+                          onError: () => {
+                            showErrorMessage('멤버 제거에 실패했어요');
                             setConfirmTarget(null);
                           },
                         });

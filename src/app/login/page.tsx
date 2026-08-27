@@ -178,7 +178,7 @@ export default function Login() {
                   <span className="ml-0 inline-flex w-0 items-center justify-center overflow-hidden opacity-0 transition-all duration-200 group-hover:ml-1.5 group-hover:w-4 group-hover:opacity-100">
                     <ChevronRight
                       size={20}
-                      className="-mr-1 shrink-0"
+                      className="-mr-2 shrink-0"
                       strokeWidth={2.5}
                     />
                   </span>

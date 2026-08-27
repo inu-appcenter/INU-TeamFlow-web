@@ -475,7 +475,7 @@ export default function ChatRoomDrawer({
                                     onClick={() => setOpenMemberMenuId(null)}
                                     className="fixed inset-0 z-[270]"
                                   />
-                                  <div className="absolute top-7 right-0 z-[280] w-[120px] overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white py-1 shadow-lg">
+                                  <div className="absolute top-7 right-0 z-[280] w-[120px] overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5] bg-white py-1 shadow-md">
                                     <button
                                       onClick={() =>
                                         handleDirectMessage(member)
@@ -484,6 +484,12 @@ export default function ChatRoomDrawer({
                                       className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#2C2C2C] hover:bg-[#F6F8FA] disabled:opacity-50"
                                     >
                                       1:1 채팅
+                                    </button>
+                                    <button
+                                      disabled={isCreatingRoom}
+                                      className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#e22222] hover:bg-[#FDEEEE] disabled:opacity-50"
+                                    >
+                                      신고하기
                                     </button>
                                   </div>
                                 </>

@@ -22,17 +22,18 @@ export default function InfoPostDetailPage() {
   const infoPostId = Number(params.id);
 
   const { data: infoPost, isLoading } = useInfoPostDetail(infoPostId);
-  const { mutateAsync: deleteInfoPost } = useDeleteInfoPost();
+  const { mutateAsync: deleteInfoPost, isPending: isDeleting } =
+    useDeleteInfoPost();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrapped, setIsScrapped] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const { errorMessage, showErrorMessage } = useErrorToast();
-  const handleDelete = async () => {
-    const confirmed = window.confirm('정보글을 삭제하시겠습니까?');
 
-    if (!confirmed) return;
+  const handleDelete = async () => {
+    if (isDeleting) return;
 
     try {
       await deleteInfoPost(infoPostId);
@@ -94,7 +95,7 @@ export default function InfoPostDetailPage() {
           >
             <button
               type="button"
-              onClick={() => router.push('/infoPost')}
+              onClick={() => router.back()}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={24} strokeWidth={2.5} />
@@ -133,8 +134,12 @@ export default function InfoPostDetailPage() {
 
                         <button
                           type="button"
-                          onClick={handleDelete}
-                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsDeleteConfirmOpen(true);
+                          }}
+                          disabled={isDeleting}
+                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA] disabled:opacity-50"
                         >
                           삭제하기
                         </button>
@@ -232,6 +237,7 @@ export default function InfoPostDetailPage() {
                 {[...infoPost.images]
                   .sort((a, b) => a.sortOrder - b.sortOrder)
                   .map((image) => (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       key={`${image.imageUrl}-${image.sortOrder}`}
                       src={image.imageUrl}
@@ -243,6 +249,46 @@ export default function InfoPostDetailPage() {
             )}
           </div>
         </Card>
+
+        {isDeleteConfirmOpen && (
+          <div
+            onClick={() => setIsDeleteConfirmOpen(false)}
+            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-4 shadow-xl"
+            >
+              <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
+                정보글을 삭제할까요?
+              </h2>
+
+              <p className="mt-2 text-center text-[15px] text-[#989898]">
+                삭제한 정보글은 복구할 수 없어요
+              </p>
+
+              <div className="mt-3 flex gap-3">
+                <button
+                  onClick={() => setIsDeleteConfirmOpen(false)}
+                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
+                >
+                  취소
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    handleDelete();
+                  }}
+                  disabled={isDeleting}
+                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-200 active:scale-95 disabled:opacity-50"
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <AnimatePresence>
           {isReportModalOpen && (

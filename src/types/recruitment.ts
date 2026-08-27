@@ -30,8 +30,8 @@ export interface RecruitmentDetailResponse {
   description: string;
   targetMemberCount: number;
   currentMemberCount: number;
-  announcementId: number | null;
-  announcementTitle: string | null;
+  infoPostId: number | null;
+  infoPostTitle: string | null;
   teamId: number | null;
   teamName: string | null;
   endAt: string;

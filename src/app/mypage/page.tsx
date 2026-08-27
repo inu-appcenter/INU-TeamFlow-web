@@ -18,6 +18,7 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import { cafe24Nyangi, circulat } from '@/fonts/logoFonts';
 import {
   Check,
+  ChevronDown,
   Vote,
   SquarePen,
   UserRoundPlus,
@@ -31,6 +32,7 @@ import {
   LayoutDashboard,
 } from 'lucide-react';
 import { darkenColor } from '@/utils/color/darkenColor';
+import { motion } from 'motion/react';
 
 interface Department {
   value: string;
@@ -459,19 +461,51 @@ export default function MyPage() {
                   ) : profileData.isSchoolVerified ? (
                     <span
                       aria-label="학교 인증 완료"
-                      className="absolute right-1 bottom-1 flex h-9 w-9 items-center justify-center rounded-full bg-[#A7ECA7] shadow-md"
-                      style={{ color: darkenColor(`#A7ECA7`, 140) }}
+                      className="absolute right-1 bottom-1 flex h-10 w-10 items-center justify-center"
                     >
-                      <Check size={21} className="mt-[2px]" strokeWidth={2} />
+                      <span className="absolute inset-0 overflow-hidden rounded-full">
+                        <motion.div
+                          style={{ willChange: 'transform' }}
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: 'linear',
+                          }}
+                          className="absolute inset-[-50%]"
+                        />
+                      </span>
+
+                      <span
+                        className="relative z-10 flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#A7ECA7] shadow-md"
+                        style={{ color: darkenColor(`#A7ECA7`, 140) }}
+                      >
+                        <Check size={19} className="mt-[2px]" strokeWidth={2} />
+                      </span>
                     </span>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => router.push('/mypage/authentication')}
-                      className="absolute -right-12 bottom-1 rounded-full bg-[#F67F8F] px-3 py-1.5 text-[12px] font-medium text-white shadow-md transition-all duration-150 active:scale-90"
-                    >
-                      학교 인증
-                    </button>
+                    <div className="absolute -right-4 bottom-1 flex">
+                      <div className="relative overflow-hidden rounded-full p-[2px]">
+                        <motion.div
+                          style={{ willChange: 'transform' }}
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: 'linear',
+                          }}
+                          className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0%,#FFB3B3_25%,#F07272_45%,transparent_65%)]"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => router.push('/mypage/authentication')}
+                          className="relative z-10 cursor-pointer rounded-full bg-[#E75A5A] px-3 py-1.5 text-[12px] font-medium text-white shadow-md transition-all duration-150 active:scale-90"
+                        >
+                          학교 인증
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -552,12 +586,12 @@ export default function MyPage() {
                     className="mb-2 w-full rounded-xl border border-[#D6DDE5]/60 bg-white p-2.5 pl-4 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
                   />
 
-                  <div className="mb-2">
+                  <div className="relative mb-2">
                     <select
                       value={editDepartment}
                       onChange={(e) => setEditDepartment(e.target.value)}
                       aria-label="학과"
-                      className="w-full rounded-xl border border-[#D6DDE5]/60 bg-white px-3 py-2.5 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
+                      className="w-full appearance-none rounded-xl border border-[#D6DDE5]/60 bg-white px-3 py-2.5 pr-10 text-[#2C2C2C] transition-colors outline-none focus:border-[#5E92F0]"
                     >
                       <option value="">학과 선택</option>
 
@@ -574,6 +608,12 @@ export default function MyPage() {
                         </optgroup>
                       ))}
                     </select>
+
+                    <ChevronDown
+                      size={18}
+                      strokeWidth={2}
+                      className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[#989898]"
+                    />
                   </div>
 
                   <input
