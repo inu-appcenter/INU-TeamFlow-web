@@ -17,6 +17,7 @@ import { categoryMap, categoryColorMap } from '@/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
 import ReportModal from '@/components/report/ReportModal';
+import ScrapButton from '@/components/common/ScrapButton';
 
 export default function RecruitmentDetail() {
   const router = useRouter();
@@ -193,17 +194,11 @@ export default function RecruitmentDetail() {
                 </div>
               ) : (
                 <>
-                  <button
-                    onClick={() => setIsScrapped((prev) => !prev)}
-                    className="iems-center cursor-pointer text-[#2C2C2C]"
-                  >
-                    <Bookmark
-                      size={22}
-                      strokeWidth={2}
-                      fill={isScrapped ? 'currentColor' : 'none'}
-                      className={isScrapped ? 'text-[#5E92F0]' : ''}
-                    />
-                  </button>
+                  <ScrapButton
+                    type="recruitment"
+                    id={recruitment.recruitmentId}
+                    initialScrapped={recruitment.isScrap}
+                  />
 
                   <div className="relative">
                     <button

@@ -39,7 +39,7 @@ export interface RecruitmentDetailResponse {
   recruiterName: string;
   isRecruiter: boolean;
   hasApplied: boolean;
-  isScrap: boolean; 
+  isScrap: boolean;
   createdAt: string;
   updatedAt: string;
 }

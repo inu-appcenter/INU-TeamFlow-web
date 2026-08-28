@@ -15,6 +15,8 @@ import { formatDate } from '@/utils/date/formatDate';
 import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import ReportModal from '@/components/report/ReportModal';
+import ScrapButton from '@/components/common/ScrapButton';
+
 export default function InfoPostDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -25,7 +27,7 @@ export default function InfoPostDetailPage() {
   const { mutateAsync: deleteInfoPost, isPending: isDeleting } =
     useDeleteInfoPost();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrapped, setIsScrapped] = useState(false);
+
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -149,18 +151,11 @@ export default function InfoPostDetailPage() {
                 </div>
               ) : (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => setIsScrapped((prev) => !prev)}
-                    className="iems-center cursor-pointer text-[#2C2C2C]"
-                  >
-                    <Bookmark
-                      size={22}
-                      strokeWidth={2}
-                      fill={isScrapped ? 'currentColor' : 'none'}
-                      className={isScrapped ? 'text-[#5E92F0]' : ''}
-                    />
-                  </button>
+                  <ScrapButton
+                    type="infoPost"
+                    id={infoPost.infoPostId}
+                    initialScrapped={infoPost.isScrap}
+                  />
 
                   <div className="relative">
                     <button
