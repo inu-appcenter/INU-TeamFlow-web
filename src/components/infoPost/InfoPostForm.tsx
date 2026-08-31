@@ -312,7 +312,7 @@ export default function InfoPostForm({
               <div className="py-2">
                 <div className="mb-2">
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
-                    제목<span className="ml-0.5 text-[#EF4444]">*</span>
+                    제목<span className="ml-0.5 text-[#E22222]">*</span>
                   </span>
                 </div>
 
@@ -335,7 +335,7 @@ export default function InfoPostForm({
               <div className="py-2">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
-                    카테고리<span className="ml-0.5 text-[#EF4444]">*</span>
+                    카테고리<span className="ml-0.5 text-[#E22222]">*</span>
                   </span>
 
                   {mode === 'edit' && (
@@ -479,7 +479,7 @@ export default function InfoPostForm({
               <div className="py-2">
                 <div className="mb-2">
                   <span className="text-sm font-bold tracking-wider text-[#B0B0B0]">
-                    내용<span className="ml-0.5 text-[#EF4444]">*</span>
+                    내용<span className="ml-0.5 text-[#E22222]">*</span>
                   </span>
                 </div>
 

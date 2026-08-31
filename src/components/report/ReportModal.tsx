@@ -3,22 +3,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Check } from 'lucide-react';
+import {
+  REPORT_REASON_LABEL,
+  type ReportReason,
+  type ReportRequest,
+} from '@/types/report';
 
-// ---- 타입 (관리자 신고 페이지의 ReportReason과 동일하게 맞춰주세요) ----
-export type ReportReason = 'SPAM' | 'ABUSE' | 'INAPPROPRIATE' | 'FRAUD' | 'ETC';
-
-export const REPORT_REASON_MAP: Record<ReportReason, string> = {
-  SPAM: '스팸/광고',
-  ABUSE: '욕설/비방',
-  INAPPROPRIATE: '부적절한 콘텐츠',
-  FRAUD: '사기/허위정보',
-  ETC: '기타',
-};
-
-const REASON_OPTIONS = (Object.keys(REPORT_REASON_MAP) as ReportReason[]).map(
+const REASON_OPTIONS = (Object.keys(REPORT_REASON_LABEL) as ReportReason[]).map(
   (value) => ({
     value,
-    label: REPORT_REASON_MAP[value],
+    label: REPORT_REASON_LABEL[value],
   })
 );
 
@@ -26,10 +20,7 @@ type ReportModalProps = {
   targetLabel: string;
   isSubmitting?: boolean;
   onClose: () => void;
-  onSubmit: (payload: {
-    reason: ReportReason;
-    content: string;
-  }) => void | Promise<void>;
+  onSubmit: (payload: ReportRequest) => void | Promise<void>;
 };
 
 export default function ReportModal({
@@ -40,17 +31,17 @@ export default function ReportModal({
 }: ReportModalProps) {
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [isReasonOpen, setIsReasonOpen] = useState(false);
-  const [content, setContent] = useState('');
+  const [detail, setDetail] = useState('');
 
   const selectedLabel = reason
-    ? REPORT_REASON_MAP[reason]
+    ? REPORT_REASON_LABEL[reason]
     : '신고 유형을 선택해주세요';
 
-  const isSubmitDisabled = !reason || !content.trim() || isSubmitting;
+  const isSubmitDisabled = !reason || !detail.trim() || isSubmitting;
 
   const handleSubmit = async () => {
     if (isSubmitDisabled || !reason) return;
-    await onSubmit({ reason, content: content.trim() });
+    await onSubmit({ reason, detail: detail.trim() });
   };
 
   return (
@@ -80,7 +71,7 @@ export default function ReportModal({
           <button
             type="button"
             onClick={() => setIsReasonOpen((prev) => !prev)}
-            className="flex h-[42px] w-full cursor-pointer items-center justify-between rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 text-left text-sm transition focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
+            className="flex h-[42px] w-full cursor-pointer items-center justify-between rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] px-4 text-left text-sm transition focus:ring-2 focus:ring-[#5E92F0] focus:outline-none"
           >
             <span className={reason ? 'text-[#2C2C2C]' : 'text-[#9C9C9C]'}>
               {selectedLabel}
@@ -136,11 +127,11 @@ export default function ReportModal({
             신고 내용
           </div>
           <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+            value={detail}
+            onChange={(e) => setDetail(e.target.value)}
             rows={5}
             placeholder="신고 사유를 자세히 적어주세요"
-            className="thin-scrollbar w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 py-3 text-sm text-[#2C2C2C] outline-none placeholder:text-[#9C9C9C] focus:ring-2 focus:ring-[#5E92F0]"
+            className="thin-scrollbar w-full resize-none rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] px-4 py-3 text-sm text-[#2C2C2C] outline-none placeholder:text-[#9C9C9C] focus:ring-2 focus:ring-[#5E92F0]"
           />
         </div>
 
@@ -149,7 +140,7 @@ export default function ReportModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] py-2.5 text-sm font-semibold text-[#2C2C2C] disabled:opacity-50"
+            className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] py-2.5 text-sm font-semibold text-[#2C2C2C] disabled:opacity-50"
           >
             취소
           </button>

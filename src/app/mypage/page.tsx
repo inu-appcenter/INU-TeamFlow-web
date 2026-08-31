@@ -690,10 +690,19 @@ export default function MyPage() {
                 <button
                   type="button"
                   onClick={() => router.push('/admin')}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#D9DEE7] px-3 py-2 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 hover:bg-[#DCEAFF] active:scale-90"
+                  className="group flex cursor-pointer items-center gap-1.5 border-r border-[#D6DDE5] pr-4 text-[12px] font-medium"
                 >
-                  <LayoutDashboard size={14} />
-                  관리자 대시보드
+                  <LayoutDashboard
+                    size={14}
+                    className="text-[#2C2C2C]/60 transition-colors duration-300 group-hover:text-[#2c2c2c]"
+                  />
+
+                  <span className="relative">
+                    <span className="text-[#2C2C2C]/50">관리자 대시보드</span>
+                    <span className="absolute inset-0 overflow-hidden text-[#2c2c2c] transition-[clip-path] duration-300 ease-out [clip-path:inset(0_100%_0_0)] group-hover:[clip-path:inset(0_0_0_0)]">
+                      관리자 대시보드
+                    </span>
+                  </span>
                 </button>
               )}
               <button
@@ -906,7 +915,7 @@ export default function MyPage() {
                   autoFocus
                   spellCheck={false}
                   aria-label="탈퇴 확인 아이디"
-                  className="mt-3 w-full rounded-xl border border-[#D6DDE5] bg-white px-4 py-3 text-[14px] text-[#2C2C2C] transition-colors outline-none focus:border-[#EF4444] disabled:bg-[#F6F8FA]"
+                  className="mt-3 w-full rounded-xl border border-[#D6DDE5] bg-white px-4 py-3 text-[14px] text-[#2C2C2C] transition-colors outline-none focus:border-[#E22222] disabled:bg-[#F6F8FA]"
                 />
               </div>
 
@@ -927,7 +936,7 @@ export default function MyPage() {
                     isDeleteUserPending ||
                     deleteConfirmText !== profileData.username
                   }
-                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-150 hover:bg-[#DC3636] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#F6A5A5]"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-150 hover:bg-[#DC3636] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#F6A5A5]"
                 >
                   {isDeleteUserPending ? '탈퇴 중...' : '탈퇴'}
                 </button>
@@ -964,7 +973,7 @@ export default function MyPage() {
                     setHasUnsavedNotificationChanges(false);
                     setIsSettingsOpen(false);
                   }}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-150 hover:bg-[#DC3636] active:scale-95"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-150 hover:bg-[#DC3636] active:scale-95"
                 >
                   저장하지 않고 닫기
                 </button>

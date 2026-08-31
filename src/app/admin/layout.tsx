@@ -1,13 +1,35 @@
 // src/app/admin/layout.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { useMyProfile } from '@/hooks/useUserQuery';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // TODO: 백엔드에 유저 role(또는 isAdmin) 필드 추가되면
-  // useMyProfile()로 받아서 role !== 'ADMIN'인 경우 리다이렉트 처리
+  const router = useRouter();
+  const { data: profile, isLoading, isError } = useMyProfile();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (isError || !profile || profile.role !== 'ADMIN') {
+      router.replace('/');
+    }
+  }, [isLoading, isError, profile, router]);
+
+  if (isLoading || isError || !profile || profile.role !== 'ADMIN') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F0F2F5] text-sm text-[#9C9C9C]">
+        권한을 확인 중이에요...
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-[#F0F2F5]">
       <AdminSidebar />

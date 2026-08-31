@@ -54,7 +54,7 @@ export default function AdminSidebar() {
                 className={`relative z-10 flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                   isActive
                     ? 'text-[#5E92F0]'
-                    : 'text-[#989898] hover:text-[#2C2C2C]'
+                    : 'text-[#989898] hover:text-[#5E92F0]'
                 }`}
               >
                 <Icon size={18} strokeWidth={2.2} />
