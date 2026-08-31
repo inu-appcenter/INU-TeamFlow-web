@@ -11,6 +11,13 @@ type ScrapPageResponse<T> = PageResponse<T> & {
   numberOfElements: number;
 };
 
+export type ScrapType = 'infoPost' | 'recruitment';
+
+const scrapPathMap: Record<ScrapType, string> = {
+  infoPost: 'info-posts',
+  recruitment: 'recruitments',
+};
+
 /** GET /recruitments/scraps */
 export const getMyRecruitmentScraps = (
   page = 0,
@@ -40,3 +47,13 @@ export const getMyInfoPostScraps = (
       },
     })
     .then((res) => res.data);
+
+/** POST /{type}/{id}/scraps */
+export const scrap = async (type: ScrapType, id: number) => {
+  await axiosInstance.post(`/${scrapPathMap[type]}/${id}/scraps`);
+};
+
+/** DELETE /{type}/{id}/scraps */
+export const unscrap = async (type: ScrapType, id: number) => {
+  await axiosInstance.delete(`/${scrapPathMap[type]}/${id}/scraps`);
+};

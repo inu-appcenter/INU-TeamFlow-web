@@ -17,6 +17,7 @@ export interface InfoPostSummaryResponse {
   thumbnailUrl: string | null;
   recruitmentCount: number;
   createdAt: string;
+  isScrap: boolean;
 }
 
 export interface InfoPostAuthor {
@@ -42,6 +43,7 @@ export interface InfoPostDetailResponse {
   recruitmentCount: number;
   createdAt: string;
   updatedAt: string;
+  isScrap: boolean;
 }
 
 export interface InfoPostCreateRequest {
