@@ -43,13 +43,21 @@ export const infoPostKeys = {
     [...infoPostKeys.detail(infoPostId), 'recruitments', params] as const,
 };
 
-export const useInfoPosts = (params: GetInfoPostsParams = {}) =>
+// NOTE: 두 번째 인자로 { enabled } 를 받도록 확장했습니다.
+// RecruitmentForm의 "내 스크랩만 보기" 필터가 켜졌을 때 이 목록 조회를
+// 건너뛰기 위한 용도입니다. 기존 호출부(useInfoPosts(params))는
+// enabled 기본값이 true이므로 그대로 동작합니다.
+export const useInfoPosts = (
+  params: GetInfoPostsParams = {},
+  options: { enabled?: boolean } = {}
+) =>
   useQuery({
     queryKey: infoPostKeys.list(params),
     queryFn: () => getInfoPosts(params),
     placeholderData: keepPreviousData,
     staleTime: 30 * 1000,
     retry: false,
+    enabled: options.enabled ?? true,
   });
 
 export const useMyInfoPosts = (params: PageableParams = {}) =>
