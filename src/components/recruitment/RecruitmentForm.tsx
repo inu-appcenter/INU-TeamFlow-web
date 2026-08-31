@@ -5,9 +5,12 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight, X, Search, ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useMyTeams } from '@/hooks/team/useTeamQuery';
 import { useInfoPosts } from '@/hooks/useInfoPostQuery';
+import { getMyInfoPostScraps } from '@/api/scrap';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
+import Checkbox from '@/components/common/Checkbox';
 import type {
   InfoPostSummaryResponse,
   InfoPostCategory,
@@ -101,6 +104,8 @@ export default function RecruitmentForm({
   const [infoKeywordInput, setInfoKeywordInput] = useState('');
   const [infoSearchKeyword, setInfoSearchKeyword] = useState('');
   const [infoPage, setInfoPage] = useState(1);
+  // 내가 스크랩한 정보글만 보기
+  const [onlyScrapped, setOnlyScrapped] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -116,6 +121,11 @@ export default function RecruitmentForm({
     setInfoPage(1);
   };
 
+  const handleToggleOnlyScrapped = (checked: boolean) => {
+    setOnlyScrapped(checked);
+    setInfoPage(1);
+  };
+
   const infoQueryParams: GetInfoPostsParams = {
     category: infoCategory,
     keyword: infoSearchKeyword || undefined,
@@ -124,8 +134,31 @@ export default function RecruitmentForm({
     sort: ['createdAt,DESC'],
   };
 
-  const { data: connectInfoPostPage, isLoading: isConnectInfoPostsLoading } =
-    useInfoPosts(infoQueryParams);
+  // 카테고리/검색어 기반 일반 목록 (스크랩 필터가 꺼져 있을 때만 조회)
+  const { data: categoryInfoPostPage, isLoading: isCategoryInfoPostsLoading } =
+    useInfoPosts(infoQueryParams, { enabled: !onlyScrapped });
+
+  // 내가 스크랩한 정보글 목록 (스크랩 필터가 켜져 있을 때만 조회)
+  const { data: myScrapInfoPostPage, isLoading: isMyScrapInfoPostsLoading } =
+    useQuery({
+      queryKey: [
+        'scraps',
+        'infoPosts',
+        'page',
+        infoPage - 1,
+        INFO_POST_MODAL_SIZE,
+      ],
+      queryFn: () => getMyInfoPostScraps(infoPage - 1, INFO_POST_MODAL_SIZE),
+      enabled: onlyScrapped,
+      placeholderData: keepPreviousData,
+    });
+
+  const connectInfoPostPage = onlyScrapped
+    ? myScrapInfoPostPage
+    : categoryInfoPostPage;
+  const isConnectInfoPostsLoading = onlyScrapped
+    ? isMyScrapInfoPostsLoading
+    : isCategoryInfoPostsLoading;
 
   const linkableInfoPostCategoryOptions = infoPostCategoryFilterOptions.filter(
     (category) =>
@@ -497,10 +530,15 @@ export default function RecruitmentForm({
               </h2>
             </div>
 
-            {/* 카테고리 탭 */}
-            <div className="relative flex border-b-[0.5px] border-[#D6DDE5]/40">
+            {/* 카테고리 탭 (스크랩 필터가 켜지면 비활성화됩니다) */}
+            <div
+              className={`relative flex border-b-[0.5px] border-[#D6DDE5]/40 ${
+                onlyScrapped ? 'pointer-events-none opacity-40' : ''
+              }`}
+            >
               {linkableInfoPostCategoryOptions.map((category) => {
-                const isActive = infoCategory === category.value;
+                const isActive =
+                  !onlyScrapped && infoCategory === category.value;
 
                 return (
                   <button
@@ -534,17 +572,32 @@ export default function RecruitmentForm({
               })}
             </div>
 
-            {/* 검색 */}
-            <div className="flex w-100 items-center gap-3 px-6 py-3">
-              <div className="flex h-10 flex-1 items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-3">
-                <Search size={16} className="shrink-0 text-[#989898]" />
-                <input
-                  value={infoKeywordInput}
-                  onChange={(e) => setInfoKeywordInput(e.target.value)}
-                  placeholder="제목을 입력하세요"
-                  className="min-w-0 flex-1 bg-transparent text-sm text-[#2C2C2C] outline-none placeholder:text-[#989898]"
-                />
+            {/* 검색 + 스크랩 필터 */}
+            <div className="flex w-full items-center justify-between px-6 py-3">
+              <div className="w-100">
+                <div
+                  className={`flex h-10 flex-1 items-center gap-2 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] px-3 ${
+                    onlyScrapped ? 'pointer-events-none opacity-40' : ''
+                  }`}
+                >
+                  <Search size={16} className="shrink-0 text-[#989898]" />
+                  <input
+                    value={infoKeywordInput}
+                    onChange={(e) => setInfoKeywordInput(e.target.value)}
+                    placeholder="제목을 입력하세요"
+                    disabled={onlyScrapped}
+                    className="min-w-0 flex-1 bg-transparent text-sm text-[#2C2C2C] outline-none placeholder:text-[#989898]"
+                  />
+                </div>
               </div>
+
+              <Checkbox
+                checked={onlyScrapped}
+                onChange={handleToggleOnlyScrapped}
+                label="스크랩한 글만 보기"
+                size="sm"
+                className="shrink-0 text-sm font-medium whitespace-nowrap text-[#989898]"
+              />
             </div>
 
             {/* 리스트 */}
@@ -560,7 +613,9 @@ export default function RecruitmentForm({
 
               {!isConnectInfoPostsLoading && connectInfoPosts.length === 0 && (
                 <div className="flex h-[240px] items-center justify-center text-sm text-[#989898]">
-                  연결 가능한 공고가 없습니다
+                  {onlyScrapped
+                    ? '스크랩한 정보글이 없습니다'
+                    : '연결 가능한 공고가 없습니다'}
                 </div>
               )}
 
