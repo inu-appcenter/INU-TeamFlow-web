@@ -16,7 +16,10 @@ import {
 } from '@/hooks/chat/useUpdateMyChatRoomInfo';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useMyInfo } from '@/hooks/useAuthQuery';
+import { useCreateReport } from '@/hooks/useCreateReport';
+import ReportModal from '@/components/report/ReportModal';
 import type { ChatRoomMemberResponse } from '@/types/chat';
+import type { ReportRequest } from '@/types/report';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 
 type ChatRoomDrawerProps = {
@@ -52,8 +55,12 @@ export default function ChatRoomDrawer({
   const [openMemberMenuId, setOpenMemberMenuId] = useState<number | null>(null);
   const [confirmKickTarget, setConfirmKickTarget] =
     useState<ChatRoomMemberResponse | null>(null);
+  const [reportTarget, setReportTarget] =
+    useState<ChatRoomMemberResponse | null>(null);
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
+  const { mutate: createReport, isPending: isReportSubmitting } =
+    useCreateReport();
   const { data: me } = useMyInfo();
   const { data: members, isLoading: isMembersLoading } =
     useChatRoomMembers(roomId);
@@ -105,6 +112,28 @@ export default function ChatRoomDrawer({
     } catch {
       showErrorMessage('채팅방 생성에 실패했어요');
     }
+  };
+
+  const handleOpenReport = (member: ChatRoomMemberResponse) => {
+    setOpenMemberMenuId(null);
+    setReportTarget(member);
+  };
+
+  const handleSubmitReport = ({ reason, detail }: ReportRequest) => {
+    if (!reportTarget) return;
+    createReport(
+      {
+        target: { type: 'USER', id: reportTarget.userId },
+        body: { reason, detail },
+      },
+      {
+        onSuccess: () => {
+          setReportTarget(null);
+          showErrorMessage('신고가 접수되었습니다');
+        },
+        onError: () => showErrorMessage('신고 접수에 실패했습니다'),
+      }
+    );
   };
 
   const handleImageMenuSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -486,6 +515,7 @@ export default function ChatRoomDrawer({
                                       1:1 채팅
                                     </button>
                                     <button
+                                      onClick={() => handleOpenReport(member)}
                                       disabled={isCreatingRoom}
                                       className="w-full cursor-pointer px-3 py-2 text-left text-xs text-[#e22222] hover:bg-[#FDEEEE] disabled:opacity-50"
                                     >
@@ -548,6 +578,19 @@ export default function ChatRoomDrawer({
             </div>
           )}
         </motion.div>
+      )}
+
+      {reportTarget && (
+        <ReportModal
+          key={reportTarget.userId}
+          targetLabel={`${reportTarget.userNickname}님`}
+          isSubmitting={isReportSubmitting}
+          onClose={() => {
+            if (isReportSubmitting) return;
+            setReportTarget(null);
+          }}
+          onSubmit={handleSubmitReport}
+        />
       )}
     </AnimatePresence>
   );

@@ -204,7 +204,7 @@ export default function Register() {
             {hasCheckPassword && (
               <div
                 className={`mx-7.5 -mt-2 mb-4 flex items-center gap-2 text-[14px] ${
-                  isPasswordMatched ? 'text-[#22A06B]' : 'text-[#EF4444]'
+                  isPasswordMatched ? 'text-[#22A06B]' : 'text-[#E22222]'
                 }`}
               >
                 <span
@@ -224,7 +224,7 @@ export default function Register() {
             )}
 
             {isCapsLockOn && (
-              <div className="mx-7.5 -mt-3 mb-4 flex items-center gap-2 text-[14px] text-[#EF4444]">
+              <div className="mx-7.5 -mt-3 mb-4 flex items-center gap-2 text-[14px] text-[#E22222]">
                 <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#FDECEC] text-[12px] font-bold">
                   !
                 </span>

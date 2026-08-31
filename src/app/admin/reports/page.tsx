@@ -1,4 +1,3 @@
-// src/app/admin/reports/page.tsx
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -8,71 +7,37 @@ import {
   ChevronRight,
   ChevronDown,
   Search,
-  X,
   Check,
 } from 'lucide-react';
 import Card from '@/components/main/Card';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
+import {
+  useAdminReports,
+  useAdminReportDetail,
+  useHandleAdminReport,
+} from '@/hooks/admin/useAdminReports';
+import {
+  REPORT_TARGET_TYPE_LABEL,
+  REPORT_REASON_LABEL,
+  type PostActionType,
+  type UserActionType,
+  type ReportHandleRequest,
+  type ReportDetailResponse,
+  type ReportStatus,
+} from '@/types/report';
 
-// ---- 타입 (백엔드 연동 시 types/admin.ts로 이동 예정) ----
-type ReportTargetType = 'RECRUITMENT' | 'INFO_POST' | 'USER';
-type ReportReason = 'SPAM' | 'ABUSE' | 'INAPPROPRIATE' | 'FRAUD' | 'ETC';
-type ReportStatus = 'PENDING' | 'RESOLVED';
+type ReportSearchType = 'target' | 'reporter';
 
-type PostAction = 'NONE' | 'HIDDEN' | 'DELETED';
-type AuthorAction =
-  | 'NONE'
-  | 'WARNING'
-  | 'SUSPEND_3D'
-  | 'SUSPEND_7D'
-  | 'SUSPEND_30D'
-  | 'PERMANENT_BAN';
-
-type ReportSearchType = 'target' | 'author' | 'reporter';
-
-type AdminReport = {
-  id: number;
-  targetType: ReportTargetType;
-  targetTitle: string;
-  authorName: string;
-  reporterName: string;
-  reason: ReportReason;
-  content: string;
-  createdAt: string;
-  status: ReportStatus;
-  reply?: string;
-  sanctionReason?: string;
-  postAction: PostAction;
-  authorAction: AuthorAction;
-};
-
-const TARGET_TYPE_MAP: Record<ReportTargetType, string> = {
-  RECRUITMENT: '모집글',
-  INFO_POST: '정보글',
-  USER: '유저',
-};
-
-const REASON_MAP: Record<ReportReason, string> = {
-  SPAM: '스팸/광고',
-  ABUSE: '욕설/비방',
-  INAPPROPRIATE: '부적절한 콘텐츠',
-  FRAUD: '사기/허위정보',
-  ETC: '기타',
-};
-
-const POST_ACTION_OPTIONS: { value: PostAction; label: string }[] = [
-  { value: 'NONE', label: '조치 없음' },
-  { value: 'HIDDEN', label: '숨김 처리' },
-  { value: 'DELETED', label: '삭제' },
+const POST_ACTION_OPTIONS: { value: PostActionType; label: string }[] = [
+  { value: 'NONE', label: '조치 없음(허위 신고)' },
+  { value: 'DELETE', label: '게시글 강제 삭제' },
 ];
 
-const AUTHOR_ACTION_OPTIONS: { value: AuthorAction; label: string }[] = [
-  { value: 'NONE', label: '조치 없음' },
-  { value: 'WARNING', label: '경고' },
-  { value: 'SUSPEND_3D', label: '3일 정지' },
-  { value: 'SUSPEND_7D', label: '7일 정지' },
-  { value: 'SUSPEND_30D', label: '30일 정지' },
-  { value: 'PERMANENT_BAN', label: '영구 정지' },
+const USER_ACTION_OPTIONS: { value: UserActionType; label: string }[] = [
+  { value: 'NONE', label: '조치 없음(허위 신고)' },
+  { value: 'WARN', label: '경고' },
+  { value: 'SUSPEND', label: '정지' },
+  { value: 'BAN', label: '영구정지' },
 ];
 
 const STATUS_TABS = [
@@ -85,39 +50,6 @@ type StatusTabValue = (typeof STATUS_TABS)[number]['value'];
 
 const PAGE_SIZE = 15;
 const PAGE_WINDOW_SIZE = 5;
-
-// ---- 더미 데이터 (백엔드 연동 시 useAdminReports 훅으로 교체) ----
-const DUMMY_REPORTS: AdminReport[] = Array.from({ length: 19 }, (_, i) => {
-  const targetTypes: ReportTargetType[] = ['RECRUITMENT', 'INFO_POST', 'USER'];
-  const reasons: ReportReason[] = [
-    'SPAM',
-    'ABUSE',
-    'INAPPROPRIATE',
-    'FRAUD',
-    'ETC',
-  ];
-  const isResolved = i % 3 === 0;
-  return {
-    id: i + 1,
-    targetType: targetTypes[i % targetTypes.length],
-    targetTitle:
-      targetTypes[i % targetTypes.length] === 'USER'
-        ? `유저${(i % 9) + 1}`
-        : `모집글 제목 예시 ${i + 1}`,
-    authorName: `작성자`,
-    reporterName: `신고자${(i % 7) + 1}`,
-    reason: reasons[i % reasons.length],
-    content: '허위 정보로 팀원을 모집하고 있어요. 실제 활동 내역과 다릅니다.',
-    createdAt: `2026-08-${String((i % 27) + 1).padStart(2, '0')}`,
-    status: isResolved ? 'RESOLVED' : 'PENDING',
-    reply: isResolved ? '확인 후 조치했습니다. 신고 감사합니다.' : undefined,
-    sanctionReason: isResolved
-      ? '커뮤니티 이용 규칙 위반으로 조치되었습니다.'
-      : undefined,
-    postAction: isResolved ? 'HIDDEN' : 'NONE',
-    authorAction: isResolved ? 'WARNING' : 'NONE',
-  };
-});
 
 function ActionDropdown<T extends string>({
   label,
@@ -190,78 +122,273 @@ function ActionDropdown<T extends string>({
   );
 }
 
+// 상세를 불러온 뒤에만 렌더되는 폼. detail이 바뀌면(=다른 report를 열면)
+// 부모에서 key={detail.reportId}를 줘서 이 컴포넌트를 통째로 리마운트시킴 ->
+// useEffect로 setState 동기화할 필요 없이 useState 초기값으로 바로 세팅됨.
+function ReportActionForm({
+  detail,
+  isSubmitting,
+  onSubmit,
+  onClose,
+}: {
+  detail: ReportDetailResponse;
+  isSubmitting: boolean;
+  onSubmit: (body: ReportHandleRequest) => void;
+  onClose: () => void;
+}) {
+  const [postAction, setPostAction] = useState<PostActionType>(
+    detail.postAction?.action ?? 'NONE'
+  );
+  const [postActionDetail, setPostActionDetail] = useState(
+    detail.postAction?.detail ?? ''
+  );
+  const [userAction, setUserAction] = useState<UserActionType>(
+    detail.userAction?.action ?? 'NONE'
+  );
+  const [userActionDetail, setUserActionDetail] = useState(
+    detail.userAction?.detail ?? ''
+  );
+  const [durationDays, setDurationDays] = useState(
+    detail.userAction?.durationDays
+      ? String(detail.userAction.durationDays)
+      : ''
+  );
+
+  const isSubmitDisabled =
+    isSubmitting ||
+    !userActionDetail.trim() ||
+    (detail.targetType !== 'USER' && !postActionDetail.trim()) ||
+    (userAction === 'SUSPEND' && !(Number(durationDays) > 0));
+
+  const handleSubmit = () => {
+    if (isSubmitDisabled) return;
+    onSubmit({
+      postAction:
+        detail.targetType === 'USER'
+          ? null
+          : { action: postAction, detail: postActionDetail },
+      userAction: {
+        action: userAction,
+        detail: userActionDetail,
+        ...(userAction === 'SUSPEND'
+          ? { durationDays: Number(durationDays) }
+          : {}),
+      },
+    });
+  };
+
+  const modalTitle = detail.targetPost?.title ?? detail.targetUser?.name ?? '';
+
+  return (
+    <>
+      <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] px-5 py-4">
+        <div className="flex items-center gap-3">
+          <span className="w-fit rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[12px] font-semibold text-[#5E92F0]">
+            {REPORT_TARGET_TYPE_LABEL[detail.targetType]}
+          </span>
+          <span className="text-[13px] font-semibold text-[#B32424]">
+            {REPORT_REASON_LABEL[detail.reason]}
+          </span>
+        </div>
+        {detail.status === 'RESOLVED' && (
+          <span className="text-sm font-medium text-[#2F8F4E]">처리 완료</span>
+        )}
+      </div>
+
+      <div className="no-scrollbar flex-1 overflow-y-auto px-6 py-3">
+        <h2 className="text-lg font-bold text-[#2C2C2C]">{modalTitle}</h2>
+        <div className="mt-1 flex items-center gap-1 text-xs text-[#9C9C9C]">
+          {detail.targetUser && (
+            <>
+              <span>대상 {detail.targetUser.name}</span>
+              <span>·</span>
+            </>
+          )}
+          <span>신고자 {detail.reporter.name}</span>
+          <span>·</span>
+          <span>{detail.createdAt.slice(0, 10)}</span>
+        </div>
+
+        <p className="mt-2 rounded-xl bg-[#F6F8FA] px-4 py-3 text-sm leading-6 whitespace-pre-wrap text-[#2C2C2C]">
+          {detail.detail}
+        </p>
+
+        {detail.status === 'RESOLVED' && detail.handledBy && (
+          <p className="mt-2 text-xs text-[#9C9C9C]">
+            {detail.handledBy.name}님이 {detail.handledAt?.slice(0, 10)}에
+            처리함
+          </p>
+        )}
+
+        <div
+          className={`mt-4 grid gap-3 ${
+            detail.targetType === 'USER' ? 'grid-cols-1' : 'grid-cols-2'
+          }`}
+        >
+          {detail.targetType !== 'USER' && (
+            <ActionDropdown
+              label="게시물 조치"
+              value={postAction}
+              options={POST_ACTION_OPTIONS}
+              onChange={setPostAction}
+            />
+          )}
+          <ActionDropdown
+            label="대상자 조치"
+            value={userAction}
+            options={USER_ACTION_OPTIONS}
+            onChange={setUserAction}
+          />
+        </div>
+
+        {userAction === 'SUSPEND' && (
+          <div className="mt-3">
+            <div className="mb-2 flex items-center gap-1.5">
+              <span className="text-xs font-medium text-[#B0B0B0]">
+                정지 기간(일)
+              </span>
+              <span className="text-xs font-semibold text-[#FF6B6B]">*</span>
+            </div>
+            <input
+              type="number"
+              min={1}
+              value={durationDays}
+              onChange={(e) => setDurationDays(e.target.value)}
+              placeholder="예: 7"
+              className="h-[42px] w-full rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-4 text-sm text-[#2C2C2C] outline-none placeholder:text-[#9C9C9C] focus:ring-2 focus:ring-[#5E92F0]"
+            />
+          </div>
+        )}
+
+        {detail.targetType !== 'USER' && (
+          <div className="mt-4">
+            <div className="mb-2 flex items-center gap-1.5">
+              <span className="text-xs font-medium text-[#B0B0B0]">
+                게시물 조치 사유
+              </span>
+              <span className="text-xs font-semibold text-[#FF6B6B]">*</span>
+            </div>
+            <textarea
+              value={postActionDetail}
+              onChange={(e) => setPostActionDetail(e.target.value)}
+              rows={3}
+              placeholder="게시물을 어떻게 처리했는지 적어주세요"
+              className="thin-scrollbar w-full resize-none rounded-xl bg-[#F6F8FA] px-4 py-3 text-sm text-[#2C2C2C] outline-none placeholder:text-[#9C9C9C] focus:ring-2 focus:ring-[#5E92F0]"
+            />
+          </div>
+        )}
+
+        <div className="mt-4">
+          <div className="mb-2 flex items-center gap-1.5">
+            <span className="text-xs font-medium text-[#B0B0B0]">
+              대상자 조치 사유
+            </span>
+            <span className="text-xs font-semibold text-[#FF6B6B]">*</span>
+            <span className="text-xs text-[#9C9C9C]">
+              (대상자 {detail.targetUser?.name}님에게 전달돼요)
+            </span>
+          </div>
+          <textarea
+            value={userActionDetail}
+            onChange={(e) => setUserActionDetail(e.target.value)}
+            rows={4}
+            placeholder="어떤 사유로 어떤 조치를 받았는지 안내해주세요"
+            className="thin-scrollbar w-full resize-none rounded-xl bg-[#FDECEC]/40 px-4 py-3 text-sm text-[#2C2C2C] outline-none placeholder:text-[#9C9C9C] focus:ring-2 focus:ring-[#E22222]"
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-3 border-t-[0.5px] border-[#D6DDE5] px-6 py-4">
+        <button
+          onClick={onClose}
+          className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] py-2.5 text-sm font-medium text-[#2C2C2C]"
+        >
+          닫기
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitDisabled}
+          className={`flex-1 cursor-pointer rounded-xl py-2.5 text-sm text-white transition ${
+            isSubmitDisabled
+              ? 'cursor-not-allowed bg-[#EEF1F5] text-[#9C9C9C]'
+              : 'bg-[#5E92F0] hover:bg-[#5C86EB]'
+          }`}
+        >
+          {isSubmitting
+            ? '처리 중...'
+            : detail.status === 'RESOLVED'
+              ? '처리 내용 수정'
+              : '처리 완료'}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export default function AdminReportsPage() {
   const [statusTab, setStatusTab] = useState<StatusTabValue>('ALL');
   const [keyword, setKeyword] = useState('');
-  const [page, setPage] = useState(1);
-  const [selectedReport, setSelectedReport] = useState<AdminReport | null>(
-    null
-  );
   const [searchType, setSearchType] = useState<ReportSearchType>('target');
-  const [replyDraft, setReplyDraft] = useState('');
-  const [sanctionReasonDraft, setSanctionReasonDraft] = useState('');
-  const [postAction, setPostAction] = useState<PostAction>('NONE');
-  const [authorAction, setAuthorAction] = useState<AuthorAction>('NONE');
+  const [page, setPage] = useState(1);
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
 
-  useLockBodyScroll(!!selectedReport);
+  useLockBodyScroll(!!selectedReportId);
 
-  const filtered = useMemo(() => {
-    return DUMMY_REPORTS.filter((report) => {
-      const matchesStatus = statusTab === 'ALL' || report.status === statusTab;
-      const trimmedKeyword = keyword.trim();
-      const matchesKeyword =
-        trimmedKeyword === '' ||
-        (searchType === 'target'
-          ? report.targetTitle.includes(trimmedKeyword)
-          : searchType === 'author'
-            ? report.authorName.includes(trimmedKeyword)
-            : report.reporterName.includes(trimmedKeyword));
-      return matchesStatus && matchesKeyword;
+  const trimmedKeyword = keyword.replace(/\s/g, '');
+  // NOTE: 백엔드 /admin/reports에 keyword 검색 파라미터가 추가되면 이 분기 지우고
+  // 항상 서버 페이지네이션(size: PAGE_SIZE)만 쓰도록 바꿔주세요.
+  // 그 전까지는 검색어가 있을 때만 크게 받아와서 프론트에서 필터링+페이지네이션함.
+  const isSearching = trimmedKeyword.length > 0;
+
+  const { data, isLoading } = useAdminReports({
+    page: isSearching ? 0 : page - 1, // 백엔드는 0-based, 화면 표시는 1-based
+    size: isSearching ? 1000 : PAGE_SIZE,
+    status: statusTab === 'ALL' ? undefined : (statusTab as ReportStatus),
+  });
+
+  const { data: detail, isLoading: isDetailLoading } =
+    useAdminReportDetail(selectedReportId);
+
+  const { mutate: submitHandleReport, isPending: isSubmitting } =
+    useHandleAdminReport();
+
+  const reportsPage = data?.reports;
+  const fetchedItems = reportsPage?.content ?? [];
+  const pendingCount = data?.summary.pending ?? 0;
+
+  const searchFilteredItems = useMemo(() => {
+    if (!isSearching) return fetchedItems;
+    return fetchedItems.filter((item) => {
+      const target = item.targetName.replace(/\s/g, '');
+      const reporter = item.reporterName.replace(/\s/g, '');
+      return searchType === 'target'
+        ? target.includes(trimmedKeyword)
+        : reporter.includes(trimmedKeyword);
     });
-  }, [statusTab, keyword, searchType]);
+  }, [fetchedItems, isSearching, searchType, trimmedKeyword]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
-  const pageItems = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  // 검색 중일 땐 위에서 받은 전체 목록을 프론트에서 잘라서 페이지네이션,
+  // 검색 중이 아닐 땐 서버가 이미 잘라준 페이지를 그대로 씀.
+  const filteredItems = isSearching
+    ? searchFilteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+    : searchFilteredItems;
+
+  const totalPages = isSearching
+    ? Math.max(1, Math.ceil(searchFilteredItems.length / PAGE_SIZE))
+    : (reportsPage?.totalPages ?? 0);
 
   const blockStart =
-    Math.floor((currentPage - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
+    Math.floor((page - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
   const blockEnd = Math.min(blockStart + PAGE_WINDOW_SIZE - 1, totalPages);
-  const visiblePages = Array.from(
-    { length: blockEnd - blockStart + 1 },
-    (_, i) => blockStart + i
-  );
+  const visiblePages =
+    totalPages === 0
+      ? []
+      : Array.from(
+          { length: blockEnd - blockStart + 1 },
+          (_, i) => blockStart + i
+        );
 
-  const pendingCount = DUMMY_REPORTS.filter(
-    (r) => r.status === 'PENDING'
-  ).length;
-
-  const handleOpenReport = (report: AdminReport) => {
-    setSelectedReport(report);
-    setReplyDraft(report.reply ?? '');
-    setSanctionReasonDraft(report.sanctionReason ?? '');
-    setPostAction(report.postAction);
-    setAuthorAction(report.authorAction);
-  };
-
-  const hasAction = postAction !== 'NONE' || authorAction !== 'NONE';
-
-  const isSubmitDisabled =
-    !replyDraft.trim() || (hasAction && !sanctionReasonDraft.trim());
-
-  const handleResolve = () => {
-    if (!selectedReport || isSubmitDisabled) return;
-    // TODO: 백엔드 연동 시 신고 처리 API 호출로 교체
-    // { reply, sanctionReason, postAction, authorAction } 전달
-    setSelectedReport(null);
-    setReplyDraft('');
-    setSanctionReasonDraft('');
-    setPostAction('NONE');
-    setAuthorAction('NONE');
-  };
+  const closeModal = () => setSelectedReportId(null);
 
   return (
     <div>
@@ -283,7 +410,7 @@ export default function AdminReportsPage() {
                   setStatusTab(tab.value);
                   setPage(1);
                 }}
-                className={`relative cursor-pointer px-10 pt-4 pb-3.5 text-base font-semibold transition ${
+                className={`relative cursor-pointer px-10 pt-3.5 pb-3.5 text-[18px] font-semibold transition ${
                   isActive
                     ? 'text-[#5E92F0]'
                     : 'text-[#9C9C9C] hover:text-[#2C2C2C]'
@@ -315,10 +442,9 @@ export default function AdminReportsPage() {
                 className="h-full appearance-none border-r-[0.5px] border-[#D6DDE5] bg-transparent px-4 pr-8 text-sm text-[#2C2C2C] outline-none"
               >
                 <option value="target">대상</option>
-                <option value="author">작성자</option>
                 <option value="reporter">신고자</option>
               </select>
-              <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-[#2C2C2C]">
+              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#2C2C2C]">
                 <ChevronDown size={14} />
               </span>
             </div>
@@ -339,10 +465,9 @@ export default function AdminReportsPage() {
         </div>
 
         {/* 목록 헤더 */}
-        <div className="grid grid-cols-[80px_1fr_100px_100px_130px_60px] items-center gap-3 border-b-[0.5px] border-[#D6DDE5] px-6 pb-2.5 text-xs font-medium text-[#9C9C9C]">
+        <div className="grid grid-cols-[80px_1fr_100px_130px_60px] items-center gap-3 border-b-[0.5px] border-[#D6DDE5] px-6 pb-2.5 text-xs font-medium text-[#9C9C9C]">
           <span>대상</span>
           <span>신고 대상 / 사유</span>
-          <span>작성자</span>
           <span>신고자</span>
           <span>신고일</span>
           <span className="text-center">상태</span>
@@ -350,50 +475,56 @@ export default function AdminReportsPage() {
 
         {/* 목록 */}
         <div>
-          {pageItems.length === 0 && (
+          {isLoading && (
             <div className="flex h-[200px] items-center justify-center text-sm text-[#9C9C9C]">
-              해당하는 신고가 없어요
+              불러오는 중...
             </div>
           )}
 
-          {pageItems.map((report) => (
-            <button
-              key={report.id}
-              type="button"
-              onClick={() => handleOpenReport(report)}
-              className="grid w-full cursor-pointer grid-cols-[80px_1fr_100px_101px_130px_60px] items-center gap-3 border-b-[0.5px] border-[#F0F2F5] px-6 py-2 text-left transition hover:bg-[#F6F8FA]"
-            >
-              <span className="w-fit rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[12px] font-semibold text-[#5E92F0]">
-                {TARGET_TYPE_MAP[report.targetType]}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm text-[#2C2C2C]">
-                  {report.targetTitle}
-                </p>
-                <p className="mt-0.5 text-[11px] text-[#B32424]">
-                  {REASON_MAP[report.reason]}
-                </p>
-              </div>
-              <span className="truncate text-sm text-[#6B6B6B]">
-                {report.authorName}
-              </span>
-              <span className="truncate text-sm text-[#6B6B6B]">
-                {report.reporterName}
-              </span>
-              <span className="text-sm text-[#9C9C9C]">{report.createdAt}</span>
-              <span className="flex justify-center">
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                    report.status === 'PENDING'
-                      ? 'bg-[#FFDDDD] text-[#B32424]'
-                      : 'bg-[#DDF7E5] text-[#2F8F4E]'
-                  }`}
-                >
-                  {report.status === 'PENDING' ? '대기중' : '처리완료'}
+          {!isLoading && filteredItems.length === 0 && (
+            <div className="flex h-[200px] items-center justify-center text-sm text-[#9C9C9C]">
+              아직 신고 내역이 없어요
+            </div>
+          )}
+
+          {!isLoading &&
+            filteredItems.map((report) => (
+              <button
+                key={report.reportId}
+                type="button"
+                onClick={() => setSelectedReportId(report.reportId)}
+                className="grid w-full cursor-pointer grid-cols-[80px_1fr_100px_130px_60px] items-center gap-3 border-b-[0.5px] border-[#F0F2F5] px-6 py-2.5 text-left transition hover:bg-[#F6F8FA]"
+              >
+                <span className="w-fit rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[12px] font-semibold text-[#5E92F0]">
+                  {REPORT_TARGET_TYPE_LABEL[report.targetType]}
                 </span>
-              </span>
-            </button>
-          ))}
+                <div className="min-w-0">
+                  <p className="truncate text-sm text-[#2C2C2C]">
+                    {report.targetName}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-[#B32424]">
+                    {REPORT_REASON_LABEL[report.reason]}
+                  </p>
+                </div>
+                <span className="truncate text-sm text-[#6B6B6B]">
+                  {report.reporterName}
+                </span>
+                <span className="text-sm text-[#9C9C9C]">
+                  {report.createdAt.slice(0, 10)}
+                </span>
+                <span className="flex justify-center">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                      report.status === 'PENDING'
+                        ? 'bg-[#FFDDDD] text-[#B32424]'
+                        : 'bg-[#DDF7E5] text-[#2F8F4E]'
+                    }`}
+                  >
+                    {report.status === 'PENDING' ? '대기중' : '처리완료'}
+                  </span>
+                </span>
+              </button>
+            ))}
         </div>
 
         {/* 페이지네이션 */}
@@ -416,7 +547,7 @@ export default function AdminReportsPage() {
                 type="button"
                 onClick={() => setPage(n)}
                 className={`flex items-center justify-center px-1 text-[15px] font-semibold transition-all duration-150 active:scale-90 ${
-                  currentPage === n
+                  page === n
                     ? 'text-[#5E92F0]'
                     : 'cursor-pointer text-[#2c2c2c]/50'
                 }`}
@@ -441,9 +572,9 @@ export default function AdminReportsPage() {
 
       {/* 상세 + 조치 모달 */}
       <AnimatePresence>
-        {selectedReport && (
+        {selectedReportId !== null && (
           <div
-            onClick={() => setSelectedReport(null)}
+            onClick={closeModal}
             className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 p-4"
           >
             <motion.div
@@ -454,113 +585,24 @@ export default function AdminReportsPage() {
               transition={{ type: 'spring', stiffness: 340, damping: 28 }}
               className="flex max-h-[85vh] w-full max-w-[560px] flex-col overflow-hidden rounded-3xl bg-white shadow-xl"
             >
-              <div className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <span className="w-fit rounded-full bg-[#EEF1F5] px-2.5 py-1 text-[12px] font-semibold text-[#5E92F0]">
-                    {TARGET_TYPE_MAP[selectedReport.targetType]}
-                  </span>
-                  <span className="text-[13px] font-semibold text-[#B32424]">
-                    {REASON_MAP[selectedReport.reason]}
-                  </span>
+              {isDetailLoading || !detail ? (
+                <div className="flex h-[300px] items-center justify-center text-sm text-[#9C9C9C]">
+                  불러오는 중...
                 </div>
-                {selectedReport.status === 'RESOLVED' && (
-                  <span className="text-sm font-medium text-[#2F8F4E]">
-                    처리 완료
-                  </span>
-                )}
-              </div>
-
-              <div className="no-scrollbar flex-1 overflow-y-auto px-6 py-3">
-                <h2 className="text-lg font-bold text-[#2C2C2C]">
-                  {selectedReport.targetTitle}
-                </h2>
-                <div className="mt-1 flex items-center gap-1 text-xs text-[#9C9C9C]">
-                  <span>작성자 {selectedReport.authorName}</span>
-                  <span>·</span>
-                  <span>신고자 {selectedReport.reporterName}</span>
-                  <span>·</span>
-                  <span>{selectedReport.createdAt}</span>
-                </div>
-
-                <p className="mt-3 rounded-xl bg-[#F6F8FA] px-4 py-3 text-sm leading-6 whitespace-pre-wrap text-[#2C2C2C]">
-                  {selectedReport.content}
-                </p>
-
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <ActionDropdown
-                    label="게시물 조치"
-                    value={postAction}
-                    options={POST_ACTION_OPTIONS}
-                    onChange={setPostAction}
-                  />
-                  <ActionDropdown
-                    label="작성자 조치"
-                    value={authorAction}
-                    options={AUTHOR_ACTION_OPTIONS}
-                    onChange={setAuthorAction}
-                  />
-                </div>
-
-                {hasAction && (
-                  <div className="mt-4">
-                    <div className="mb-2 flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-[#B0B0B0]">
-                        제재 사유
-                      </span>
-                      <span className="text-xs font-semibold text-[#FF6B6B]">
-                        *
-                      </span>
-                      <span className="text-xs text-[#9C9C9C]">
-                        (피신고자 {selectedReport.authorName}님에게 전달돼요)
-                      </span>
-                    </div>
-                    <textarea
-                      value={sanctionReasonDraft}
-                      onChange={(e) => setSanctionReasonDraft(e.target.value)}
-                      rows={4}
-                      placeholder="어떤 사유로 어떤 조치를 받았는지 안내해주세요"
-                      className="thin-scrollbar w-full resize-none rounded-xl bg-[#FDECEC]/40 px-4 py-3 text-sm text-[#2C2C2C] outline-none placeholder:text-[#9C9C9C] focus:ring-2 focus:ring-[#E22222]"
-                    />
-                  </div>
-                )}
-
-                <div className="mt-4">
-                  <div className="mb-2 flex items-center gap-1">
-                    <span className="text-xs font-medium text-[#B0B0B0]">
-                      신고자에게 보낼 답변
-                    </span>
-                  </div>
-                  <textarea
-                    value={replyDraft}
-                    onChange={(e) => setReplyDraft(e.target.value)}
-                    rows={5}
-                    placeholder="처리 결과를 안내하는 답변을 입력해주세요"
-                    className="thin-scrollbar w-full resize-none rounded-xl bg-[#F6F8FA] px-4 py-3 text-sm text-[#2C2C2C] outline-none placeholder:text-[#9C9C9C] focus:ring-2 focus:ring-[#5E92F0]"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 border-t-[0.5px] border-[#D6DDE5] px-6 py-4">
-                <button
-                  onClick={() => setSelectedReport(null)}
-                  className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] py-2.5 text-sm font-medium text-[#2C2C2C]"
-                >
-                  닫기
-                </button>
-                <button
-                  onClick={handleResolve}
-                  disabled={isSubmitDisabled}
-                  className={`flex-1 cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition ${
-                    isSubmitDisabled
-                      ? 'cursor-not-allowed bg-[#EEF1F5] text-[#9C9C9C]'
-                      : 'bg-[#5E92F0] hover:bg-[#5C86EB]'
-                  }`}
-                >
-                  {selectedReport.status === 'RESOLVED'
-                    ? '처리 내용 수정'
-                    : '처리 완료'}
-                </button>
-              </div>
+              ) : (
+                <ReportActionForm
+                  key={detail.reportId}
+                  detail={detail}
+                  isSubmitting={isSubmitting}
+                  onClose={closeModal}
+                  onSubmit={(body) =>
+                    submitHandleReport(
+                      { reportId: detail.reportId, body },
+                      { onSuccess: closeModal }
+                    )
+                  }
+                />
+              )}
             </motion.div>
           </div>
         )}

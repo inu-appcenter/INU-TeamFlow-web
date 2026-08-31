@@ -167,7 +167,7 @@ export default function VoteDetailPage() {
                             setIsDeleteConfirmOpen(true);
                           }}
                           disabled={isDeleting}
-                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA] disabled:opacity-50"
+                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#E22222] transition hover:bg-[#F6F8FA] disabled:opacity-50"
                         >
                           삭제하기
                         </button>
@@ -502,7 +502,7 @@ export default function VoteDetailPage() {
                     setIsDeleteConfirmOpen(false);
                     handleDeleteVote();
                   }}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
                 >
                   삭제
                 </button>

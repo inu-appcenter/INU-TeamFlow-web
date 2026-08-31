@@ -14,7 +14,9 @@ import { formatDate } from '@/utils/date/formatDate';
 
 import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useCreateReport } from '@/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
+import type { ReportRequest } from '@/types/report';
 import ScrapButton from '@/components/common/ScrapButton';
 
 export default function InfoPostDetailPage() {
@@ -31,8 +33,9 @@ export default function InfoPostDetailPage() {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const { errorMessage, showErrorMessage } = useErrorToast();
+  const { mutate: createReport, isPending: isReportSubmitting } =
+    useCreateReport();
 
   const handleDelete = async () => {
     if (isDeleting) return;
@@ -46,25 +49,20 @@ export default function InfoPostDetailPage() {
     }
   };
 
-  // TODO: 실제 신고 API 연동 필요 (예: useReportInfoPost 훅으로 교체)
-  const handleSubmitReport = async ({
-    reason,
-    content,
-  }: {
-    reason: string;
-    content: string;
-  }) => {
-    setIsReportSubmitting(true);
-    try {
-      console.log('정보글 신고:', { infoPostId, reason, content });
-      setIsReportModalOpen(false);
-      showErrorMessage('신고가 접수되었습니다');
-    } catch (error) {
-      console.error('정보글 신고 실패', error);
-      showErrorMessage('신고 접수에 실패했습니다');
-    } finally {
-      setIsReportSubmitting(false);
-    }
+  const handleSubmitReport = ({ reason, detail }: ReportRequest) => {
+    createReport(
+      {
+        target: { type: 'INFO_POST', id: infoPostId },
+        body: { reason, detail },
+      },
+      {
+        onSuccess: () => {
+          setIsReportModalOpen(false);
+          showErrorMessage('신고가 접수되었습니다');
+        },
+        onError: () => showErrorMessage('신고 접수에 실패했습니다'),
+      }
+    );
   };
 
   if (isLoading) return null;
@@ -141,7 +139,7 @@ export default function InfoPostDetailPage() {
                             setIsDeleteConfirmOpen(true);
                           }}
                           disabled={isDeleting}
-                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA] disabled:opacity-50"
+                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#E22222] transition hover:bg-[#F6F8FA] disabled:opacity-50"
                         >
                           삭제하기
                         </button>
@@ -182,7 +180,7 @@ export default function InfoPostDetailPage() {
                               setIsReportMenuOpen(false);
                               setIsReportModalOpen(true);
                             }}
-                            className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#EF4444] transition hover:bg-[#F6F8FA]"
+                            className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#E22222] transition hover:bg-[#F6F8FA]"
                           >
                             신고하기
                           </button>
@@ -276,7 +274,7 @@ export default function InfoPostDetailPage() {
                     handleDelete();
                   }}
                   disabled={isDeleting}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-200 active:scale-95 disabled:opacity-50"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95 disabled:opacity-50"
                 >
                   삭제
                 </button>

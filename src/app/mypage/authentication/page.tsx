@@ -132,7 +132,7 @@ export default function SchoolAuthenticationPage() {
             />
 
             {isCapsLockOn && (
-              <div className="mx-7.5 -mt-2 mb-4 flex items-center gap-2 text-sm text-[#EF4444]">
+              <div className="mx-7.5 -mt-2 mb-4 flex items-center gap-2 text-sm text-[#E22222]">
                 <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#FDECEC] text-xs font-bold">
                   !
                 </span>

@@ -6,7 +6,7 @@ import Card from '@/components/main/Card';
 import { BannerCarousel } from '@/components/main/banner/Banner';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
-import { cafe24Nyangi, circulat } from '@/fonts/logoFonts';
+import { circulat } from '@/fonts/logoFonts';
 import { useInfoPosts } from '@/hooks/useInfoPostQuery';
 import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -34,9 +34,6 @@ export default function Main() {
 
   const infoPostCategoryScrollRef = useRef<HTMLDivElement>(null);
 
-  const infoPostCategoryButtonRefs = useRef<
-    Partial<Record<InfoPostCategoryValue, HTMLButtonElement | null>>
-  >({});
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
@@ -69,18 +66,6 @@ export default function Main() {
     setCurrentDate(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
     );
-  };
-
-  const handleInfoPostCategoryChange = (category: InfoPostCategoryValue) => {
-    setSelectedInfoPostCategory(category);
-
-    requestAnimationFrame(() => {
-      infoPostCategoryButtonRefs.current[category]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center',
-      });
-    });
   };
 
   const filteredRecruitments = recruitments.filter((recruitment) => {

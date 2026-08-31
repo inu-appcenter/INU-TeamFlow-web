@@ -618,7 +618,7 @@ export default function CalendarEditModal({
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#EF4444] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
+                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
                 >
                   삭제
                 </button>
