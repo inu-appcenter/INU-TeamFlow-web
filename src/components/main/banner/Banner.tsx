@@ -3,11 +3,12 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { AppCenterCreditSlide } from './slides/AppCenterSlide';
 import { TeamFlowLaunchSlide } from './slides/TeamFlowSlide';
 import { MoimiSlide } from './slides/MoimiSlide';
+import { AppCenterBannerSlide } from './slides/AppCenterBannerSlide';
 
-const SLIDES = [TeamFlowLaunchSlide, AppCenterCreditSlide, MoimiSlide];
+const SLIDES = [TeamFlowLaunchSlide, AppCenterBannerSlide, MoimiSlide];
+// const SLIDES = [AppCenterBannerSlide];
 
 export function BannerCarousel() {
   const [index, setIndex] = useState(0);
