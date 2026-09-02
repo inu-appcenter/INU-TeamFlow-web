@@ -23,6 +23,7 @@ export interface RecruitmentSummaryResponse {
 }
 
 export interface RecruitmentDetailResponse {
+  announcementId: number;
   recruitmentId: number;
   title: string;
   isOpened: boolean;

@@ -8,7 +8,7 @@ export const mockNotificationResponse: NotificationListResponse = {
       notificationId: 40,
       title: '[앱센터 - 베이직 스터디 일정] 일정 투표가 시작되었습니다',
       content: '오프라인으로 진행될 예정입니다. 가능한 시간대에 투표해주세요.',
-      type: 'TEAM_SCHEDULE',
+      type: 'CALENDAR',
       redirectUrl: '/team/1/vote/5',
       isRead: false,
       createdAt: '2026-07-10T09:00:00',
