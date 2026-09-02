@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import axios from 'axios';
 import { Bookmark } from 'lucide-react';
 import { scrap, unscrap, type ScrapType } from '@/api/scrap';
 
@@ -18,25 +19,26 @@ export default function ScrapButton({
   const [isScrapped, setIsScrapped] = useState(initialScrapped);
   const [isPending, setIsPending] = useState(false);
 
-  useEffect(() => {
-    setIsScrapped(initialScrapped);
-  }, [id, initialScrapped]);
-
   const handleScrap = async () => {
     if (isPending) return;
+
+    const nextScrapped = !isScrapped;
 
     setIsPending(true);
 
     try {
       if (isScrapped) {
         await unscrap(type, id);
-        setIsScrapped(false);
       } else {
         await scrap(type, id);
-        setIsScrapped(true);
       }
+
+      setIsScrapped(nextScrapped);
     } catch (error) {
-      console.error('스크랩 처리 실패:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setIsScrapped(nextScrapped);
+        return;
+      }
     } finally {
       setIsPending(false);
     }

@@ -2,55 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { BellRing } from 'lucide-react';
+
 import {
   useNotificationOptions,
   useUpdateNotificationOptions,
 } from '@/hooks/useNotificationOptionQuery';
-import type { NotificationOptionRequest } from '@/types/notificationOption';
 
-interface NotificationSettingsProps {
-  showErrorMessage: (message: string) => void;
-  onDirtyChange?: (isDirty: boolean) => void;
-}
+import { notificationItems } from '@/constants/notificationOption';
 
-interface NotificationToggleProps {
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (checked: boolean) => void;
-  label: string;
-}
-
-const notificationItems: {
-  key: keyof NotificationOptionRequest;
-  title: string;
-  description: string;
-}[] = [
-  {
-    key: 'noticeEnabled',
-    title: '공지 알림',
-    description: '새로운 공지와 관련된 알림을 받아요',
-  },
-  {
-    key: 'inviteEnabled',
-    title: '초대 알림',
-    description: '팀 초대와 관련된 알림을 받아요',
-  },
-  {
-    key: 'applicationEnabled',
-    title: '신청 알림',
-    description: '팀 신청과 관련된 알림을 받아요',
-  },
-  {
-    key: 'calendarEnabled',
-    title: '캘린더 알림',
-    description: '일정과 관련된 알림을 받아요',
-  },
-  {
-    key: 'chatEnabled',
-    title: '채팅 알림',
-    description: '새로운 채팅과 관련된 알림을 받아요',
-  },
-];
+import type {
+  NotificationOptionRequest,
+  NotificationSettingsProps,
+  NotificationToggleProps,
+} from '@/types/notificationOption';
 
 function NotificationToggle({
   checked,
@@ -94,34 +58,35 @@ export default function NotificationSettings({
 
   const [draft, setDraft] = useState<NotificationOptionRequest | null>(null);
 
-  useEffect(() => {
-    if (!notificationOptions) return;
+  const serverOptions: NotificationOptionRequest | null = notificationOptions
+    ? {
+        noticeEnabled: notificationOptions.noticeEnabled,
+        inviteEnabled: notificationOptions.inviteEnabled,
+        applicationEnabled: notificationOptions.applicationEnabled,
+        calendarEnabled: notificationOptions.calendarEnabled,
+        chatEnabled: notificationOptions.chatEnabled,
+      }
+    : null;
 
-    setDraft({
-      noticeEnabled: notificationOptions.noticeEnabled,
-      inviteEnabled: notificationOptions.inviteEnabled,
-      applicationEnabled: notificationOptions.applicationEnabled,
-      calendarEnabled: notificationOptions.calendarEnabled,
-      chatEnabled: notificationOptions.chatEnabled,
-    });
-  }, [notificationOptions]);
+  // 사용자가 수정하기 전에는 서버 값을 그대로 사용
+  const currentOptions = draft ?? serverOptions;
 
   const allEnabled =
-    draft !== null &&
-    draft.noticeEnabled &&
-    draft.inviteEnabled &&
-    draft.applicationEnabled &&
-    draft.calendarEnabled &&
-    draft.chatEnabled;
+    currentOptions !== null &&
+    currentOptions.noticeEnabled &&
+    currentOptions.inviteEnabled &&
+    currentOptions.applicationEnabled &&
+    currentOptions.calendarEnabled &&
+    currentOptions.chatEnabled;
 
   const isDirty =
     draft !== null &&
-    notificationOptions !== undefined &&
-    (draft.noticeEnabled !== notificationOptions.noticeEnabled ||
-      draft.inviteEnabled !== notificationOptions.inviteEnabled ||
-      draft.applicationEnabled !== notificationOptions.applicationEnabled ||
-      draft.calendarEnabled !== notificationOptions.calendarEnabled ||
-      draft.chatEnabled !== notificationOptions.chatEnabled);
+    serverOptions !== null &&
+    (draft.noticeEnabled !== serverOptions.noticeEnabled ||
+      draft.inviteEnabled !== serverOptions.inviteEnabled ||
+      draft.applicationEnabled !== serverOptions.applicationEnabled ||
+      draft.calendarEnabled !== serverOptions.calendarEnabled ||
+      draft.chatEnabled !== serverOptions.chatEnabled);
 
   useEffect(() => {
     onDirtyChange?.(isDirty);
@@ -141,41 +106,46 @@ export default function NotificationSettings({
     key: keyof NotificationOptionRequest,
     enabled: boolean
   ) => {
-    setDraft((prev) => {
-      if (!prev) return prev;
+    if (!currentOptions) return;
 
-      return {
-        ...prev,
-        [key]: enabled,
-      };
+    setDraft({
+      ...currentOptions,
+      [key]: enabled,
     });
   };
 
   const handleCancel = () => {
-    if (!notificationOptions) return;
-
-    setDraft({
-      noticeEnabled: notificationOptions.noticeEnabled,
-      inviteEnabled: notificationOptions.inviteEnabled,
-      applicationEnabled: notificationOptions.applicationEnabled,
-      calendarEnabled: notificationOptions.calendarEnabled,
-      chatEnabled: notificationOptions.chatEnabled,
-    });
+    // draft를 버리면 다시 서버 값을 사용
+    setDraft(null);
   };
 
   const handleSave = () => {
     if (!draft || !isDirty || isPending) return;
 
-    const request = { ...draft };
-
-    updateNotificationOptions(request, {
+    updateNotificationOptions(draft, {
       onError: () => {
         showErrorMessage('알림 설정 저장에 실패했습니다');
       },
     });
   };
 
-  if (isLoading || !draft) {
+  if (isError) {
+    return (
+      <section>
+        <div className="mb-4">
+          <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
+        </div>
+
+        <div className="flex min-h-[180px] items-center justify-center rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white">
+          <p className="text-[14px] text-[#989898]">
+            알림 설정을 불러오지 못했습니다
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (isLoading || !currentOptions) {
     return (
       <section>
         <div className="mb-4">
@@ -189,22 +159,6 @@ export default function NotificationSettings({
         <div className="flex min-h-[180px] items-center justify-center rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white">
           <p className="text-[14px] text-[#989898]">
             알림 설정을 불러오는 중...
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  if (isError) {
-    return (
-      <section>
-        <div className="mb-4">
-          <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
-        </div>
-
-        <div className="flex min-h-[180px] items-center justify-center rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white">
-          <p className="text-[14px] text-[#989898]">
-            알림 설정을 불러오지 못했습니다
           </p>
         </div>
       </section>
@@ -270,7 +224,7 @@ export default function NotificationSettings({
 
               <NotificationToggle
                 label={item.title}
-                checked={draft[item.key]}
+                checked={currentOptions[item.key]}
                 onChange={(enabled) => handleOptionToggle(item.key, enabled)}
               />
             </div>
