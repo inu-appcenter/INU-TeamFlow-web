@@ -15,7 +15,7 @@ import {
 } from '@/hooks/useUserQuery';
 import { useFcm } from '@/hooks/useFcm';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { cafe24Nyangi, circulat } from '@/fonts/logoFonts';
+import Image from 'next/image';
 import {
   Check,
   ChevronDown,
@@ -417,25 +417,25 @@ export default function MyPage() {
         <section className="mx-auto grid max-w-[1180px] grid-cols-1 gap-6 lg:grid-cols-[420px_1fr]">
           <section className="relative h-[630px] rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-6 transition-all duration-200 sm:p-6 2xl:h-[650px]">
             {!modify && (
-              <span
-                className={`${circulat.className} absolute top-7 left-1/2 mb-2 -translate-x-1/2 text-[45px]`}
-                style={{
-                  color: '#5E92F0',
-                }}
-              >
-                Moimi
-              </span>
+              <Image
+                src="/images/moimi_logo.png"
+                alt="Moimi 로고"
+                width={6477}
+                height={2184}
+                priority
+                className="absolute top-10 left-1/2 h-auto w-[140px] -translate-x-1/2"
+              />
             )}
 
             <div className="flex h-full flex-col">
               <div
                 className={`flex flex-1 flex-col items-center transition-all duration-200 ${
-                  modify ? 'justify-start pt-6' : 'justify-center'
+                  modify ? 'justify-start pt-2' : 'justify-center'
                 }`}
               >
                 <div
                   className={`relative h-36 w-36 shrink-0 transition-all duration-200 sm:h-44 sm:w-44 ${
-                    modify ? 'mt-0' : 'mt-14'
+                    modify ? 'mt-0' : 'mt-8'
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}

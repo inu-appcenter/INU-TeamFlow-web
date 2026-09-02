@@ -5,8 +5,9 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { AppCenterCreditSlide } from './slides/AppCenterSlide';
 import { TeamFlowLaunchSlide } from './slides/TeamFlowSlide';
+import { MoimiSlide } from './slides/MoimiSlide';
 
-const SLIDES = [TeamFlowLaunchSlide, AppCenterCreditSlide];
+const SLIDES = [TeamFlowLaunchSlide, AppCenterCreditSlide, MoimiSlide];
 
 export function BannerCarousel() {
   const [index, setIndex] = useState(0);
@@ -43,7 +44,7 @@ export function BannerCarousel() {
             type="button"
             onClick={() => setIndex(i)}
             aria-label={`${i + 1}번째 배너로 이동`}
-            className="p- cursor-pointer"
+            className="cursor-pointer p-0"
           >
             <span
               className={`block w-1.5 rounded-full transition-all duration-300 ${
