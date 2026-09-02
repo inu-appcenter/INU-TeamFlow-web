@@ -2,10 +2,16 @@
 
 import { motion } from 'motion/react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export function AppCenterBannerSlide() {
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-3xl bg-white/10 p-[1.5px]">
+    <Link
+      href="https://home.inuappcenter.kr/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="relative block h-full w-full overflow-hidden rounded-3xl bg-white/10 p-[1.5px]"
+    >
       <motion.div
         style={{ willChange: 'transform' }}
         animate={{ rotate: 360 }}
@@ -23,6 +29,6 @@ export function AppCenterBannerSlide() {
           className="object-cover"
         />
       </div>
-    </div>
+    </Link>
   );
 }
