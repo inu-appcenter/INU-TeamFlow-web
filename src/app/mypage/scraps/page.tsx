@@ -182,8 +182,7 @@ export default function Scrap() {
               const endDate = new Date(recruitment.endAt);
               endDate.setHours(0, 0, 0, 0);
 
-              const isClosed =
-                endDate < today || recruitment.status === 'CLOSED';
+              const isClosed = endDate < today || !recruitment.isOpened;
 
               return (
                 <ContentCard
@@ -191,7 +190,6 @@ export default function Scrap() {
                   cardType="recruitment"
                   category={recruitment.category}
                   title={recruitment.title}
-                  content={recruitment.status}
                   cardStatus={isClosed ? 'CLOSED' : 'OPEN'}
                   path={`/recruitment/${recruitment.recruitmentId}`}
                   startAt={formatDate(recruitment.createdAt)}
