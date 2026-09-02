@@ -6,7 +6,6 @@ import Card from '@/components/main/Card';
 import { BannerCarousel } from '@/components/main/banner/Banner';
 import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
 import { useRecruitments } from '@/hooks/useRecruitmentQuery';
-import { circulat } from '@/fonts/logoFonts';
 import { useInfoPosts } from '@/hooks/useInfoPostQuery';
 import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -127,46 +126,20 @@ export default function Main() {
     };
   }, []);
 
-  const logoM = [{ label: 'Circulat', className: circulat.className }];
-
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto max-w-[1180px]">
         {/* 상단 */}
         <section className="relative mb-8 pt-4 md:min-h-[160px]">
-          <div className="fixed top-4 left-10 z-80 flex flex-col items-center">
-            {logoM.map((font) => (
-              <motion.span
-                key={font.label}
-                className={`${font.className} inline-flex text-[45px]`}
-                style={{ color: '#5E92F0' }}
-              >
-                {'Moimi'.split('').map((char, index) => (
-                  <motion.span
-                    key={index}
-                    initial={{ opacity: 1, y: 12 }}
-                    animate={{
-                      opacity: 1,
-                      y: [0, -10, 0],
-                    }}
-                    transition={{
-                      opacity: {
-                        duration: 0.4,
-                        delay: index * 0.09,
-                        ease: 'easeOut',
-                      },
-                      y: {
-                        duration: 0.75,
-                        ease: 'easeInOut',
-                        delay: index * 0.11,
-                      },
-                    }}
-                  >
-                    {char}
-                  </motion.span>
-                ))}
-              </motion.span>
-            ))}
+          <div className="fixed top-6 left-4 z-80 flex flex-col items-center sm:left-6 lg:left-10">
+            <Image
+              src="/images/moimi_logo.png"
+              alt="Moimi 로고"
+              width={6477}
+              height={2184}
+              priority
+              className="mt-0 h-auto w-[130px] sm:mt-1 lg:w-[140px]"
+            />
           </div>
 
           {/* 배너: 가로 길이 확장 */}

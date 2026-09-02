@@ -8,7 +8,7 @@ export default function NotificationButton() {
   return (
     <button
       onClick={() => router.push('/notification')}
-      className="fixed top-8 right-6 z-80 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5] bg-white text-[#2c2c2c] transition-all duration-150 active:scale-90"
+      className="fixed top-4 right-6 z-80 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5] bg-white text-[#2c2c2c] transition-all duration-150 active:scale-90 sm:top-8"
     >
       <FaBell size={18} />
     </button>

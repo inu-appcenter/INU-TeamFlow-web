@@ -1,4 +1,3 @@
-// src/components/main/banner/slides/TeamFlowSlide.tsx
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
