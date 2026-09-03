@@ -147,7 +147,7 @@ export default function RecruitmentDetail() {
             }}
           >
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push(`/recruitment`)}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={24} strokeWidth={2.5} />
@@ -362,7 +362,7 @@ export default function RecruitmentDetail() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-4 shadow-xl"
+              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
             >
               <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
                 모집글을 삭제할까요?

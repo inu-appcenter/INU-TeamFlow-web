@@ -209,7 +209,6 @@ export default function Scrap() {
                 path={`/infoPost/${infoPost.infoPostId}`}
                 createdAt={formatDate(infoPost.createdAt)}
                 content=""
-                cardStatus="WAITING"
               />
             ))}
 

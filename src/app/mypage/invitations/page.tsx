@@ -176,7 +176,7 @@ export default function InvitationsPage() {
               <ContentCard
                 key={invitation.invitationId}
                 cardType="invitation"
-                category={invitation.teamCategory ?? 'ETC'}
+                category="INVITATION"
                 title={invitation.teamName}
                 createdAt={formatDate(invitation.createdAt)}
                 direction={selectedCategory}
