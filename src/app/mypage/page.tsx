@@ -556,9 +556,13 @@ export default function MyPage() {
                   <button
                     type="button"
                     onClick={startModify}
-                    className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#EEF1F5] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95"
+                    className="group mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#EEF1F5] px-2.5 py-3 text-[13px] font-semibold text-[#989898] transition-all duration-150 hover:text-[#2c2c2c] active:scale-95"
                   >
-                    <Pen size={13} />
+                    <Pen
+                      size={13}
+                      strokeWidth={2.5}
+                      className="transition-transform duration-150 group-hover:scale-x-[-1]"
+                    />
                     수정하기
                   </button>
                 </div>
@@ -640,7 +644,7 @@ export default function MyPage() {
                       type="button"
                       onClick={saveModify}
                       disabled={isUpdatePending || isImagePending}
-                      className="flex-1 cursor-pointer rounded-xl bg-[#A7ECA7] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#D6DDE5]"
+                      className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] px-2.5 py-2.5 text-[14px] font-semibold text-white transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#D6DDE5]"
                     >
                       완료
                     </button>
@@ -649,7 +653,7 @@ export default function MyPage() {
                       type="button"
                       onClick={() => setModify(false)}
                       disabled={isUpdatePending || isImagePending}
-                      className="flex-1 cursor-pointer rounded-xl bg-[#D6DDE5] px-2.5 py-3 text-[12px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] px-2.5 py-2.5 text-[14px] font-semibold text-[#2c2c2c] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       취소
                     </button>
@@ -837,13 +841,13 @@ export default function MyPage() {
                     <h3 className="text-[18px] font-bold text-[#2C2C2C]">
                       계정 관리
                     </h3>
-                    <p className="mt-1 text-[14px] leading-6 text-[#989898]">
+                    <p className="text-[14px] leading-6 text-[#989898]">
                       계정과 관련된 설정을 관리할 수 있어요
                     </p>
                   </div>
 
                   <div className="rounded-3xl border border-[#FFD3D3] bg-white p-5 sm:p-6">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-end gap-3">
                       <div className="min-w-0 flex-1">
                         <h4 className="text-[17px] font-bold text-[#E22222]">
                           회원 탈퇴
@@ -852,21 +856,20 @@ export default function MyPage() {
                           탈퇴하면 계정과 관련된 정보가 삭제되며 복구할 수
                           없습니다
                         </p>
-                        <p className="mt-1 text-[14px] leading-6 text-[#989898]">
+                        <p className="mt-0 text-[14px] leading-6 text-[#989898]">
                           팀장 권한을 보유하고 있거나 진행 중인 투표가 있으면
                           탈퇴할 수 없습니다
                         </p>
                       </div>
-                    </div>
-
-                    <div className="mt-5 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={openDeleteUserConfirm}
-                        className="cursor-pointer rounded-xl border border-[#FFD3D3] bg-[#FFF5F5] px-4 py-2.5 text-[14px] font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#FFECEC] active:scale-95"
-                      >
-                        탈퇴하기
-                      </button>
+                      <div className="mt-5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={openDeleteUserConfirm}
+                          className="cursor-pointer rounded-xl border border-[#FFD3D3] bg-[#FFF5F5] px-6 py-2 text-[14px] font-semibold text-[#E22222] transition-all duration-150 hover:bg-[#FFECEC] active:scale-95"
+                        >
+                          탈퇴하기
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -949,14 +952,8 @@ export default function MyPage() {
           <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/45 px-4">
             <div className="animate-modal-pop w-full max-w-[400px] rounded-3xl bg-white p-6 shadow-xl">
               <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
-                변경사항이 저장되지 않았습니다
+                변경사항이 저장되지 않았어요
               </h2>
-
-              <p className="mt-2 text-center text-[14px] leading-6 text-[#989898]">
-                알림 설정을 변경했지만 아직 완료하지 않았어요
-                <br />
-                저장하지 않고 설정을 닫을까요
-              </p>
 
               <div className="mt-5 flex gap-3">
                 <button

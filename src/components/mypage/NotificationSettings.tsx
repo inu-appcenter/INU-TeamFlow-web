@@ -151,7 +151,7 @@ export default function NotificationSettings({
         <div className="mb-4">
           <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
 
-          <p className="mt-1 text-[14px] leading-6 text-[#989898]">
+          <p className="text-[14px] leading-6 text-[#989898]">
             받고 싶은 알림을 선택할 수 있어요
           </p>
         </div>
@@ -166,11 +166,11 @@ export default function NotificationSettings({
   }
 
   return (
-    <section className="mb-4">
+    <section className="mb-6">
       <div className="mb-4">
         <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
 
-        <p className="mt-1 text-[14px] leading-6 text-[#989898]">
+        <p className="text-[14px] leading-6 text-[#989898]">
           받고 싶은 알림을 선택할 수 있어요
         </p>
       </div>
@@ -200,7 +200,7 @@ export default function NotificationSettings({
           />
         </div>
 
-        <div className="my-5 border-t border-[#EEF1F5]" />
+        <div className="mt-5 border-t border-[#EEF1F5]" />
 
         <div className="flex flex-col">
           {notificationItems.map((item, index) => (
@@ -231,12 +231,12 @@ export default function NotificationSettings({
           ))}
         </div>
 
-        <div className="mt-6 flex gap-3 border-t border-[#EEF1F5] pt-5">
+        <div className="flex gap-3 border-t border-[#EEF1F5] pt-5">
           <button
             type="button"
             onClick={handleCancel}
             disabled={!isDirty || isPending}
-            className="flex-1 cursor-pointer rounded-xl bg-[#D9DEE7] py-3 text-[13px] font-medium text-[#2C2C2C] transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 text-[14px] font-semibold text-[#2C2C2C] transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             취소
           </button>
@@ -245,7 +245,7 @@ export default function NotificationSettings({
             type="button"
             onClick={handleSave}
             disabled={!isDirty || isPending}
-            className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] py-3 text-[13px] font-medium text-white transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#B8C9E8]"
+            className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] py-3 text-[14px] font-semibold text-white transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#B8C9E8]"
           >
             완료
           </button>

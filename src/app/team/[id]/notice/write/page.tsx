@@ -330,34 +330,25 @@ export default function TeamNoticeWrite() {
               />
 
               <div className="mt-6 mb-16 flex justify-center">
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => router.push(`/team/${teamId}/notice`)}
-                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] px-8 py-2 font-medium text-[#2C2C2C]"
-                  >
-                    취소
-                  </button>
+                <button
+                  onClick={() => {
+                    if (!title.trim()) {
+                      showErrorMessage('제목을 입력해주세요');
+                      return;
+                    }
 
-                  <button
-                    onClick={() => {
-                      if (!title.trim()) {
-                        showErrorMessage('제목을 입력해주세요');
-                        return;
-                      }
+                    if (!content.trim()) {
+                      showErrorMessage('내용을 입력해주세요');
+                      return;
+                    }
 
-                      if (!content.trim()) {
-                        showErrorMessage('내용을 입력해주세요');
-                        return;
-                      }
-
-                      setIsConfirmOpen(true);
-                    }}
-                    disabled={isSubmitting}
-                    className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-8 py-2 font-medium text-white disabled:opacity-60"
-                  >
-                    작성
-                  </button>
-                </div>
+                    setIsConfirmOpen(true);
+                  }}
+                  disabled={isSubmitting}
+                  className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-10 py-2 font-medium text-white disabled:opacity-60"
+                >
+                  작성
+                </button>
               </div>
             </div>
           </div>

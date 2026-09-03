@@ -11,6 +11,7 @@ export const categoryMap: Record<string, string> = {
   CAREER_ADVICE: '취업 조언',
   CASUAL_TALK: '잡담',
   INFO_SHARING: '정보 공유',
+  INVITATION: '초대',
 };
 
 // CONTEST~ETC는 팀(모집글) 카테고리라 이 파일이 색상 원본입니다.
@@ -25,6 +26,7 @@ export const categoryColorMap: Record<string, string> = {
   PROJECT: '#DCEBFF',
   CLUB: '#FFF1CC',
   ETC: '#E9E9E9',
+  INVITATION: '#E3E7EE',
 };
 
 export const categoryBorderColorMap: Record<string, string> = {
