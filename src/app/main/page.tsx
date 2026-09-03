@@ -133,12 +133,13 @@ export default function Main() {
         <section className="relative mb-8 pt-4 md:min-h-[160px]">
           <div className="fixed top-6 left-4 z-80 flex flex-col items-center sm:left-6 lg:left-10">
             <Image
-              src="/images/moimi_logo.png"
+              src="/images/logo.svg"
               alt="Moimi 로고"
               width={6477}
               height={2184}
               priority
-              className="mt-0 h-auto w-[130px] sm:mt-1 lg:w-[140px]"
+              unoptimized
+              className="mt-0 h-auto w-[125px] sm:mt-2"
             />
           </div>
 
