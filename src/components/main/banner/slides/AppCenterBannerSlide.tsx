@@ -21,7 +21,7 @@ export function AppCenterBannerSlide() {
 
       <div className="relative z-10 h-full w-full overflow-hidden rounded-3xl">
         <Image
-          src="/images/banner2.png"
+          src="/images/banner2.webp"
           alt="모이미는 인천대학교 앱센터에서 만들어졌습니다"
           fill
           priority

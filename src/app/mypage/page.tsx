@@ -418,11 +418,12 @@ export default function MyPage() {
           <section className="relative h-[630px] rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white p-6 transition-all duration-200 sm:p-6 2xl:h-[650px]">
             {!modify && (
               <Image
-                src="/images/moimi_logo.png"
+                src="/images/logo.svg"
                 alt="Moimi 로고"
                 width={6477}
                 height={2184}
                 priority
+                unoptimized
                 className="absolute top-10 left-1/2 h-auto w-[140px] -translate-x-1/2"
               />
             )}

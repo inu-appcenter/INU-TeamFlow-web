@@ -7,7 +7,7 @@ export function MoimiSlide() {
   return (
     <div className="relative h-full w-full overflow-hidden rounded-3xl">
       <Image
-        src="/images/banner1.png"
+        src="/images/banner1.webp"
         alt=""
         fill
         priority
