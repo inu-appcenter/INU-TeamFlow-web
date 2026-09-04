@@ -1,0 +1,15 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/apps/web/src/app/main/page": [
+      "static/media/Pretendard_Regular-s.p.03ginm53upljq.woff2",
+      "static/media/Pretendard_Medium-s.p.0bmf7-ims7d2~.woff2",
+      "static/media/Pretendard_SemiBold-s.p.0tcmjtvhw_7x5.woff2",
+      "static/media/Pretendard_Bold-s.p.0fjtkubmj4wmi.woff2",
+      "static/media/Cafe24Nyangi_B_v1_0-s.p.02fz57alnpics.woff2",
+      "static/media/circulat-s.p.04ngz.98ew.-_.ttf"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}
