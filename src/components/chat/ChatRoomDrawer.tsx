@@ -10,6 +10,7 @@ import { useChatRoomMembers } from '@/hooks/chat/useChatRoomMembers';
 import { useChatRoomAvailableMembers } from '@/hooks/chat/useChatRoomAvailableMembers';
 import { useAddChatRoomMembers } from '@/hooks/chat/useAddChatRoomMembers';
 import { useLeaveChatRoom } from '@/hooks/chat/useLeaveChatRoom';
+import { maskStudentNumber } from '@/utils/maskStudentNumber';
 import {
   useUpdateMyChatRoomName,
   useUpdateMyChatRoomImage,
@@ -395,7 +396,7 @@ export default function ChatRoomDrawer({
                               {user.name}
                             </p>
                             <p className="text-xs text-[#989898]">
-                              {user.studentNumber}
+                              {maskStudentNumber(user.studentNumber)}
                             </p>
                           </div>
                           {isSelected && (
