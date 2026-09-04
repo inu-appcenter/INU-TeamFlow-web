@@ -11,6 +11,8 @@ import { formatChatTime } from '@/utils/date/formatChatTime';
 import { useMyInfo } from '@/hooks/useAuthQuery';
 import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
 import { useTeamChatRoom } from '@/hooks/chat/useTeamChatRoom';
+import { maskStudentNumber } from '@/utils/maskStudentNumber';
+
 import {
   useKickMember,
   useLeaveTeam,
@@ -223,7 +225,7 @@ export default function TeamMemberDrawer({
                               {user.name}
                             </p>
                             <p className="text-xs text-[#989898]">
-                              {user.studentNumber}
+                              {maskStudentNumber(user.studentNumber)}
                             </p>
                           </div>
                           <button
