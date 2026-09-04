@@ -14,10 +14,10 @@ import type { ComponentProps } from 'react';
 
 import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
-import { colleges } from '@/constants/departments';
-import { MESSAGES, REGISTER_TEXT } from '@/constants/messages';
-import { ROUTES } from '@/constants/routes';
-import { useSignup } from '@/hooks/useAuthQuery';
+import { colleges } from '@moimi/core/constants/departments';
+import { MESSAGES, REGISTER_TEXT } from '@moimi/core/constants/messages';
+import { ROUTES } from '@moimi/core/constants/routes';
+import { useSignup } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
 interface Department {

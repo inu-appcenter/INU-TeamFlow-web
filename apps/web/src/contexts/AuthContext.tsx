@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getMyProfile } from '../api/user';
-import type { UserMeResponse } from '../types/user';
+import { getMyProfile } from '@moimi/core/api/user';
+import type { UserMeResponse } from '@moimi/core/types/user';
 
 interface AuthContextValue {
   user: UserMeResponse | null;

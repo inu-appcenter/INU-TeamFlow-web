@@ -3,13 +3,13 @@
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
 import CalendarEditModal from '@/components/calendar/CalendarEditModal';
-import type { Schedule, RecurrenceEditScope } from '@/types/event';
+import type { Schedule, RecurrenceEditScope } from '@moimi/core/types/event';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useCalendarEventActions } from '@/hooks/calendar/useCalendarEventActions';
-import { useCalendarGrid } from '@/hooks/calendar/useCalendarGrid';
-import { useMonthSchedules } from '@/hooks/calendar/useMonthSchedules';
+import { useCalendarEventActions } from '@moimi/core/hooks/calendar/useCalendarEventActions';
+import { useCalendarGrid } from '@moimi/core/hooks/calendar/useCalendarGrid';
+import { useMonthSchedules } from '@moimi/core/hooks/calendar/useMonthSchedules';
 import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
 import ScheduleDetailPanel from '@/components/calendar/ScheduleDetailPanel';
 import MonthGridWithEvents from '@/components/calendar/MonthGridWithEvents';

@@ -1,9 +1,9 @@
 'use client';
 
-import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
+import { EVENT_COLOR_MAP } from '@moimi/core/constants/scheduleColor';
 import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
 import type { CalendarDate } from '@/utils/date/calendar';
-import type { Schedule } from '@/types/event';
+import type { Schedule } from '@moimi/core/types/event';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 

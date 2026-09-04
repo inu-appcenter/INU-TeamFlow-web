@@ -1,5 +1,6 @@
 'use client';
 
+import '@/lib/axiosInstance';
 import './globals.css';
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

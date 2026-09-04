@@ -5,11 +5,11 @@ import { ChevronLeft, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
-import { useTeamDetail } from '@/hooks/team/useTeamQuery';
+import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
 import {
   useCreateTeamNotice,
   useGetPresignedUrls,
-} from '@/hooks/useNoticeQuery';
+} from '@moimi/core/hooks/useNoticeQuery';
 import { uploadImageToS3 } from '@/utils/uploadImageToS3';
 
 const categoryColorMap: Record<string, string> = {

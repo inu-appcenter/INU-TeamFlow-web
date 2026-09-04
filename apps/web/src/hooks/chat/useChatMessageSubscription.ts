@@ -8,7 +8,7 @@ import { getChatClient, subscribeChatRoom } from '@/lib/chatSocket';
 import type {
   ChatMessageResponse,
   ChatMessageAnchorResponse,
-} from '@/types/chat';
+} from '@moimi/core/types/chat';
 
 /**
  * 새 채팅 메시지 소켓 이벤트(요구사항 2단계의 "수신")를 구독해서

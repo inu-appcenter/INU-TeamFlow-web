@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import type { Schedule } from '@/types/event';
+import type { Schedule } from '@moimi/core/types/event';
 import { getDday } from '@/utils/date/getDday';
 import ScheduleListItem from '@/components/calendar/ScheduleListItem';
 

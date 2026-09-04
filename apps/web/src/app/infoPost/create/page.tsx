@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import InfoPostForm, {
   type InfoPostFormData,
 } from '@/components/infoPost/InfoPostForm';
-import { useCreateInfoPost } from '@/hooks/useInfoPostQuery';
+import { useCreateInfoPost } from '@moimi/core/hooks/useInfoPostQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 
 export default function InfoPostCreatePage() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 'use client';
 
 import { Repeat } from 'lucide-react';
-import { DAYS } from '@/constants/days';
+import { DAYS } from '@moimi/core/constants/days';
 
 type RepeatType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 

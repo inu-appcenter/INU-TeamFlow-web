@@ -9,13 +9,13 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import {
   useInvitations,
   useUpdateInvitationStatus,
-} from '@/hooks/useMypageInvitationQuery';
+} from '@moimi/core/hooks/useMypageInvitationQuery';
 
 import type {
   InvitationResponse,
   InvitationStatus,
   InvitationTab,
-} from '@/types/mypageInvitation';
+} from '@moimi/core/types/mypageInvitation';
 
 import { formatDate } from '@/utils/date/formatDate';
 

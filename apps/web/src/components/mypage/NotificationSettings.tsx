@@ -6,15 +6,15 @@ import { BellRing } from 'lucide-react';
 import {
   useNotificationOptions,
   useUpdateNotificationOptions,
-} from '@/hooks/useNotificationOptionQuery';
+} from '@moimi/core/hooks/useNotificationOptionQuery';
 
-import { notificationItems } from '@/constants/notificationOption';
+import { notificationItems } from '@moimi/core/constants/notificationOption';
 
 import type {
   NotificationOptionRequest,
   NotificationSettingsProps,
   NotificationToggleProps,
-} from '@/types/notificationOption';
+} from '@moimi/core/types/notificationOption';
 
 function NotificationToggle({
   checked,

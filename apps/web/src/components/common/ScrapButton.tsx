@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { Bookmark } from 'lucide-react';
-import { scrap, unscrap, type ScrapType } from '@/api/scrap';
+import { scrap, unscrap, type ScrapType } from '@moimi/core/api/scrap';
 
 interface ScrapButtonProps {
   type: ScrapType;

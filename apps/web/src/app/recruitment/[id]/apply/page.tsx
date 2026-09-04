@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 
 import Card from '@/components/main/Card';
-import { applyRecruitment } from '@/api/recruitment';
-import { useRecruitmentDetail } from '@/hooks/useRecruitmentQuery';
-import { useMyInfo } from '@/hooks/useAuthQuery';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
-import { categoryColorMap } from '@/constants/category';
+import { applyRecruitment } from '@moimi/core/api/recruitment';
+import { useRecruitmentDetail } from '@moimi/core/hooks/useRecruitmentQuery';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
+import { categoryColorMap } from '@moimi/core/constants/category';
 
 export default function RecruitmentApplyPage() {
   const router = useRouter();

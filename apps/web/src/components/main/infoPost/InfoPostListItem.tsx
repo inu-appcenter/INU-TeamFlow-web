@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { infoPostCategoryMap } from '@/constants/infoPost';
-import type { InfoPostSummaryResponse } from '@/types/infoPost';
+import { infoPostCategoryMap } from '@moimi/core/constants/infoPost';
+import type { InfoPostSummaryResponse } from '@moimi/core/types/infoPost';
 
 type InfoPostListItemProps = {
   infoPost: InfoPostSummaryResponse;

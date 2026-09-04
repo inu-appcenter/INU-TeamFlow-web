@@ -7,11 +7,11 @@ import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ImagePlus, LoaderCircle, X } from 'lucide-react';
 
 import Card from '@/components/main/Card';
-import { categoryColorMap } from '@/constants/contentCard';
-import { infoPostCategoryFilterOptions } from '@/constants/infoPost';
+import { categoryColorMap } from '@moimi/core/constants/contentCard';
+import { infoPostCategoryFilterOptions } from '@moimi/core/constants/infoPost';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useUploadInfoPostImages } from '@/hooks/useInfoPostQuery';
-import type { InfoPostCategory } from '@/types/infoPost';
+import { useUploadInfoPostImages } from '@moimi/core/hooks/useInfoPostQuery';
+import type { InfoPostCategory } from '@moimi/core/types/infoPost';
 import { darkenColor } from '@/utils/color/darkenColor';
 
 export interface InfoPostFormData {

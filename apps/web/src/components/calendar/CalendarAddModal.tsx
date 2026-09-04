@@ -4,10 +4,10 @@ import {
   SCHEDULE_COLORS,
   EVENT_COLOR_MAP,
   type ScheduleColor,
-} from '@/constants/scheduleColor';
+} from '@moimi/core/constants/scheduleColor';
 import { Repeat, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { EventColor, Recurrence } from '@/types/event';
+import { EventColor, Recurrence } from '@moimi/core/types/event';
 import CalendarDatePicker from './CalendarDatePicker';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 

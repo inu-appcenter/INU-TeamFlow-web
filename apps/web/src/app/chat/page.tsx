@@ -8,7 +8,7 @@ import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
 import GroupChatCreateModal from '@/components/chat/GroupChatCreateModal';
-import { useChatRooms } from '@/hooks/chat/useChatRooms';
+import { useChatRooms } from '@moimi/core/hooks/chat/useChatRooms';
 import { ChatRoomListSkeleton } from '@/components/skeleton/ChatListSkeleton';
 import { formatChatTime } from '@/utils/date/formatChatTime';
 

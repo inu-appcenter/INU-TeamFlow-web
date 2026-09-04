@@ -1,9 +1,9 @@
 'use client';
 
 import Card from '@/components/main/Card';
-import { useTeamDetail } from '@/hooks/team/useTeamQuery';
-import { useTeamVotes } from '@/hooks/useVoteQuery';
-import { categoryMap, categoryColorMap } from '@/constants/category';
+import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
+import { useTeamVotes } from '@moimi/core/hooks/useVoteQuery';
+import { categoryMap, categoryColorMap } from '@moimi/core/constants/category';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useErrorToast } from '@/hooks/useErrorToast';

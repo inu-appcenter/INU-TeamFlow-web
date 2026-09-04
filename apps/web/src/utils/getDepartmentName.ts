@@ -1,4 +1,4 @@
-import { colleges } from '@/constants/departments';
+import { colleges } from '@moimi/core/constants/departments';
 
 export const getDepartmentName = (departmentEnum: string): string => {
   for (const college of colleges) {

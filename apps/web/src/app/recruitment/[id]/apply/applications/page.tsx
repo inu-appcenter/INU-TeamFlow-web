@@ -7,10 +7,10 @@ import Card from '@/components/main/Card';
 import {
   useRecruitmentDetail,
   useRecruitmentApplications,
-} from '@/hooks/useRecruitmentQuery';
+} from '@moimi/core/hooks/useRecruitmentQuery';
 import { formatDate } from '@/utils/date/formatDate';
-import { categoryColorMap } from '@/constants/category';
-import type { ApplicationStatus } from '@/types/recruitment';
+import { categoryColorMap } from '@moimi/core/constants/category';
+import type { ApplicationStatus } from '@moimi/core/types/recruitment';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',

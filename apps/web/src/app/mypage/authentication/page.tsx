@@ -9,7 +9,7 @@ import inuLogo from '@/public/images/inuLogo/inu-logo.png';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
-import { useVerifySchool } from '@/hooks/useAuthQuery';
+import { useVerifySchool } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import InputField from '@/components/register/InputField';
 

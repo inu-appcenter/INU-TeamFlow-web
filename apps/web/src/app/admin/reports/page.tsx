@@ -24,7 +24,7 @@ import {
   type ReportHandleRequest,
   type ReportDetailResponse,
   type ReportStatus,
-} from '@/types/report';
+} from '@moimi/core/types/report';
 
 type ReportSearchType = 'target' | 'reporter';
 

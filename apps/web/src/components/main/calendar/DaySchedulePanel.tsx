@@ -1,7 +1,7 @@
 'use client';
 
-import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
-import type { Schedule } from '@/types/event';
+import { EVENT_COLOR_MAP } from '@moimi/core/constants/scheduleColor';
+import type { Schedule } from '@moimi/core/types/event';
 
 type DaySchedulePanelProps = {
   selectedDate: Date;

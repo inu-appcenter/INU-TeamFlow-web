@@ -89,6 +89,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@moimi/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@stomp/stompjs':
         specifier: ^7.3.0
         version: 7.3.0
@@ -174,6 +177,25 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.3.3
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/core:
+    dependencies:
+      '@tanstack/react-query':
+        specifier: ^5.101.1
+        version: 5.102.8(react@19.2.4)
+      axios:
+        specifier: ^1.18.1
+        version: 1.20.0
+      react:
+        specifier: 19.2.4
+        version: 19.2.4
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.2.18
       typescript:
         specifier: ^5
         version: 5.9.3

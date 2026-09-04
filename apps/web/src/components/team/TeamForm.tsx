@@ -3,14 +3,14 @@
 import Card from '@/components/main/Card';
 import { ChevronLeft, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { getPresignedUrl } from '@/api/team';
+import { getPresignedUrl } from '@moimi/core/api/team';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useRouter } from 'next/navigation';
 import {
   categoryMap,
   categoryColorMap,
   DEFAULT_CATEGORY_COLOR,
-} from '@/constants/category';
+} from '@moimi/core/constants/category';
 import { darkenColor } from '@/utils/color/darkenColor';
 
 export type TeamFormData = {

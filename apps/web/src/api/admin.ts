@@ -1,15 +1,15 @@
 import axiosInstance from '@/lib/axiosInstance';
-import type { DashboardResponse } from '@/types/admin';
+import type { DashboardResponse } from '@moimi/core/types/admin';
 import type {
   ReportSummaryResponse,
   ReportDetailResponse,
   ReportHandleRequest,
-} from '@/types/report';
+} from '@moimi/core/types/report';
 import type {
   InquirySummaryResponse,
   InquiryDetailResponse,
   InquiryHandleRequest,
-} from '@/types/inquiry';
+} from '@moimi/core/types/inquiry';
 
 export const getAdminDashboard = (params?: { page?: number; size?: number }) =>
   axiosInstance

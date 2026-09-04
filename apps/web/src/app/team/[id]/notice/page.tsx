@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Card from '@/components/main/Card';
 
-import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
-import { useTeamDetail } from '@/hooks/team/useTeamQuery';
+import { useMyTeamNotices } from '@moimi/core/hooks/useNoticeQuery';
+import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
 import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
 

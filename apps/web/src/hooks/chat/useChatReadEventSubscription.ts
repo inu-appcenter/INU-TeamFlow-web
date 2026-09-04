@@ -4,12 +4,12 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IMessage } from '@stomp/stompjs';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
-import { useMyInfo } from '@/hooks/useAuthQuery';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
 import { getChatClient, subscribeChatRoomRead } from '@/lib/chatSocket';
 import type {
   ChatMessageResponse,
   ChatMessageAnchorResponse,
-} from '@/types/chat';
+} from '@moimi/core/types/chat';
 
 interface ChatReadEvent {
   chatRoomId: number;

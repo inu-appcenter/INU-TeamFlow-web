@@ -1,4 +1,4 @@
-import type { Schedule } from '@/types/event';
+import type { Schedule } from '@moimi/core/types/event';
 
 // 달력 그리드에서 각 칸이 이전달/이번달/다음달 날짜인지 구분하는 타입
 export type CalendarDate = {

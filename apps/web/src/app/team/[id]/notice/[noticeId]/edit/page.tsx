@@ -5,15 +5,15 @@ import { ChevronLeft, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
-import { useTeamDetail } from '@/hooks/team/useTeamQuery';
+import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
 import {
   useTeamNoticeDetail,
   useUpdateTeamNotice,
   useGetPresignedUrls,
-} from '@/hooks/useNoticeQuery';
+} from '@moimi/core/hooks/useNoticeQuery';
 import { uploadImageToS3 } from '@/utils/uploadImageToS3';
 import { getImageKeyFromUrl } from '@/utils/getImageKey';
-import type { TeamNoticeDetail } from '@/types/notice';
+import type { TeamNoticeDetail } from '@moimi/core/types/notice';
 
 const categoryColorMap: Record<string, string> = {
   CONTEST: '#FBE4F8',

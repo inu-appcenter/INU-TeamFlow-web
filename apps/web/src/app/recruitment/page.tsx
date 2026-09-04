@@ -3,10 +3,10 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRecruitments } from '@/hooks/useRecruitmentQuery';
+import { useRecruitments } from '@moimi/core/hooks/useRecruitmentQuery';
 import { getDday } from '@/utils/date/getDday';
 import { formatDate } from '@/utils/date/formatDate';
-import { categoryFilterOptions } from '@/constants/category';
+import { categoryFilterOptions } from '@moimi/core/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import Header from '@/components/common/Header';
 import ContentCard from '@/components/common/ContentCard';

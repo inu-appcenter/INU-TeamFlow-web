@@ -6,26 +6,26 @@ import { ChevronLeft, ChevronRight, X, Search, ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useMyTeams } from '@/hooks/team/useTeamQuery';
-import { useInfoPosts } from '@/hooks/useInfoPostQuery';
-import { getMyInfoPostScraps } from '@/api/scrap';
+import { useMyTeams } from '@moimi/core/hooks/team/useTeamQuery';
+import { useInfoPosts } from '@moimi/core/hooks/useInfoPostQuery';
+import { getMyInfoPostScraps } from '@moimi/core/api/scrap';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 import Checkbox from '@/components/common/Checkbox';
 import type {
   InfoPostSummaryResponse,
   InfoPostCategory,
   GetInfoPostsParams,
-} from '@/types/infoPost';
+} from '@moimi/core/types/infoPost';
 import {
   categoryMap,
   categoryColorMap,
   DEFAULT_CATEGORY_COLOR,
-} from '@/constants/category';
+} from '@moimi/core/constants/category';
 import {
   infoPostCategoryFilterOptions,
   infoPostCategoryColorMap,
   infoPostCategoryMap,
-} from '@/constants/infoPost';
+} from '@moimi/core/constants/infoPost';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useRouter } from 'next/navigation';
 import { darkenColor } from '@/utils/color/darkenColor';

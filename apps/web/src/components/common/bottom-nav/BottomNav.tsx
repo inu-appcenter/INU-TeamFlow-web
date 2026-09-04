@@ -8,7 +8,7 @@ import {
   MessagesSquare,
 } from 'lucide-react';
 import BottomNavItem from './BottomNavItem';
-import { useUnreadChatCount } from '@/hooks/chat/useUnreadChatCount';
+import { useUnreadChatCount } from '@moimi/core/hooks/chat/useUnreadChatCount';
 
 const navItems = [
   { icon: Home, label: '홈', href: '/main' },
