@@ -1,0 +1,51 @@
+/* [project]/apps/web/src/lib/pretendard_5f9ac057.module.css [app-client] (css) */
+@font-face {
+  font-family: pretendard;
+  src: url("../media/Pretendard_Regular-s.p.03ginm53upljq.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: pretendard;
+  src: url("../media/Pretendard_Medium-s.p.0bmf7-ims7d2~.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: pretendard;
+  src: url("../media/Pretendard_SemiBold-s.p.0tcmjtvhw_7x5.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: pretendard;
+  src: url("../media/Pretendard_Bold-s.p.0fjtkubmj4wmi.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: pretendard Fallback;
+  src: local(Arial);
+  ascent-override: 93.76%;
+  descent-override: 23.75%;
+  line-gap-override: 0.0%;
+  size-adjust: 101.55%;
+}
+
+.pretendard_5f9ac057-module__h_S1EG__className {
+  font-family: pretendard, pretendard Fallback;
+}
+
+.pretendard_5f9ac057-module__h_S1EG__variable {
+  --font-pretendard: "pretendard", "pretendard Fallback";
+}
+
+/*# sourceMappingURL=apps_web_src_lib_pretendard_5f9ac057_module_css_0w3-wzy._.single.css.map*/

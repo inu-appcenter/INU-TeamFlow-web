@@ -1,1 +1,0 @@
-export const isDefaultTeamImage = (url: string) => url.includes('/default/');
