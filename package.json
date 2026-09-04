@@ -1,4 +1,5 @@
 {
   "name": "moimi-monorepo",
-  "private": true
+  "private": true,
+  "packageManager": "pnpm@11.8.0"
 }
