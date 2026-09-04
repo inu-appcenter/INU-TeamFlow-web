@@ -5,24 +5,24 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { ChevronLeft, ImagePlus, Send, Menu, ChevronDown } from 'lucide-react';
 import { useChatMessageAnchor } from '@/hooks/chat/useChatMessageAnchor';
-import { useChatMessageHistory } from '@/hooks/chat/useChatMessageHistory';
+import { useChatMessageHistory } from '@moimi/core/hooks/chat/useChatMessageHistory';
 import { isEmojiOnlyMessage } from '@/utils/isEmojiOnly';
 import {
   formatChatDate,
   isSameDay,
   isSameMinute,
 } from '@/utils/date/formatChatDate';
-import { useChatRoomMembers } from '@/hooks/chat/useChatRoomMembers';
+import { useChatRoomMembers } from '@moimi/core/hooks/chat/useChatRoomMembers';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import { formatChatMessageTime } from '@/utils/date/formatChatMessageTime';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
-import { useSendChatMessage } from '@/hooks/chat/useSendChatMessage';
+import { useSendChatMessage } from '@moimi/core/hooks/chat/useSendChatMessage';
 import { useChatMessageSubscription } from '@/hooks/chat/useChatMessageSubscription';
 import { useChatReadEventSubscription } from '@/hooks/chat/useChatReadEventSubscription';
 import { useMarkRoomRead } from '@/hooks/chat/useMarkRoomRead';
-import { useChatImageUpload } from '@/hooks/chat/useChatImageUpload';
-import { useMyInfo } from '@/hooks/useAuthQuery';
-import type { ChatMessageResponse } from '@/types/chat';
+import { useChatImageUpload } from '@moimi/core/hooks/chat/useChatImageUpload';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
+import type { ChatMessageResponse } from '@moimi/core/types/chat';
 import ChatRoomDrawer from '@/components/chat/ChatRoomDrawer';
 
 export default function ChatRoomPage() {

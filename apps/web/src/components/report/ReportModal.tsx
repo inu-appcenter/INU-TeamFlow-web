@@ -7,7 +7,7 @@ import {
   REPORT_REASON_LABEL,
   type ReportReason,
   type ReportRequest,
-} from '@/types/report';
+} from '@moimi/core/types/report';
 
 const REASON_OPTIONS = (Object.keys(REPORT_REASON_LABEL) as ReportReason[]).map(
   (value) => ({

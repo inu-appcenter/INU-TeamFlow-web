@@ -7,9 +7,9 @@ import Card from '@/components/main/Card';
 import {
   useApplicationDetail,
   useUpdateApplicationStatus,
-} from '@/hooks/useRecruitmentQuery';
-import { categoryColorMap } from '@/constants/category';
-import type { ApplicationStatus } from '@/types/recruitment';
+} from '@moimi/core/hooks/useRecruitmentQuery';
+import { categoryColorMap } from '@moimi/core/constants/category';
+import type { ApplicationStatus } from '@moimi/core/types/recruitment';
 import { formatDate } from '@/utils/date/formatDate';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {

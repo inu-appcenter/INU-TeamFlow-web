@@ -4,7 +4,7 @@ import {
   getAdminInquiryDetail,
   handleAdminInquiry,
 } from '@/api/admin';
-import type { InquiryHandleRequest, InquiryStatus } from '@/types/inquiry';
+import type { InquiryHandleRequest, InquiryStatus } from '@moimi/core/types/inquiry';
 
 export const useAdminInquiries = (params: {
   page: number;

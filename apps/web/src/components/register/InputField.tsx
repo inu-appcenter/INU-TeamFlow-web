@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { colleges } from '@/constants/departments';
-import { INPUT_FIELD_TEXT } from '@/constants/messages';
+import { colleges } from '@moimi/core/constants/departments';
+import { INPUT_FIELD_TEXT } from '@moimi/core/constants/messages';
 
 interface Department {
   value: string;

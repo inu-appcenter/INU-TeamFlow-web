@@ -2,13 +2,13 @@
 
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useMarkChatAsRead } from '@/hooks/chat/useMarkChatAsRead';
-import { useMyInfo } from '@/hooks/useAuthQuery';
+import { useMarkChatAsRead } from '@moimi/core/hooks/chat/useMarkChatAsRead';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
 import { markChatReadKeepalive } from '@/api/chatReadBeacon';
 import type {
   ChatMessageResponse,
   ChatMessageAnchorResponse,
-} from '@/types/chat';
+} from '@moimi/core/types/chat';
 
 const READ_DEBOUNCE_MS = 300;
 

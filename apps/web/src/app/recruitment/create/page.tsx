@@ -3,8 +3,8 @@
 import RecruitmentForm, {
   type RecruitmentFormData,
 } from '@/components/recruitment/RecruitmentForm';
-import { useCreateRecruitment } from '@/hooks/useRecruitmentQuery';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
+import { useCreateRecruitment } from '@moimi/core/hooks/useRecruitmentQuery';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useErrorToast } from '@/hooks/useErrorToast';

@@ -7,7 +7,7 @@ import {
   statusBorderColorMap,
   categoryMap,
   categoryColorMap,
-} from '@/constants/contentCard';
+} from '@moimi/core/constants/contentCard';
 
 interface BaseCardProps {
   category: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { RecruitmentSummaryResponse } from '@/types/recruitment';
+import type { RecruitmentSummaryResponse } from '@moimi/core/types/recruitment';
 
 const categoryMap: Record<string, string> = {
   CONTEST: '공모전',

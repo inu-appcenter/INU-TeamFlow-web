@@ -4,7 +4,7 @@ import {
   getAdminReportDetail,
   handleAdminReport,
 } from '@/api/admin';
-import type { ReportHandleRequest, ReportStatus } from '@/types/report';
+import type { ReportHandleRequest, ReportStatus } from '@moimi/core/types/report';
 
 export const useAdminReports = (params: {
   page: number;

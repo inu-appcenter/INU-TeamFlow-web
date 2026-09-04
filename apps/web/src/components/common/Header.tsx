@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { ChevronLeft, Search, ChevronDown, Plus } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
 

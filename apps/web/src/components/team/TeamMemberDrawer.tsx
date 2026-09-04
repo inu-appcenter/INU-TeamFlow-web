@@ -4,24 +4,24 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MoreVertical, Search } from 'lucide-react';
-import { TeamMemberResponse } from '@/types/team';
+import { TeamMemberResponse } from '@moimi/core/types/team';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 import { getTeamRoleLabel } from '@/utils/teamRole';
 import { formatChatTime } from '@/utils/date/formatChatTime';
-import { useMyInfo } from '@/hooks/useAuthQuery';
-import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
-import { useTeamChatRoom } from '@/hooks/chat/useTeamChatRoom';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
+import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
+import { useTeamChatRoom } from '@moimi/core/hooks/chat/useTeamChatRoom';
 import { maskStudentNumber } from '@/utils/maskStudentNumber';
 
 import {
   useKickMember,
   useLeaveTeam,
   useUpdateMemberRole,
-} from '@/hooks/team/useTeamQuery';
+} from '@moimi/core/hooks/team/useTeamQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import type { AxiosError } from 'axios';
-import { useInvitationCandidates } from '@/hooks/team/useTeamInvitationQuery';
-import type { InvitationCandidateStatus } from '@/types/invitation';
+import { useInvitationCandidates } from '@moimi/core/hooks/team/useTeamInvitationQuery';
+import type { InvitationCandidateStatus } from '@moimi/core/types/invitation';
 
 type InviteUser = {
   studentNumber: string;

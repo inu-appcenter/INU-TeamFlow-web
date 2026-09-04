@@ -18,13 +18,13 @@ import {
   useNotifications,
   useReadNotification,
   useReadNotifications,
-} from '@/hooks/useNotificationQuery';
+} from '@moimi/core/hooks/useNotificationQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import type {
   NotificationFilterType,
   NotificationItem,
   NotificationType,
-} from '@/types/notification';
+} from '@moimi/core/types/notification';
 import { formatDate } from '@/utils/date/formatDate';
 
 const notificationTabs: {

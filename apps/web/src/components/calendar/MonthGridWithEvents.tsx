@@ -1,11 +1,11 @@
 'use client';
 
-import type { Schedule } from '@/types/event';
+import type { Schedule } from '@moimi/core/types/event';
 import type { CalendarDate } from '@/utils/date/calendar';
 import { formatDateKey } from '@/utils/date/calendar';
 import { assignWeekSlots } from '@/utils/calendar/assignWeekSlots';
 import { darkenColor } from '@/utils/color/darkenColor';
-import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
+import { EVENT_COLOR_MAP } from '@moimi/core/constants/scheduleColor';
 
 const DATE_HEADER_H = 28;
 const EVENT_H = 20;

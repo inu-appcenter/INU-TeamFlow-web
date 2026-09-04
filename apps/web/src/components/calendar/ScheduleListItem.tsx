@@ -1,8 +1,8 @@
 'use client';
 
 import { Check, MoveHorizontal, Repeat } from 'lucide-react';
-import type { Schedule } from '@/types/event';
-import { EVENT_COLOR_MAP } from '@/constants/scheduleColor';
+import type { Schedule } from '@moimi/core/types/event';
+import { EVENT_COLOR_MAP } from '@moimi/core/constants/scheduleColor';
 import { formatTime } from '@/utils/date/formatTime';
 import { darkenColor } from '@/utils/color/darkenColor';
 

@@ -7,25 +7,25 @@ import VoteAddModal, {
   type EventVoteCreateRequest,
 } from '@/components/vote/VoteAddModar';
 import Card from '@/components/main/Card';
-import { useCreateVote } from '@/hooks/useVoteQuery';
+import { useCreateVote } from '@moimi/core/hooks/useVoteQuery';
 import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
-import type { Schedule, RecurrenceEditScope } from '@/types/event';
+import type { Schedule, RecurrenceEditScope } from '@moimi/core/types/event';
 import { formatDateKey, isScheduleOnDate } from '@/utils/date/calendar';
-import { useCalendarGrid } from '@/hooks/calendar/useCalendarGrid';
-import { useCalendarWeeks } from '@/hooks/calendar/useCalendarWeeks';
-import { useTeamMonthSchedules } from '@/hooks/team/useTeamMonthSchedules';
-import { categoryMap, categoryColorMap } from '@/constants/category';
-import { useCreateInvitation } from '@/hooks/team/useTeamInvitationQuery';
+import { useCalendarGrid } from '@moimi/core/hooks/calendar/useCalendarGrid';
+import { useCalendarWeeks } from '@moimi/core/hooks/calendar/useCalendarWeeks';
+import { useTeamMonthSchedules } from '@moimi/core/hooks/team/useTeamMonthSchedules';
+import { categoryMap, categoryColorMap } from '@moimi/core/constants/category';
+import { useCreateInvitation } from '@moimi/core/hooks/team/useTeamInvitationQuery';
 import {
   useCreateTeamEvent,
   useUpdateTeamEvent,
   useDeleteTeamEvent,
-} from '@/hooks/calendar/useEventQuery';
-import { useTeamDetail, useTeamMembers } from '@/hooks/team/useTeamQuery';
-import { useTeamVotes } from '@/hooks/useVoteQuery';
+} from '@moimi/core/hooks/calendar/useEventQuery';
+import { useTeamDetail, useTeamMembers } from '@moimi/core/hooks/team/useTeamQuery';
+import { useTeamVotes } from '@moimi/core/hooks/useVoteQuery';
 import { getDday } from '@/utils/date/getDday';
-import { useTeamNotices } from '@/hooks/useNoticeQuery';
+import { useTeamNotices } from '@moimi/core/hooks/useNoticeQuery';
 import {
   Check,
   ChevronLeft,

@@ -6,15 +6,15 @@ import { useState } from 'react';
 
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
-import { useMyInfoPosts } from '@/hooks/useInfoPostQuery';
+import { useMyInfoPosts } from '@moimi/core/hooks/useInfoPostQuery';
 import {
   useCancelApplication,
   useMyApplications,
   useMyRecruitments,
   useMyTeamNotices,
-} from '@/hooks/useMypagePostQuery';
+} from '@moimi/core/hooks/useMypagePostQuery';
 
-import type { MyPost, MyPostType } from '@/types/mypagePost';
+import type { MyPost, MyPostType } from '@moimi/core/types/mypagePost';
 import { formatDate } from '@/utils/date/formatDate';
 import { getDday } from '@/utils/date/getDday';
 import Header from '@/components/common/Header';

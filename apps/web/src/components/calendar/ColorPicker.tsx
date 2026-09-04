@@ -5,7 +5,7 @@ import {
   SCHEDULE_COLORS,
   EVENT_COLOR_MAP,
   type ScheduleColor,
-} from '@/constants/scheduleColor';
+} from '@moimi/core/constants/scheduleColor';
 
 type ColorPickerProps = {
   value: ScheduleColor;

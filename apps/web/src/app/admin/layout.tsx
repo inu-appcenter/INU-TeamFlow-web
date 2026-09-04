@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import { useMyProfile } from '@/hooks/useUserQuery';
+import { useMyProfile } from '@moimi/core/hooks/useUserQuery';
 
 export default function AdminLayout({
   children,

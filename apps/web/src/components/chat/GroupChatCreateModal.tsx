@@ -3,12 +3,12 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, X, Check, Search } from 'lucide-react';
-import { useCreateGroupChatRoom } from '@/hooks/chat/useCreateGroupChatRoom';
-import { useMyTeams, useTeamMembers } from '@/hooks/team/useTeamQuery';
+import { useCreateGroupChatRoom } from '@moimi/core/hooks/chat/useCreateGroupChatRoom';
+import { useMyTeams, useTeamMembers } from '@moimi/core/hooks/team/useTeamQuery';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
-import { useMyInfo } from '@/hooks/useAuthQuery';
-import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
+import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { getTeamRoleLabel } from '@/utils/teamRole';
 

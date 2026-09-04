@@ -8,8 +8,8 @@ import ContentCard from '@/components/common/ContentCard';
 import Header from '@/components/common/Header';
 
 import { formatDate } from '@/utils/date/formatDate';
-import { useMyVotes } from '@/hooks/useMypageVoteQuery';
-import type { VoteTab } from '@/types/mypageVote';
+import { useMyVotes } from '@moimi/core/hooks/useMypageVoteQuery';
+import type { VoteTab } from '@moimi/core/types/mypageVote';
 
 const categories: { label: string; value: VoteTab }[] = [
   { label: '전체', value: 'ALL' },

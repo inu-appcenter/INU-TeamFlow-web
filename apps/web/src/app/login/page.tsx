@@ -7,10 +7,10 @@ import type { ComponentProps } from 'react';
 
 import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
-import { LOGIN_TEXT } from '@/constants/messages';
-import { ROUTES } from '@/constants/routes';
+import { LOGIN_TEXT } from '@moimi/core/constants/messages';
+import { ROUTES } from '@moimi/core/constants/routes';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLogin } from '@/hooks/useAuthQuery';
+import { useLogin } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useFcm } from '@/hooks/useFcm';
 

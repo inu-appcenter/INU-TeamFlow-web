@@ -5,18 +5,18 @@ import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 
 import Card from '@/components/main/Card';
-import { useDeleteInfoPost, useInfoPostDetail } from '@/hooks/useInfoPostQuery';
+import { useDeleteInfoPost, useInfoPostDetail } from '@moimi/core/hooks/useInfoPostQuery';
 import {
   infoPostCategoryColorMap,
   infoPostCategoryMap,
-} from '@/constants/infoPost';
+} from '@moimi/core/constants/infoPost';
 import { formatDate } from '@/utils/date/formatDate';
 
 import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useCreateReport } from '@/hooks/useCreateReport';
+import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
-import type { ReportRequest } from '@/types/report';
+import type { ReportRequest } from '@moimi/core/types/report';
 import ScrapButton from '@/components/common/ScrapButton';
 
 export default function InfoPostDetailPage() {

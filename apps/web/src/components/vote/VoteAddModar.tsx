@@ -4,7 +4,7 @@ import {
   SCHEDULE_COLORS,
   EVENT_COLOR_MAP,
   type ScheduleColor,
-} from '@/constants/scheduleColor';
+} from '@moimi/core/constants/scheduleColor';
 import { useEffect, useState, useRef } from 'react';
 import { X, ChevronDown } from 'lucide-react';
 import { getDepartmentName } from '@/utils/getDepartmentName';

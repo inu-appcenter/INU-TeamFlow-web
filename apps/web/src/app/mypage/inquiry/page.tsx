@@ -12,10 +12,10 @@ import {
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useCreateInquiry, useCancelInquiry } from '@/hooks/useCreateInquiry';
-import { useMyInquiries, useMyInquiryDetail } from '@/hooks/useMyInquiries';
+import { useCreateInquiry, useCancelInquiry } from '@moimi/core/hooks/useCreateInquiry';
+import { useMyInquiries, useMyInquiryDetail } from '@moimi/core/hooks/useMyInquiries';
 import { motion, AnimatePresence } from 'motion/react';
-import { INQUIRY_TYPE_LABEL, type InquiryType } from '@/types/inquiry';
+import { INQUIRY_TYPE_LABEL, type InquiryType } from '@moimi/core/types/inquiry';
 
 const INQUIRY_CATEGORIES: { value: InquiryType; label: string }[] = [
   { value: 'ACCOUNT', label: '계정 관련' },

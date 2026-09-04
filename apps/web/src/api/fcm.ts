@@ -1,6 +1,6 @@
 import axiosInstance from '@/lib/axiosInstance';
 
-import type { FcmTokenRequest, FcmTokenResponse } from '@/types/fcm';
+import type { FcmTokenRequest, FcmTokenResponse } from '@moimi/core/types/fcm';
 
 export const createFcmToken = (
   body: FcmTokenRequest

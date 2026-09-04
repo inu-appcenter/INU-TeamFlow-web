@@ -12,7 +12,7 @@ import {
   connectChatClient,
   disconnectChatClient,
 } from '@/lib/chatSocket';
-import { useMyInfo } from '@/hooks/useAuthQuery';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
 
 interface ChatSocketContextValue {
   isConnected: boolean;

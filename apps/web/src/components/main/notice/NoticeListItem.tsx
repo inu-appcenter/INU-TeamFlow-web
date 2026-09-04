@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
-import type { TeamNoticeSummary } from '@/types/notice';
+import type { TeamNoticeSummary } from '@moimi/core/types/notice';
 
 type NoticeListItemProps = {
   notice: TeamNoticeSummary;

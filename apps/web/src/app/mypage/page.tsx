@@ -5,14 +5,14 @@ import { useRef, useState, useEffect } from 'react';
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import NotificationSettings from '@/components/mypage/NotificationSettings';
-import { colleges } from '@/constants/departments';
+import { colleges } from '@moimi/core/constants/departments';
 import {
   useDeleteUser,
   useMyProfile,
   useProfilePresignedUrl,
   useUpdateMyProfile,
   useUploadProfileImage,
-} from '@/hooks/useUserQuery';
+} from '@moimi/core/hooks/useUserQuery';
 import { useFcm } from '@/hooks/useFcm';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import Image from 'next/image';

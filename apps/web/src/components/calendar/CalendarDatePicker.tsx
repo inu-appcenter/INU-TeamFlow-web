@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { DAYS } from '@/constants/days';
+import { DAYS } from '@moimi/core/constants/days';
 import { formatDateKey } from '@/utils/date/calendar';
 
 interface CalendarDatePickerProps {

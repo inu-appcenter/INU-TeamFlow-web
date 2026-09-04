@@ -1,4 +1,4 @@
-import type { Schedule } from '@/types/event';
+import type { Schedule } from '@moimi/core/types/event';
 import { isScheduleOnDate } from '@/utils/date/calendar';
 
 export type SlottedSchedule = Schedule & { slot: number };

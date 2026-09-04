@@ -3,18 +3,18 @@
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
-import { useMyTeams } from '@/hooks/team/useTeamQuery';
+import { useMyTeams } from '@moimi/core/hooks/team/useTeamQuery';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { TeamListSkeleton } from '@/components/skeleton';
 import { motion } from 'motion/react';
 import {
   categoryMap,
   categoryColorMap,
   categoryFilterOptions,
-} from '@/constants/category';
+} from '@moimi/core/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { darkenColor } from '@/utils/color/darkenColor';
 

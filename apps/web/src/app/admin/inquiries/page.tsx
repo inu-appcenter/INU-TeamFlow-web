@@ -15,7 +15,7 @@ import {
   type InquiryHandleRequest,
   type InquiryDetailResponse,
   type InquiryStatus,
-} from '@/types/inquiry';
+} from '@moimi/core/types/inquiry';
 
 type InquirySearchType = 'detail' | 'writer';
 

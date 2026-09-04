@@ -7,7 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   useRecruitmentDetail,
   useUpdateRecruitment,
-} from '@/hooks/useRecruitmentQuery';
+} from '@moimi/core/hooks/useRecruitmentQuery';
 
 export default function RecruitmentEditPage() {
   const router = useRouter();

@@ -5,11 +5,11 @@ import { ChevronLeft, EllipsisVertical, Pin, X } from 'lucide-react';
 import { useState } from 'react';
 import NoticeDetailSkeleton from '@/components/skeleton/NoticeDetailSkeleton';
 import Card from '@/components/main/Card';
-import { useTeamDetail } from '@/hooks/team/useTeamQuery';
+import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
 import {
   useTeamNoticeDetail,
   useDeleteTeamNotice,
-} from '@/hooks/useNoticeQuery';
+} from '@moimi/core/hooks/useNoticeQuery';
 import { formatDate } from '@/utils/date/formatDate';
 import { useSearchParams } from 'next/navigation';
 

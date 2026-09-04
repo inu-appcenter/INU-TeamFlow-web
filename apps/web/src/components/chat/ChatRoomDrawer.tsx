@@ -5,22 +5,22 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 import { MoreVertical, Camera, Pencil, Plus, Search, X } from 'lucide-react';
-import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
-import { useChatRoomMembers } from '@/hooks/chat/useChatRoomMembers';
-import { useChatRoomAvailableMembers } from '@/hooks/chat/useChatRoomAvailableMembers';
-import { useAddChatRoomMembers } from '@/hooks/chat/useAddChatRoomMembers';
-import { useLeaveChatRoom } from '@/hooks/chat/useLeaveChatRoom';
+import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
+import { useChatRoomMembers } from '@moimi/core/hooks/chat/useChatRoomMembers';
+import { useChatRoomAvailableMembers } from '@moimi/core/hooks/chat/useChatRoomAvailableMembers';
+import { useAddChatRoomMembers } from '@moimi/core/hooks/chat/useAddChatRoomMembers';
+import { useLeaveChatRoom } from '@moimi/core/hooks/chat/useLeaveChatRoom';
 import { maskStudentNumber } from '@/utils/maskStudentNumber';
 import {
   useUpdateMyChatRoomName,
   useUpdateMyChatRoomImage,
-} from '@/hooks/chat/useUpdateMyChatRoomInfo';
+} from '@moimi/core/hooks/chat/useUpdateMyChatRoomInfo';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useMyInfo } from '@/hooks/useAuthQuery';
-import { useCreateReport } from '@/hooks/useCreateReport';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
+import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
-import type { ChatRoomMemberResponse } from '@/types/chat';
-import type { ReportRequest } from '@/types/report';
+import type { ChatRoomMemberResponse } from '@moimi/core/types/chat';
+import type { ReportRequest } from '@moimi/core/types/report';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 
 type ChatRoomDrawerProps = {

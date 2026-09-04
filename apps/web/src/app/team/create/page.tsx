@@ -1,8 +1,8 @@
 'use client';
 
 import TeamForm, { type TeamFormData } from '@/components/team/TeamForm';
-import { useCreateTeam } from '@/hooks/team/useTeamQuery';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
+import { useCreateTeam } from '@moimi/core/hooks/team/useTeamQuery';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 

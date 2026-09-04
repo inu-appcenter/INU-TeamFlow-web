@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { useMyTeamNotices } from '@/hooks/useNoticeQuery';
+import { useMyTeamNotices } from '@moimi/core/hooks/useNoticeQuery';
 import { getTeamRoleLabel } from '@/utils/teamRole';
-import { categoryColorMap } from '@/constants/category';
+import { categoryColorMap } from '@moimi/core/constants/category';
 import { darkenColor } from '@/utils/color/darkenColor';
 
 import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';

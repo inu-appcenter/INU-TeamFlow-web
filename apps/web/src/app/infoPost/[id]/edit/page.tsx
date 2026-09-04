@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import InfoPostForm, {
   type InfoPostFormData,
 } from '@/components/infoPost/InfoPostForm';
-import { useInfoPostDetail, useUpdateInfoPost } from '@/hooks/useInfoPostQuery';
+import { useInfoPostDetail, useUpdateInfoPost } from '@moimi/core/hooks/useInfoPostQuery';
 import { getImageKeyFromUrl } from '@/utils/image/getImageKeyFromUrl';
 
 export default function InfoPostEditPage() {

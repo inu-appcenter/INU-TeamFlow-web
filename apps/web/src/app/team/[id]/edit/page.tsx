@@ -6,7 +6,7 @@ import {
   useTeamDetail,
   useUpdateTeam,
   useDeleteTeam,
-} from '@/hooks/team/useTeamQuery';
+} from '@moimi/core/hooks/team/useTeamQuery';
 import { useRouter, useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 

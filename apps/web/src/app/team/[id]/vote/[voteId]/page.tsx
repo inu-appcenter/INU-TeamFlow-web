@@ -1,15 +1,15 @@
 'use client';
 
 import Card from '@/components/main/Card';
-import { categoryMap, categoryColorMap } from '@/constants/category';
-import { useTeamDetail } from '@/hooks/team/useTeamQuery';
+import { categoryMap, categoryColorMap } from '@moimi/core/constants/category';
+import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
 import {
   useVoteDetail,
   useVoteSlots,
   useSelectVoteSlots,
   useConfirmVoteResult,
   useDeleteVote,
-} from '@/hooks/useVoteQuery';
+} from '@moimi/core/hooks/useVoteQuery';
 import VoteForm from '@/components/vote/VoteForm';
 import VoteResult from '@/components/vote/VoteResult';
 import { ChevronLeft, ChevronRight, EllipsisVertical } from 'lucide-react';

@@ -1,12 +1,12 @@
 'use client';
 
-import type { ScheduleColor } from '@/constants/scheduleColor';
+import type { ScheduleColor } from '@moimi/core/constants/scheduleColor';
 import type {
   Schedule,
   RecurrenceEditScope,
   EventParticipant,
-} from '@/types/event';
-import type { TeamMemberResponse } from '@/types/team';
+} from '@moimi/core/types/event';
+import type { TeamMemberResponse } from '@moimi/core/types/team';
 import { X, Users, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import Checkbox from '../common/Checkbox';

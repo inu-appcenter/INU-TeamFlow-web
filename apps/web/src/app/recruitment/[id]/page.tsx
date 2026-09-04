@@ -9,14 +9,14 @@ import RecruitmentDetailSkeleton from '@/components/skeleton/RecruitmentDetailSk
 import {
   useRecruitmentDetail,
   useDeleteRecruitment,
-} from '@/hooks/useRecruitmentQuery';
-import { useSchoolVerificationGuard } from '@/hooks/useSchoolVerificationGuard';
+} from '@moimi/core/hooks/useRecruitmentQuery';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { formatDate } from '@/utils/date/formatDate';
 import { getDday } from '@/utils/date/getDday';
-import { categoryMap, categoryColorMap } from '@/constants/category';
+import { categoryMap, categoryColorMap } from '@moimi/core/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useCreateDirectChatRoom } from '@/hooks/chat/useCreateDirectChatRoom';
-import { useCreateReport } from '@/hooks/useCreateReport';
+import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
+import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
 import ScrapButton from '@/components/common/ScrapButton';
 
@@ -111,7 +111,7 @@ export default function RecruitmentDetail() {
     reason,
     detail,
   }: {
-    reason: import('@/types/report').ReportReason;
+    reason: import('@moimi/core/types/report').ReportReason;
     detail: string;
   }) => {
     createReport(
