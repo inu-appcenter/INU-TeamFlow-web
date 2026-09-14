@@ -207,13 +207,13 @@ export default function InfoPostForm({
         <View
           style={{
             position: "absolute",
-            top: 110,
+            top: 160,
             alignSelf: "center",
             zIndex: 50,
           }}
           className="rounded-full bg-[#2C2C2C] px-5 py-2"
         >
-          <Text className="text-[13px] font-semibold text-white">
+          <Text className="text-sm font-semibold text-white">
             {errorMessage}
           </Text>
         </View>

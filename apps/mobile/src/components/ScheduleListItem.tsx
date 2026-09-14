@@ -26,13 +26,11 @@ export default function ScheduleListItem({
   return (
     <Pressable
       onPress={() => onClickItem(schedule)}
-      className="h-[56px] flex-row items-center justify-between rounded-xl px-3 transition-transform duration-150 active:scale-95"
+      className="h-[56px] flex-row items-center justify-between rounded-xl px-3 transition-all duration-150 active:scale-95"
       style={{
         backgroundColor: EVENT_COLOR_MAP[schedule.color],
-        borderLeftWidth: 5,
-        borderLeftColor: isDone
-          ? "transparent"
-          : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
+        borderLeftWidth: isDone ? 0 : 5,
+        borderLeftColor: darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
         opacity: schedule.teamId && schedule.isParticipant === false ? 0.4 : 1,
       }}
     >
@@ -61,7 +59,7 @@ export default function ScheduleListItem({
               e.stopPropagation();
               onToggle(schedule);
             }}
-            className="h-5 w-5 items-center justify-center"
+            className="h-5 w-5 items-center justify-center transition-transform duration-150 ease-out active:scale-90"
           >
             {isDone ? (
               <Check

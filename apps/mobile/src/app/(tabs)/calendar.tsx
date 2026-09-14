@@ -1,11 +1,16 @@
+// CalendarScreen.tsx
 import { useState } from "react";
 import { View, Text, ScrollView, Pressable, Modal } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useCalendarGrid } from "@moimi/core/hooks/calendar/useCalendarGrid";
 import { useMonthSchedules } from "@moimi/core/hooks/calendar/useMonthSchedules";
+import { useCalendarEventActions } from "@moimi/core/hooks/calendar/useCalendarEventActions";
 import { formatDateKey, isScheduleOnDate } from "@/utils/date/calendar";
 import MonthGridWithEvents from "@/components/MonthGridWithEvents";
 import ScheduleDetailPanel from "@/components/ScheduleDetailPanel";
+import CalendarAddModal from "@/components/calendar/CalendarAddModal";
+import CalendarEditModal from "@/components/calendar/CalendarEditModal";
+import type { Schedule } from "@moimi/core/types/event";
 
 const days = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -16,12 +21,28 @@ export default function CalendarScreen() {
   );
   const [selectedDate, setSelectedDate] = useState(today);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(""), 1800);
+  };
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
   const calendarDates = useCalendarGrid(year, month);
   const schedules = useMonthSchedules(year, month);
+
+  const {
+    handleAddSchedule,
+    handleEditSchedule,
+    handleDeleteSchedule,
+    handleToggleSchedule,
+  } = useCalendarEventActions();
 
   const weeks = Array.from(
     { length: calendarDates.length / 7 },
@@ -51,6 +72,24 @@ export default function CalendarScreen() {
     setIsDetailOpen(true);
   };
 
+  const handleClickScheduleItem = (schedule: Schedule) => {
+    if (schedule.teamId) {
+      showErrorMessage("팀 일정은 수정할 수 없습니다");
+      return;
+    }
+    setIsDetailOpen(false);
+    setEditingSchedule(schedule);
+    setIsEditOpen(true);
+  };
+
+  const handleToggle = (schedule: Schedule) => {
+    if (schedule.teamId) {
+      showErrorMessage("팀 일정은 수정할 수 없습니다");
+      return;
+    }
+    handleToggleSchedule(schedule);
+  };
+
   return (
     <View className="flex-1 bg-[#F0F2F5]">
       <ScrollView
@@ -68,13 +107,13 @@ export default function CalendarScreen() {
           <View className="pr-2 flex-row gap-2">
             <Pressable
               onPress={handlePrevMonth}
-              className="h-9 w-9 items-center justify-center rounded-full bg-white active:scale-90"
+              className="h-9 w-9 items-center justify-center rounded-full bg-white transition-transform duration-150 ease-out active:scale-90"
             >
               <ChevronLeft size={18} strokeWidth={2.5} color="#B0B8C1" />
             </Pressable>
             <Pressable
               onPress={handleNextMonth}
-              className="h-9 w-9 items-center justify-center rounded-full bg-white active:scale-90"
+              className="h-9 w-9 items-center justify-center rounded-full bg-white  transition-transform duration-150 ease-out active:scale-90"
             >
               <ChevronRight size={18} strokeWidth={2.5} color="#B0B8C1" />
             </Pressable>
@@ -118,29 +157,61 @@ export default function CalendarScreen() {
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="w-full max-w-[300px] rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
+            className="relative w-full max-w-[300px] rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
             style={{ height: "50%" }}
           >
+            {errorMessage && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: -60,
+                  alignSelf: "center",
+                  zIndex: 50,
+                }}
+                className="rounded-full bg-[#2C2C2C] px-4 py-2"
+              >
+                <Text className="text-sm font-semibold text-white">
+                  {errorMessage}
+                </Text>
+              </View>
+            )}
+
             <ScheduleDetailPanel
               selectedDate={selectedDate}
               dayLabel={dayLabel}
               schedules={selectedSchedules}
-              onClickItem={(schedule) => {
-                // TODO 2단계: 수정 모달 연결
-                console.log("edit", schedule.eventId);
-              }}
-              onToggle={(schedule) => {
-                // TODO 2단계: 완료 토글 API 연결
-                console.log("toggle", schedule.eventId);
-              }}
+              onClickItem={handleClickScheduleItem}
+              onToggle={handleToggle}
               onAddClick={() => {
-                // TODO 2단계: 추가 모달 연결
-                console.log("add schedule");
+                setIsDetailOpen(false);
+                setIsAddOpen(true);
               }}
             />
           </Pressable>
         </Pressable>
       </Modal>
+
+      <CalendarAddModal
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onAdd={handleAddSchedule}
+        selectedDate={selectedDate}
+      />
+
+      <CalendarEditModal
+        open={isEditOpen}
+        schedule={editingSchedule}
+        onClose={() => setIsEditOpen(false)}
+        onEdit={handleEditSchedule}
+        onDelete={(eventId, scope) =>
+          handleDeleteSchedule(
+            eventId,
+            scope,
+            editingSchedule?.occurrenceAt ?? editingSchedule?.startAt ?? ""
+          )
+        }
+        teamMembers={[]}
+      />
     </View>
   );
 }

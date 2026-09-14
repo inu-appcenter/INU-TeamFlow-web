@@ -1,7 +1,7 @@
 'use client';
 
 import CalendarAddModal from '@/components/calendar/CalendarAddModal';
-import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
+import type { MyEventCreateRequest } from '@moimi/core/types/event';
 import CalendarEditModal from '@/components/calendar/CalendarEditModal';
 import VoteAddModal, {
   type EventVoteCreateRequest,
@@ -22,7 +22,10 @@ import {
   useUpdateTeamEvent,
   useDeleteTeamEvent,
 } from '@moimi/core/hooks/calendar/useEventQuery';
-import { useTeamDetail, useTeamMembers } from '@moimi/core/hooks/team/useTeamQuery';
+import {
+  useTeamDetail,
+  useTeamMembers,
+} from '@moimi/core/hooks/team/useTeamQuery';
 import { useTeamVotes } from '@moimi/core/hooks/useVoteQuery';
 import { getDday } from '@/utils/date/getDday';
 import { useTeamNotices } from '@moimi/core/hooks/useNoticeQuery';
@@ -181,7 +184,7 @@ export default function TeamDetail() {
     }
   };
 
-  const handleAddSchedule = async (request: CreateEventRequest) => {
+  const handleAddSchedule = async (request: MyEventCreateRequest) => {
     try {
       await createEvent({
         title: request.title,

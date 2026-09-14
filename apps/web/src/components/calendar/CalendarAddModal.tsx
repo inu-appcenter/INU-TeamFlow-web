@@ -7,36 +7,20 @@ import {
 } from '@moimi/core/constants/scheduleColor';
 import { Repeat, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { EventColor, Recurrence } from '@moimi/core/types/event';
+import { EventColor } from '@moimi/core/types/event';
 import CalendarDatePicker from './CalendarDatePicker';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
+import type { Recurrence, MyEventCreateRequest } from '@moimi/core/types/event';
 
 type RepeatType = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 type ScheduleColorKey =
-  | 'SUN'
-  | 'BLOSSOM'
-  | 'OCEAN'
-  | 'LEAF'
-  | 'ROSE'
-  | 'PEACH'
-  | 'LAVENDER'
-  | 'MINT';
-
-export interface CreateEventRequest {
-  title: string;
-  description: string;
-  startAt: string;
-  endAt: string;
-  isAllDay: boolean;
-  color: ScheduleColorKey;
-  recurrence: Recurrence | null;
-}
+  'SUN' | 'BLOSSOM' | 'OCEAN' | 'LEAF' | 'ROSE' | 'PEACH' | 'LAVENDER' | 'MINT';
 
 interface CalendarAddModalProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (request: CreateEventRequest) => void;
+  onAdd: (request: MyEventCreateRequest) => void;
   selectedDate: Date;
   isEdit?: boolean;
 }
@@ -221,7 +205,7 @@ export default function CalendarAddModal({
           form.endTime
         );
 
-    const requestBody: CreateEventRequest = {
+    const requestBody: MyEventCreateRequest = {
       title: form.title,
       description: form.description,
       startAt,
@@ -245,7 +229,7 @@ export default function CalendarAddModal({
               untilAt: endAt,
               occurrenceCount: null,
             }
-          : null,
+          : undefined,
     };
 
     onAdd(requestBody);
