@@ -2,28 +2,23 @@ import {
   useCreateMyEvent,
   useUpdateMyEvent,
   useDeleteMyEvent,
-} from './useEventQuery';
-import type { Schedule, RecurrenceEditScope } from '@moimi/core/types/event';
-import type { CreateEventRequest } from '@/components/calendar/CalendarAddModal';
+} from "./useEventQuery";
+import type {
+  Schedule,
+  RecurrenceEditScope,
+  MyEventCreateRequest,
+} from "@moimi/core/types/event";
 
 export function useCalendarEventActions() {
   const { mutateAsync: createEvent } = useCreateMyEvent();
   const { mutateAsync: updateEvent } = useUpdateMyEvent();
   const { mutateAsync: deleteEvent } = useDeleteMyEvent();
 
-  const handleAddSchedule = async (request: CreateEventRequest) => {
+  const handleAddSchedule = async (request: MyEventCreateRequest) => {
     try {
-      await createEvent({
-        title: request.title,
-        description: request.description,
-        startAt: request.startAt,
-        endAt: request.endAt,
-        isAllDay: request.isAllDay,
-        color: request.color,
-        ...(request.recurrence && { recurrence: request.recurrence }),
-      });
+      await createEvent(request);
     } catch (error) {
-      console.error('일정 생성 실패', error);
+      console.error("일정 생성 실패", error);
     }
   };
 
@@ -44,13 +39,11 @@ export function useCalendarEventActions() {
           isFinished: updated.isFinished,
           occurrenceAt: updated.occurrenceAt ?? updated.startAt,
           recurrenceEditScope: scope,
-          ...(updated.recurrence && {
-            recurrence: updated.recurrence,
-          }),
+          ...(updated.recurrence && { recurrence: updated.recurrence }),
         },
       });
     } catch (error) {
-      console.error('일정 수정 실패', error);
+      console.error("일정 수정 실패", error);
     }
   };
 
@@ -62,7 +55,7 @@ export function useCalendarEventActions() {
     try {
       await deleteEvent({ eventId, scope, occurrence });
     } catch (error) {
-      console.error('일정 삭제 실패', error);
+      console.error("일정 삭제 실패", error);
     }
   };
 
@@ -79,12 +72,12 @@ export function useCalendarEventActions() {
           color: target.color,
           isFinished: !target.isFinished,
           occurrenceAt: target.occurrenceAt ?? target.startAt,
-          recurrenceEditScope: 'THIS_INSTANCE',
+          recurrenceEditScope: "THIS_INSTANCE",
           ...(target.recurrence && { recurrence: target.recurrence }),
         },
       });
     } catch (error) {
-      console.error('일정 완료 토글 실패', error);
+      console.error("일정 완료 토글 실패", error);
     }
   };
 
