@@ -18,6 +18,7 @@ type MonthGridWithEventsProps = {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   rowMinHeight?: number;
+  selectedBackgroundColor?: string;
 };
 
 export default function MonthGridWithEvents({
@@ -28,6 +29,7 @@ export default function MonthGridWithEvents({
   selectedDate,
   onSelectDate,
   rowMinHeight = 90,
+  selectedBackgroundColor = "#FAFAFA",
 }: MonthGridWithEventsProps) {
   const today = new Date();
 
@@ -103,7 +105,9 @@ export default function MonthGridWithEvents({
                   className="items-center pt-1 pb-2 transition-transform duration-150 active:scale-95"
                   style={{
                     width: `${100 / 7}%`,
-                    backgroundColor: isSelected ? "#FAFAFA" : "transparent",
+                    backgroundColor: isSelected
+                      ? selectedBackgroundColor
+                      : "transparent",
                     borderRadius: isSelected ? 16 : 0,
                   }}
                 >

@@ -22,6 +22,7 @@ import ReportModal from '@/components/report/ReportModal';
 import type { ChatRoomMemberResponse } from '@moimi/core/types/chat';
 import type { ReportRequest } from '@moimi/core/types/report';
 import { getDepartmentName } from '@/utils/getDepartmentName';
+import ChatRoomAvatar from './ChatRoomAvatar';
 
 type ChatRoomDrawerProps = {
   open: boolean;
@@ -250,22 +251,22 @@ export default function ChatRoomDrawer({
               <div className="mt-2 flex flex-col items-center gap-4">
                 <div className="relative">
                   <div
-                    className={`group relative h-20 w-20 shrink-0 overflow-hidden bg-[#D6DDE5] ${
-                      roomType === 'DIRECT' ? 'rounded-full' : 'rounded-2xl'
+                    className={`group relative h-20 w-20 shrink-0 ${
+                      roomType === 'GROUP' ? 'overflow-hidden rounded-2xl' : ''
                     }`}
                   >
-                    {roomImageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={roomImageUrl}
-                        alt={roomName}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xl font-bold text-[#3F4852]">
-                        {roomName.slice(0, 1)}
-                      </div>
-                    )}
+                    <ChatRoomAvatar
+                      imageUrl={roomImageUrl}
+                      memberProfileUrls={
+                        members
+                          ?.map((m) => m.profileImageUrl)
+                          .filter((url): url is string => !!url) ?? []
+                      }
+                      roomName={roomName}
+                      chatRoomType={roomType}
+                      sizeClassName="h-20 w-20"
+                    />
+
                     {roomType === 'GROUP' && (
                       <>
                         <div

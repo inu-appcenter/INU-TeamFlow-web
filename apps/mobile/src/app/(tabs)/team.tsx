@@ -1,3 +1,4 @@
+// TeamScreen.tsx
 import { useRef, useState } from "react";
 import {
   View,
@@ -12,7 +13,9 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { ChevronRight, Plus } from "lucide-react-native";
+import { useRouter } from "expo-router";
 import { useMyTeams } from "@moimi/core/hooks/team/useTeamQuery";
+import { useSchoolVerificationGuard } from "@moimi/core/hooks/useSchoolVerificationGuard";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   categoryMap,
@@ -22,6 +25,16 @@ import {
 import { darkenColor } from "@/utils/color/darkenColor";
 
 export default function TeamScreen() {
+  const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(""), 1800);
+  };
+
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const { data: teams = [], isLoading } = useMyTeams();
 
@@ -62,20 +75,38 @@ export default function TeamScreen() {
     return team.category === selectedCategory;
   });
 
+  const handleCreateTeam = () => {
+    if (!checkVerified()) return;
+    router.push("/team/create");
+  };
+
   return (
     <View
       className="flex-1 bg-[#F0F2F5]"
       style={{ paddingTop: 76, paddingRight: 10, paddingLeft: 10 }}
     >
+      {errorMessage && (
+        <View
+          style={{
+            position: "absolute",
+            top: 24,
+            alignSelf: "center",
+            zIndex: 50,
+          }}
+          className="rounded-full bg-[#2C2C2C] px-5 py-2"
+        >
+          <Text className="text-[13px] font-semibold text-white">
+            {errorMessage}
+          </Text>
+        </View>
+      )}
+
       <View className="mb-3 flex-row items-center justify-between pl-2">
         <Text className="text-[22px] font-bold text-[#2C2C2C]">
           나의 팀 목록
         </Text>
         <Pressable
-          onPress={() => {
-            // TODO 2단계: 학교 인증 가드 + /team/create 이동
-            console.log("create team");
-          }}
+          onPress={handleCreateTeam}
           className="flex-row items-center gap-1.5 rounded-lg bg-[#5E92F0] py-3 pr-4 pl-3.5 transition-transform duration-150 ease-out active:scale-90"
         >
           <Plus size={16} strokeWidth={2.5} color="#fff" />
@@ -157,10 +188,7 @@ export default function TeamScreen() {
             filteredTeams.map((team) => (
               <Pressable
                 key={team.teamId}
-                onPress={() => {
-                  // TODO 2단계: /team/[id] 상세 화면 연결
-                  console.log("team", team.teamId);
-                }}
+                onPress={() => router.push(`/team/${team.teamId}`)}
                 className="mb-4 overflow-hidden rounded-2xl bg-[#F6F8FA] transition-transform duration-150 ease-out active:scale-95"
               >
                 <View
