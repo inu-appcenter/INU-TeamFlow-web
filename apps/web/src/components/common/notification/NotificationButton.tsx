@@ -22,7 +22,7 @@ export default function NotificationButton() {
       {unreadCount > 0 && (
         <span
           aria-hidden="true"
-          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] leading-none font-bold text-white"
+          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#5E8EEF] px-1 text-[10px] leading-none font-bold text-white"
         >
           {unreadCount > 99 ? '99+' : unreadCount}
         </span>

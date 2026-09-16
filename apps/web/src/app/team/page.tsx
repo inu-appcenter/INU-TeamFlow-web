@@ -1,7 +1,6 @@
 'use client';
 
 import BottomNav from '@/components/common/bottom-nav/BottomNav';
-import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
 import { useMyTeams } from '@moimi/core/hooks/team/useTeamQuery';
 import { ChevronRight, Plus } from 'lucide-react';
@@ -38,10 +37,6 @@ export default function Team() {
           {errorMessage}
         </div>
       )}
-
-      <div className="hidden lg:block">
-        <NotificationButton />
-      </div>
 
       <section className="mx-auto mt-8 flex h-[calc(100vh-48px)] min-h-0 max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
         <div className="mb-3 flex items-end justify-between pl-4">
