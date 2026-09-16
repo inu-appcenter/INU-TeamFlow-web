@@ -1,17 +1,17 @@
-import { getHttpStatus } from '@/utils/httpError';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getHttpStatus } from "@/utils/httpError";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createNotificationOptions,
   getNotificationOptions,
   updateNotificationOptions,
-} from '@moimi/core/api/notificationOption';
+} from "@moimi/core/api/notificationOption";
 import type {
   NotificationOptionRequest,
   NotificationOptionResponse,
-} from '@moimi/core/types/notificationOption';
+} from "@moimi/core/types/notificationOption";
 
 export const notificationOptionKeys = {
-  all: ['notification-options'] as const,
+  all: ["notification-options"] as const,
 };
 
 const DEFAULT_NOTIFICATION_OPTIONS: NotificationOptionRequest = {
@@ -63,7 +63,7 @@ export const useUpdateNotificationOptions = () => {
       });
 
       const previous = queryClient.getQueryData<NotificationOptionResponse>(
-        notificationOptionKeys.all
+        notificationOptionKeys.all,
       );
 
       const optimisticData: NotificationOptionResponse = {
@@ -86,6 +86,18 @@ export const useUpdateNotificationOptions = () => {
         queryClient.setQueryData(notificationOptionKeys.all, context.previous);
       }
     },
+
+    onSuccess: (data) => {
+      queryClient.setQueryData(notificationOptionKeys.all, data);
+    },
+  });
+};
+
+export const useCreateNotificationOptions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createNotificationOptions,
 
     onSuccess: (data) => {
       queryClient.setQueryData(notificationOptionKeys.all, data);
