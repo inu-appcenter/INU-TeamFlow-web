@@ -22,6 +22,7 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import type { AxiosError } from 'axios';
 import { useInvitationCandidates } from '@moimi/core/hooks/team/useTeamInvitationQuery';
 import type { InvitationCandidateStatus } from '@moimi/core/types/invitation';
+import ChatRoomAvatar from '@/components/chat/ChatRoomAvatar';
 
 type InviteUser = {
   studentNumber: string;
@@ -382,20 +383,13 @@ export default function TeamMemberDrawer({
                       }
                       className="z-50 flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-[#F6F8FB] p-3 text-left transition hover:bg-[#F0F2F5]"
                     >
-                      <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-[#D6DDE5]">
-                        {room.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={room.imageUrl}
-                            alt={room.roomName}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#3F4852]">
-                            {room.roomName.slice(0, 1)}
-                          </div>
-                        )}
-                      </div>
+                      <ChatRoomAvatar
+                        imageUrl={room.imageUrl}
+                        memberProfileUrls={room.memberProfileUrls}
+                        roomName={room.roomName}
+                        chatRoomType={room.chatRoomType}
+                        sizeClassName="h-11 w-11"
+                      />
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">

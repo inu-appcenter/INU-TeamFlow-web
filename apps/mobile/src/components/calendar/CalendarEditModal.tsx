@@ -309,7 +309,7 @@ export default function CalendarEditModal({
           className="relative rounded-t-3xl border-[0.5px] border-[#D6DDE5]/60 bg-white px-6 pt-8"
         >
           {isEditingParticipants ? (
-            <View className="flex-1 pt-8">
+            <View className="flex-1 pt-2 ">
               <View className="mb-3 h-[55px] justify-center rounded-2xl bg-[#F6F8FA] px-6">
                 <Text className="text-[16px] font-semibold text-[#2C2C2C]">
                   참여할 인원을 선택해주세요
@@ -320,13 +320,14 @@ export default function CalendarEditModal({
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  className="mb-3"
-                  contentContainerStyle={{ gap: 8 }}
+                  style={{ maxHeight: 40, marginBottom: 12 }}
+                  contentContainerStyle={{ gap: 8, alignItems: "center" }}
                 >
                   {selectedParticipants.map((p) => (
                     <View
                       key={p.userId}
-                      className="flex-row items-center gap-2 rounded-full bg-[#EEF1F5] px-3 py-2"
+                      style={{ height: 36 }}
+                      className="flex-row items-center gap-2 rounded-full bg-[#F6F8FA] pr-3.5 pl-4"
                     >
                       <Text className="text-[13px] font-medium text-[#2C2C2C]">
                         {p.name}
@@ -338,7 +339,7 @@ export default function CalendarEditModal({
                           )
                         }
                       >
-                        <X size={13} color="#989898" />
+                        <X size={13} color="#989898" className="-mr-2" />
                       </Pressable>
                     </View>
                   ))}
@@ -363,7 +364,7 @@ export default function CalendarEditModal({
               </View>
 
               <ScrollView
-                className="rounded-2xl bg-[#F6F8FA]"
+                className="rounded-2xl bg-[#F6F8FA] py-3"
                 style={{ maxHeight: 300 }}
               >
                 {filteredMembers.map((member) => {
@@ -397,10 +398,10 @@ export default function CalendarEditModal({
                 })}
               </ScrollView>
 
-              <View className="mb-4 mt-6 flex-row justify-end">
+              <View className="mb-10 mt-6 flex-row justify-end">
                 <Pressable
                   onPress={() => setIsEditingParticipants(false)}
-                  className="h-10 items-center justify-center rounded-xl bg-[#5E92F0] px-6 active:scale-95"
+                  className="h-11 items-center justify-center rounded-xl bg-[#5E92F0] px-8 transition-transform duration-150 ease-out  active:scale-95"
                 >
                   <Text className="text-[14px] font-semibold text-white">
                     완료
@@ -538,7 +539,7 @@ export default function CalendarEditModal({
 
                 <Pressable
                   onPress={handleSave}
-                  className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 active:scale-95"
+                  className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 transition-transform duration-150 ease-out  active:scale-95"
                 >
                   <Text className="text-[14px] font-semibold text-[#2C2C2C]">
                     저장

@@ -137,7 +137,7 @@ function NoticeListItem({ notice }: { notice: TeamNoticeSummary }) {
       }
       style={{
         borderRadius: 12,
-        backgroundColor: "#fff",
+        backgroundColor: "#ffffff",
         paddingHorizontal: 16,
         paddingVertical: 16,
         borderWidth: 0.5,
@@ -173,7 +173,10 @@ function NoticeListItem({ notice }: { notice: TeamNoticeSummary }) {
         </View>
       </View>
 
-      <Text className="mt-2 px-1 text-[12px] text-[#989898]" numberOfLines={1}>
+      <Text
+        className="mt-2 px-0.5 text-[12px] text-[#989898]"
+        numberOfLines={1}
+      >
         {notice.authorName} · {getTeamRoleLabel(notice.teamRole)} ·{" "}
         {formatDate(notice.createdAt)}
       </Text>
