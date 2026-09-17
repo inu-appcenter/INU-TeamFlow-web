@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosInstance from '@/lib/axiosInstance';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getApiClient } from "../../api/client";
 
 export function useAddChatRoomMembers(roomId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (userIds: number[]) => {
-      await axiosInstance.post(`/chat-rooms/${roomId}/members`, { userIds });
+      await getApiClient().post(`/chat-rooms/${roomId}/members`, { userIds });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chatRoomMembers', roomId] });
+      queryClient.invalidateQueries({ queryKey: ["chatRoomMembers", roomId] });
       queryClient.invalidateQueries({
-        queryKey: ['chatRoomAvailableMembers', roomId],
+        queryKey: ["chatRoomAvailableMembers", roomId],
       });
     },
   });

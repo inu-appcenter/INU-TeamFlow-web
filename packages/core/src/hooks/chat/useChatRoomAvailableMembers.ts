@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '@/lib/axiosInstance';
+import { useQuery } from "@tanstack/react-query";
+import { getApiClient } from "../../api/client";
 
 type AvailableMember = {
   userId: number;
@@ -15,9 +15,9 @@ export function useChatRoomAvailableMembers(
   enabled: boolean
 ) {
   return useQuery({
-    queryKey: ['chatRoomAvailableMembers', roomId, keyword],
+    queryKey: ["chatRoomAvailableMembers", roomId, keyword],
     queryFn: async () => {
-      const { data } = await axiosInstance.get<AvailableMember[]>(
+      const { data } = await getApiClient().get<AvailableMember[]>(
         `/chat-rooms/${roomId}/available-members`,
         { params: { keyword } }
       );

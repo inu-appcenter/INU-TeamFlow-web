@@ -35,7 +35,7 @@ export default function ChatRoomAvatar({
 
   const profiles = (memberProfileUrls ?? []).filter(Boolean).slice(0, 4);
 
-  if (profiles.length > 0) {
+  if (profiles.length > 3) {
     const tiles = [...profiles, ...Array(4 - profiles.length).fill(null)];
 
     return (

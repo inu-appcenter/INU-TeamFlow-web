@@ -40,29 +40,26 @@ export default function ChatRoomAvatar({
     );
   }
 
-  // 2) 멤버 프로필 2x2 그리드
+  // 2) 멤버 프로필 콜라주 (4명 이상일 때만, 3명 이하는 이니셜로 폴백)
   if (memberProfileUrls && memberProfileUrls.length > 0) {
-    const tiles = memberProfileUrls.slice(0, 4);
-    while (tiles.length < 4) tiles.push("");
-    const half = size / 2;
-    return (
-      <View style={[shapeStyle, { flexDirection: "row", flexWrap: "wrap" }]}>
-        {tiles.map((url, i) => (
-          <View
-            key={i}
-            style={{ width: half, height: half, backgroundColor: "#D6DDE5" }}
-          >
-            {url ? (
+    const urls = memberProfileUrls.filter((url): url is string => !!url);
+
+    if (urls.length >= 4) {
+      const tiles = urls.slice(0, 4);
+      return (
+        <View style={[shapeStyle, { flexDirection: "row", flexWrap: "wrap" }]}>
+          {tiles.map((url, i) => (
+            <View key={i} style={{ width: "50%", height: "50%" }}>
               <Image
                 source={{ uri: url }}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
-            ) : null}
-          </View>
-        ))}
-      </View>
-    );
+            </View>
+          ))}
+        </View>
+      );
+    }
   }
 
   // 3) 이니셜 폴백

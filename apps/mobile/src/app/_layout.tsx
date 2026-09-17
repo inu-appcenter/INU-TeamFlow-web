@@ -15,6 +15,7 @@ import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { setCurrentPath } from "@/lib/authRedirect";
 import "@/lib/apiClient";
+import { ChatSocketProvider } from "@/contexts/ChatSocketContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,17 +34,19 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <PathnameTracker />
-          <AnimatedSplashOverlay />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="login" />
-            <Stack.Screen name="register" />
-          </Stack>
-        </ThemeProvider>
+        <ChatSocketProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <PathnameTracker />
+            <AnimatedSplashOverlay />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
+            </Stack>
+          </ThemeProvider>
+        </ChatSocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -333,6 +333,7 @@ export default function ChatRoomDrawer({
                       onBlur={() => setIsEditingName(false)}
                       maxLength={30}
                       autoFocus
+                      className="w-full flex-1 rounded-xl border-[0.5px] border-[#D6DDE5] px-3 py-2 text-sm text-[#2C2C2C] outline-none"
                     />
                     <button
                       onMouseDown={(e) => e.preventDefault()}
