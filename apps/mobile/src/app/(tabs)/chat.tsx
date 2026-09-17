@@ -12,10 +12,12 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
+import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { useChatRooms } from "@moimi/core/hooks/chat/useChatRooms";
 import { formatChatTime } from "@/utils/date/formatChatTime";
 import ChatRoomAvatar from "@/components/chatRoomAvatar";
+import GroupChatCreateModal from "@/components/GroupChatCreateModal";
 
 type ChatTab = "TEAM" | "DIRECT";
 
@@ -33,6 +35,8 @@ export default function ChatScreen() {
   const { data: directRooms = [], isLoading: isDirectLoading } =
     useChatRooms("DIRECT");
 
+  const router = useRouter();
+
   const indicatorX = useSharedValue(0);
   const indicatorWidth = useSharedValue(0);
   const tabLayouts = useRef<Record<string, { x: number; width: number }>>({});
@@ -45,6 +49,8 @@ export default function ChatScreen() {
       indicatorWidth.value = width;
     }
   };
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleSelectTab = (key: ChatTab) => {
     setActiveTab(key);
@@ -97,10 +103,7 @@ export default function ChatScreen() {
           나의 채팅 목록
         </Text>
         <Pressable
-          onPress={() => {
-            // TODO 2단계: 채팅 생성 모달 연결
-            console.log("create chat");
-          }}
+          onPress={() => setIsCreateModalOpen(true)}
           className="flex-row items-center gap-1.5 rounded-lg bg-[#5E92F0] py-3 pr-4 pl-3.5 transition-transform duration-150 ease-out active:scale-90"
         >
           <Plus size={16} strokeWidth={2.5} color="#fff" />
@@ -131,7 +134,7 @@ export default function ChatScreen() {
                     {tab.label}
                   </Text>
                   {hasUnread[tab.key] && (
-                    <View className="ml-1 h-1.5 w-1.5 rounded-full bg-[#5E92F0]" />
+                    <View className="-top-3 -right-2 h-1.5 w-1.5 rounded-full bg-[#5E92F0]" />
                   )}
                 </View>
               </Pressable>
@@ -166,12 +169,18 @@ export default function ChatScreen() {
               <Pressable
                 key={room.chatRoomId}
                 onPress={() => {
-                  // TODO 2단계: /chat/[id] 상세 화면 연결
-                  console.log(
-                    "room press",
-                    room.chatRoomId,
-                    JSON.stringify(room.memberProfileUrls)
-                  );
+                  router.push({
+                    pathname: "/chat/[roomId]",
+                    params: {
+                      roomId: String(room.chatRoomId),
+                      roomName: room.roomName,
+                      roomImageUrl: room.imageUrl ?? "",
+                      roomType: room.chatRoomType,
+                      memberProfileUrls: JSON.stringify(
+                        room.memberProfileUrls ?? []
+                      ),
+                    },
+                  });
                 }}
                 className="mb-2 flex-row items-center gap-3 rounded-2xl bg-[#F6F8FA] p-4 transition-transform duration-150 ease-out active:scale-95"
               >
@@ -216,6 +225,10 @@ export default function ChatScreen() {
           )}
         </ScrollView>
       </View>
+      <GroupChatCreateModal
+        visible={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </View>
   );
 }

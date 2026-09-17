@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosInstance from '@/lib/axiosInstance';
-import { uploadImageToS3 } from '@/utils/uploadImageToS3';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getApiClient } from "../../api/client";
 
 /**
  * GROUP 채팅방 개인 커스텀 이름 수정
@@ -13,7 +12,7 @@ export function useUpdateMyChatRoomName(roomId: number) {
 
   return useMutation({
     mutationFn: async (roomName: string | null) => {
-      const { data } = await axiosInstance.patch(
+      const { data } = await getApiClient().patch(
         `/chat-rooms/${roomId}/my-name`,
         { roomName }
       );
@@ -22,7 +21,7 @@ export function useUpdateMyChatRoomName(roomId: number) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chatRooms'] });
+      queryClient.invalidateQueries({ queryKey: ["chatRooms"] });
     },
   });
 }
@@ -37,7 +36,7 @@ export function useUpdateMyChatRoomImage(roomId: number) {
   return useMutation({
     mutationFn: async (file: File | null) => {
       if (file === null) {
-        const { data } = await axiosInstance.patch(
+        const { data } = await getApiClient().patch(
           `/chat-rooms/${roomId}/my-image`,
           {
             imageKey: null,
@@ -47,16 +46,22 @@ export function useUpdateMyChatRoomImage(roomId: number) {
         return data.imageUrl as string | null;
       }
 
-      const { data: presigned } = await axiosInstance.post(
-        '/images/presigned-url',
+      const { data: presigned } = await getApiClient().post(
+        "/images/presigned-url",
         {
           fileName: file.name,
         }
       );
 
-      await uploadImageToS3(presigned.uploadUrl, file);
+      // uploadImageToS3(@/utils/uploadImageToS3)도 웹 전용 별칭이라 모바일에서
+      // 못 찾아서, presigned URL에 PUT하는 로직을 직접 인라인으로 대체함.
+      await fetch(presigned.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
 
-      const { data } = await axiosInstance.patch(
+      const { data } = await getApiClient().patch(
         `/chat-rooms/${roomId}/my-image`,
         {
           imageKey: presigned.imageKey,
@@ -67,7 +72,7 @@ export function useUpdateMyChatRoomImage(roomId: number) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chatRooms'] });
+      queryClient.invalidateQueries({ queryKey: ["chatRooms"] });
     },
   });
 }
