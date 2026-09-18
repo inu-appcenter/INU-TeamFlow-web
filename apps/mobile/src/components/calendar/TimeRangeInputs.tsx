@@ -47,7 +47,7 @@ function TimeField({
     <>
       <Pressable
         onPress={() => setIsOpen(true)}
-        className="h-[55px] flex-1 px-6 justify-center rounded-2xl bg-[#F6F8FA]"
+        className="h-[50px] flex-1 px-6 justify-center rounded-2xl bg-[#F6F8FA]"
       >
         <Text className="text-[16px] font-semibold text-[#2C2C2C]">
           {formatTimeLabel(value)}

@@ -35,7 +35,7 @@ export default function TermsPage() {
           isBack={false}
         />
 
-        <article className="mt-6 rounded-2xl bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12">
+        <article className="mt-6 rounded-2xl bg-white px-5 py-8 border-[0.5px] border-[#D6DDE5] sm:px-10 sm:py-12">
           <header className="border-b border-gray-200 pb-8">
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
               모이미 서비스 이용약관
