@@ -45,7 +45,7 @@ export default function ScrapButton({
     <Pressable
       onPress={handleScrap}
       disabled={isPending}
-      className="active:scale-90"
+      className="transition-transform duration-150 ease-out active:scale-90"
     >
       <Bookmark
         size={20}

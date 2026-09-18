@@ -150,7 +150,10 @@ export default function MyApplicationDetailScreen() {
         style={{ backgroundColor: headerColor, paddingTop: 60 }}
         className="flex-row items-center justify-between px-5 pb-4"
       >
-        <Pressable onPress={() => router.back()} className="active:scale-90">
+        <Pressable
+          onPress={() => router.back()}
+          className="transition-transform duration-150 ease-out active:scale-90"
+        >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
         </Pressable>
       </View>

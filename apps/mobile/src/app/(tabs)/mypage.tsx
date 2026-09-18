@@ -220,12 +220,22 @@ export default function MyPageScreen() {
     setIsProfileImageMenuOpen(false);
   };
 
+  // 변경
+  const openImagePicker = () => {
+    return new Promise<ImagePicker.ImagePickerResult>((resolve) => {
+      setTimeout(async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 0.8,
+        });
+        resolve(result);
+      }, 400);
+    });
+  };
+
   const handlePickProfileImage = async () => {
     setIsProfileImageMenuOpen(false);
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-    });
+    const result = await openImagePicker();
     if (result.canceled || !result.assets[0]) return;
 
     const asset = result.assets[0];
@@ -349,7 +359,7 @@ export default function MyPageScreen() {
                     <Pressable
                       onPress={() => router.push("/mypage/authentication")}
                       style={{ zIndex: 1 }}
-                      className="rounded-full bg-[#E75A5A] px-3 py-1.5 active:scale-90"
+                      className="rounded-full bg-[#E75A5A] px-3 py-1.5 transition-transform duration-150 ease-out active:scale-90"
                     >
                       <Text className="text-[12px] font-medium text-white">
                         학교 인증
@@ -429,7 +439,7 @@ export default function MyPageScreen() {
                 <Pressable
                   onPress={saveModify}
                   disabled={isUpdatePending || isImagePending}
-                  className="flex-1 rounded-xl bg-[#5E92F0] py-3.5 active:scale-95"
+                  className="flex-1 rounded-xl bg-[#5E92F0] py-3.5 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-center text-[15px] font-semibold text-white">
                     완료
@@ -532,10 +542,10 @@ export default function MyPageScreen() {
                 사용할 이미지를 선택해주세요
               </Text>
 
-              <View className="mt-4 gap-2">
+              <View className="mt-4 gap-3">
                 <Pressable
                   onPress={handleSelectDefaultImage}
-                  className="w-full items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-3 transition-transform duration-150 ease-out active:scale-95"
+                  className="w-full items-center rounded-xl border border-[#D6DDE5]/40 bg-[#F6F8FA] h-12 justify-center transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="font-semibold text-[#2C2C2C]">
                     기본 이미지 적용
@@ -544,7 +554,7 @@ export default function MyPageScreen() {
 
                 <Pressable
                   onPress={handlePickProfileImage}
-                  className="w-full items-center rounded-xl bg-[#5E92F0] py-3 transition-transform duration-150 ease-out active:scale-95"
+                  className="w-full items-center rounded-xl bg-[#5E92F0] h-12 justify-center transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="font-semibold text-white">
                     사진 찾아보기

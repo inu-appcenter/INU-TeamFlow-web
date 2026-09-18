@@ -144,7 +144,7 @@ export default function VoteForm({
           onPress={handleSubmit}
           disabled={!canSubmit}
           style={{ opacity: canSubmit ? 1 : 0.4, width: 140 }}
-          className="rounded-xl justify-center items-center h-12 active:scale-95 bg-[#5E92F0]"
+          className="rounded-xl justify-center items-center h-12 transition-transform duration-150 ease-out active:scale-95 bg-[#5E92F0]"
         >
           <Text className="text-[15px] font-semibold text-white">
             투표하기 ({selectedSlots.length})

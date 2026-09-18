@@ -145,7 +145,7 @@ function MyPostCard({ post }: { post: MyPost }) {
           </Text>
           <Text
             numberOfLines={2}
-            className="mt-2 text-[14px] font-semibold text-[#2C2C2C]"
+            className="mt-2 text-[15px] font-semibold text-[#2C2C2C]"
           >
             {post.title}
           </Text>
@@ -174,7 +174,7 @@ function MyPostCard({ post }: { post: MyPost }) {
         className="mb-3 rounded-2xl bg-white p-5 active:bg-[#FAFAFA]"
       >
         <View className="flex-row items-center justify-between">
-          <Text className="text-[17px] font-bold text-[#2C2C2C]">신청서</Text>
+          <Text className="text-[15px] font-bold text-[#2C2C2C]">신청서</Text>
           <Text className="text-[12px] font-medium text-[#5E92F0]">
             {applicationStatusLabel[post.applicationStatus] ??
               post.applicationStatus}
@@ -227,7 +227,7 @@ function MyPostCard({ post }: { post: MyPost }) {
           <View className="flex-1 flex-row items-center gap-1.5">
             <Text
               style={{ flexShrink: 1 }}
-              className="text-[16px] font-semibold text-[#2C2C2C]"
+              className="text-[15px] font-semibold text-[#2C2C2C]"
               numberOfLines={1}
             >
               {post.title}
@@ -272,7 +272,7 @@ function MyPostCard({ post }: { post: MyPost }) {
           {categoryMap[post.category as RecruitmentCategory] ?? "기타"}
         </Text>
         <Text
-          className="flex-1 text-[17px] font-bold text-[#2C2C2C]"
+          className="flex-1 text-[15px] font-bold text-[#2C2C2C]"
           numberOfLines={1}
         >
           {post.title}

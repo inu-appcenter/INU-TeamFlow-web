@@ -232,9 +232,9 @@ export default function NoticeListScreen() {
         />
 
         {unreadCount > 0 && (
-          <View className="mb-3 flex-row items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0]/5 px-6 py-4">
-            <Mail size={20} strokeWidth={2.5} color="#5E92F0" />
-            <Text className="text-[15px] font-semibold text-[#2C2C2C]">
+          <View className="mb-3 flex-row items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0]/5 px-5 py-4">
+            <Mail size={18} strokeWidth={2.5} color="#5E92F0" />
+            <Text className="flex-1 text-[14px] font-semibold text-[#2C2C2C]">
               아직 읽지 않은 공지가{" "}
               <Text className="font-bold text-[#5E92F0]">{unreadCount}건</Text>{" "}
               있어요

@@ -310,7 +310,7 @@ export default function CalendarEditModal({
         >
           {isEditingParticipants ? (
             <View className="flex-1 ">
-              <View className="mb-3 h-[50px] mt-6 justify-center rounded-2xl bg-[#F6F8FA] px-6">
+              <View className="mb-3 h-[50px] mt-8 justify-center rounded-2xl bg-[#F6F8FA] px-6">
                 <Text className="text-[16px] font-semibold text-[#2C2C2C]">
                   참여할 인원을 선택해주세요
                 </Text>
@@ -414,7 +414,7 @@ export default function CalendarEditModal({
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ paddingBottom: 24 }}
             >
-              <View className="mb-3 flex-row gap-3 mt-6">
+              <View className="mb-3 flex-row gap-3 mt-8">
                 <TextInput
                   value={form.title}
                   onChangeText={(v) => setForm((p) => ({ ...p, title: v }))}
@@ -499,7 +499,7 @@ export default function CalendarEditModal({
               {schedule.teamId && (
                 <Pressable
                   onPress={() => setIsEditingParticipants(true)}
-                  className="mb-3 h-[50px] flex-row items-center justify-between rounded-2xl bg-[#F6F8FA] px-6 active:scale-95"
+                  className="mb-3 h-[50px] flex-row items-center justify-between rounded-2xl bg-[#F6F8FA] px-6 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <View className="flex-row items-center gap-3">
                     <Users size={17} strokeWidth={2.5} color="#2C2C2C" />
@@ -530,7 +530,7 @@ export default function CalendarEditModal({
               <View className="mb-8 mt-6 flex-row justify-between">
                 <Pressable
                   onPress={handleDelete}
-                  className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 active:scale-95"
+                  className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[14px] font-semibold text-[#E22222]">
                     삭제
@@ -582,7 +582,7 @@ export default function CalendarEditModal({
               <View className="mt-4 gap-2.5">
                 <Pressable
                   onPress={() => handleScopeSelect("THIS_INSTANCE")}
-                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 active:scale-95"
+                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[15px] font-semibold text-[#2C2C2C]">
                     이 일정만
@@ -590,7 +590,7 @@ export default function CalendarEditModal({
                 </Pressable>
                 <Pressable
                   onPress={() => handleScopeSelect("THIS_AND_FOLLOWING")}
-                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 active:scale-95"
+                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[15px] font-semibold text-[#2C2C2C]">
                     이 일정부터 이후 일정 모두
@@ -598,7 +598,7 @@ export default function CalendarEditModal({
                 </Pressable>
                 <Pressable
                   onPress={() => handleScopeSelect("ALL_SERIES")}
-                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 active:scale-95"
+                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[15px] font-semibold text-[#2C2C2C]">
                     전체 반복 일정

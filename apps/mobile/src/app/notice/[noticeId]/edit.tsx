@@ -442,7 +442,7 @@ export default function NoticeEditScreen() {
               }
               setIsConfirmOpen(true);
             }}
-            className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-10 py-3.5 active:scale-95 disabled:opacity-60"
+            className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-10 py-3.5 transition-transform duration-150 ease-out active:scale-95 disabled:opacity-60"
           >
             <Text className="text-[15px] font-semibold text-white">수정</Text>
           </Pressable>

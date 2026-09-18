@@ -82,7 +82,10 @@ export default function InfoPostDetailScreen() {
         style={{ backgroundColor: headerColor, paddingTop: 60 }}
         className="flex-row items-center justify-between px-5 pb-4"
       >
-        <Pressable onPress={() => router.back()} className="active:scale-90">
+        <Pressable
+          onPress={() => router.back()}
+          className="transition-transform duration-150 ease-out active:scale-90"
+        >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
         </Pressable>
 
@@ -97,7 +100,7 @@ export default function InfoPostDetailScreen() {
 
           <Pressable
             onPress={() => setIsMenuOpen(true)}
-            className="active:scale-90"
+            className="transition-transform duration-150 ease-out active:scale-90"
           >
             <EllipsisVertical size={20} color="#2C2C2C" />
           </Pressable>
@@ -238,7 +241,7 @@ export default function InfoPostDetailScreen() {
             <View className="mt-4 flex-row gap-3">
               <Pressable
                 onPress={() => setIsDeleteConfirmOpen(false)}
-                className="flex-1 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 active:scale-95"
+                className="flex-1 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-center text-[14px] font-semibold text-[#2C2C2C]">
                   취소
@@ -250,7 +253,7 @@ export default function InfoPostDetailScreen() {
                   handleDelete();
                 }}
                 disabled={isDeleting}
-                className="flex-1 rounded-xl bg-[#E22222] py-4 active:scale-95"
+                className="flex-1 rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-center text-[14px] font-semibold text-white">
                   삭제

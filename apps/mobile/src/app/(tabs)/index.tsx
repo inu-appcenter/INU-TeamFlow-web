@@ -4,6 +4,7 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Bell } from "lucide-react-native";
 import { useMyTeamNotices } from "@moimi/core/hooks/useNoticeQuery";
+import { useUnreadCount } from "@moimi/core/hooks/useNotificationQuery";
 import { useRecruitments } from "@moimi/core/hooks/useRecruitmentQuery";
 import { useInfoPosts } from "@moimi/core/hooks/useInfoPostQuery";
 import { useCalendarGrid } from "@moimi/core/hooks/calendar/useCalendarGrid";
@@ -18,6 +19,9 @@ import type { RecruitmentSummaryResponse } from "@moimi/core/types/recruitment";
 import type { InfoPostSummaryResponse } from "@moimi/core/types/infoPost";
 import { formatDate } from "@/utils/date/formatDate";
 import { getTeamRoleLabel } from "@/utils/user/teamRole";
+import { Image } from "react-native";
+
+const LOGO = require("@/assets/images/logo.webp");
 
 function SectionCard({
   title,
@@ -67,12 +71,12 @@ function NoticeRow({
           },
         })
       }
-      className={`py-5 active:opacity-60 ${
+      className={`py-4 active:opacity-60 ${
         showDivider ? "border-b-[0.5px] border-[#d6dde5]/60" : ""
       }`}
     >
       <Text
-        className={"text-[16px] font-semibold text-[#2C2C2C]"}
+        className={"text-[15px] font-semibold text-[#2C2C2C]"}
         numberOfLines={1}
       >
         [ {notice.teamName} ] {notice.title}
@@ -98,12 +102,12 @@ function RecruitmentRow({
   return (
     <Pressable
       onPress={() => router.push(`/recruitment/${recruitment.recruitmentId}`)}
-      className={`py-5 active:opacity-60 ${
+      className={`py-4 active:opacity-60 ${
         showDivider ? "border-b-[0.5px] border-[#d6dde5]/60" : ""
       }`}
     >
       <Text
-        className="text-[16px] font-semibold text-[#2C2C2C]"
+        className="text-[15px] font-semibold text-[#2C2C2C]"
         numberOfLines={1}
       >
         [ {categoryLabel} ] {recruitment.title}
@@ -131,12 +135,12 @@ function InfoPostRow({
   return (
     <Pressable
       onPress={() => router.push(`/infoPost/${infoPost.infoPostId}`)}
-      className={`py-5 active:opacity-60 ${
+      className={`py-4 active:opacity-60 ${
         showDivider ? "border-b-[0.5px] border-[#d6dde5]/60" : ""
       }`}
     >
       <Text
-        className="text-[16px] font-semibold text-[#2C2C2C]"
+        className="text-[15px] font-semibold text-[#2C2C2C]"
         numberOfLines={1}
       >
         [ {categoryLabel} ] {infoPost.title}
@@ -154,7 +158,7 @@ export default function MainScreen() {
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
   const [selectedDate, setSelectedDate] = useState(today);
-
+  const { data: unreadCount = 0 } = useUnreadCount();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -202,8 +206,31 @@ export default function MainScreen() {
         className="absolute right-3 top-16 z-50 h-14 w-14 items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5] bg-white transition-transform duration-150 ease-out active:scale-90"
       >
         <Bell size={20} color="#2C2C2C" fill="#2C2C2C" />
-      </Pressable>
 
+        {unreadCount > 0 && (
+          <View
+            style={{
+              position: "absolute",
+              top: -2,
+              right: -2,
+              minWidth: 20,
+              height: 20,
+              borderRadius: 10,
+              paddingHorizontal: 4,
+              backgroundColor: "#5E8EEF",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{ lineHeight: 12 }}
+              className="text-[10px] font-bold text-white"
+            >
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </Text>
+          </View>
+        )}
+      </Pressable>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
@@ -212,8 +239,12 @@ export default function MainScreen() {
           paddingHorizontal: 10,
         }}
       >
-        <Text className="mb-4 text-[22px] font-bold text-[#2C2C2C]">Moimi</Text>
-
+        <Image
+          source={LOGO}
+          style={{ height: 30, width: 100, marginBottom: 16 }}
+          resizeMode="contain"
+          className="ml-2 -mt-3"
+        />
         <SectionCard
           title={`${month + 1}월`}
           headerRight={
@@ -246,7 +277,6 @@ export default function MainScreen() {
             selectedSchedules={selectedSchedules}
           />
         </SectionCard>
-
         <SectionCard
           title="공지사항"
           headerRight={
@@ -270,7 +300,6 @@ export default function MainScreen() {
             <EmptyState text="아직 등록된 공지사항이 없어요" />
           )}
         </SectionCard>
-
         <SectionCard
           title="모집 게시판"
           headerRight={
@@ -299,7 +328,6 @@ export default function MainScreen() {
             <EmptyState text="아직 등록된 모집글이 없어요" />
           )}
         </SectionCard>
-
         <SectionCard
           title="정보 게시판"
           headerRight={
