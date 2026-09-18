@@ -1,4 +1,4 @@
-import { getHttpStatus } from "@/utils/httpError";
+import { getHttpStatus } from "../utils/httpError";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createNotificationOptions,
@@ -63,7 +63,7 @@ export const useUpdateNotificationOptions = () => {
       });
 
       const previous = queryClient.getQueryData<NotificationOptionResponse>(
-        notificationOptionKeys.all,
+        notificationOptionKeys.all
       );
 
       const optimisticData: NotificationOptionResponse = {

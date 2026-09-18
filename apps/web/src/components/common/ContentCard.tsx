@@ -264,22 +264,13 @@ export default function ContentCard(props: CardProps) {
               props.cardStatus === 'WAITING' ? (
               <div className="relative shrink-0">
                 <span
-                  className="absolute right-0 bottom-full mb-2 rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap"
+                  className="absolute right-0 bottom-full rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap"
                   style={{
                     backgroundColor: statusBorderColorMap[props.cardStatus],
                     color: statusTextColorMap[props.cardStatus],
                   }}
                 >
                   {cardStatusMap[props.cardStatus]}
-                </span>
-
-                <span
-                  className="inline-flex items-center rounded-full bg-[#EEF1F5] px-3 py-1 text-[13px] font-medium text-[#646B75]"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                  }}
-                >
-                  신청취소
                 </span>
               </div>
             ) : props.cardStatus && statusLabel ? (

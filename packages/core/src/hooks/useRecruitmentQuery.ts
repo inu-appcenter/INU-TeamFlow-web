@@ -11,6 +11,7 @@ import {
   getMyApplications,
   getApplicationDetail,
   updateApplicationStatus,
+  cancelApplication,
 } from "@moimi/core/api/recruitment";
 import type {
   RecruitmentCreateRequest,
@@ -130,6 +131,17 @@ export const useUpdateApplicationStatus = () => {
       applicationId: number;
       body: ApplicationStatusUpdateRequest;
     }) => updateApplicationStatus(applicationId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
+      queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+    },
+  });
+};
+
+export const useCancelApplication = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (applicationId: number) => cancelApplication(applicationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["recruitments"] });

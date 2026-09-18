@@ -113,3 +113,13 @@ export const updateApplicationStatus = (
   getApiClient()
     .patch(`/applications/${applicationId}/status`, body)
     .then((res) => res.data);
+
+/** DELETE /applications/{applicationId} */
+export const cancelApplication = async (
+  applicationId: number
+): Promise<ApplicationStatusResponse> => {
+  const { data } = await getApiClient().delete(
+    `/applications/${applicationId}`
+  );
+  return data;
+};
