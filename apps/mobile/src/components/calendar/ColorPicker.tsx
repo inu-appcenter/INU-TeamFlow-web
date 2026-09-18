@@ -19,7 +19,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
     <View style={{ position: "relative" }}>
       <Pressable
         onPress={() => setIsOpen((prev) => !prev)}
-        className="h-[50px] w-[100px] flex-row items-center justify-center gap-2 rounded-2xl bg-[#F6F8FA] active:scale-95"
+        className="h-[50px] w-[100px] flex-row items-center justify-center gap-2 rounded-2xl bg-[#F6F8FA] transition-transform duration-150 ease-out active:scale-95"
       >
         <View
           style={{ backgroundColor: EVENT_COLOR_MAP[value] }}

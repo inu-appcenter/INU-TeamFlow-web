@@ -290,8 +290,8 @@ export default function TeamDetailScreen() {
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 24,
+          paddingHorizontal: 16,
+          paddingTop: 20,
           paddingBottom: 50,
         }}
       >
@@ -308,7 +308,7 @@ export default function TeamDetailScreen() {
             {isLeader && (
               <Pressable
                 onPress={() => router.push(`/team/${teamId}/edit`)}
-                className="absolute bottom-1.5 right-1.5 h-7 w-7 items-center justify-center rounded-full bg-black/30 active:scale-90"
+                className="absolute bottom-1.5 right-1.5 h-7 w-7 items-center justify-center rounded-full bg-black/30 transition-transform duration-150 ease-out active:scale-90"
               >
                 <Pencil size={13} color="#fff" />
               </Pressable>
@@ -317,17 +317,17 @@ export default function TeamDetailScreen() {
 
           <View className="flex-1 justify-center">
             <View className="flex-row items-center justify-between">
-              <Text className="text-[22px] font-bold text-[#2C2C2C]">
+              <Text className="text-[18px] font-bold text-[#2C2C2C]">
                 {team.name}
               </Text>
               <Pressable
                 onPress={() => setIsMemberDrawerOpen(true)}
-                className="h-12 w-12 items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5]/40 bg-[#F8F9FB] active:scale-95"
+                className="h-12 w-12 items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5]/40 bg-[#F8F9FB] transition-transform duration-150 ease-out active:scale-95"
               >
                 <Menu size={18} color="#2C2C2C" />
               </Pressable>
             </View>
-            <Text numberOfLines={2} className="mt-2 text-[14px] text-[#989898]">
+            <Text numberOfLines={2} className="mt-2 text-[13px] text-[#989898]">
               {team.description}
             </Text>
           </View>
@@ -390,13 +390,13 @@ export default function TeamDetailScreen() {
               <View className="flex-row gap-3">
                 <Pressable
                   onPress={handlePrevMonth}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-[#EEF1F4] active:scale-90"
+                  className="h-8 w-8 items-center justify-center rounded-full bg-[#EEF1F4] transition-transform duration-150 ease-out active:scale-90"
                 >
                   <ChevronLeft size={16} strokeWidth={2.5} color="#2C2C2C66" />
                 </Pressable>
                 <Pressable
                   onPress={handleNextMonth}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-[#EEF1F4] active:scale-90"
+                  className="h-8 w-8 items-center justify-center rounded-full bg-[#EEF1F4] transition-transform duration-150 ease-out active:scale-90"
                 >
                   <ChevronRight size={16} strokeWidth={2.5} color="#2C2C2C66" />
                 </Pressable>
@@ -527,15 +527,15 @@ export default function TeamDetailScreen() {
               >
                 <Text
                   numberOfLines={1}
-                  className="text-[16px] font-semibold text-[#2C2C2C]"
+                  className="text-[15px] font-semibold text-[#2C2C2C]"
                 >
                   {notice.title}
                 </Text>
                 <View className="mt-1.5 flex-row items-center justify-between">
-                  <Text className="text-[13px] text-[#989898]">
+                  <Text className="text-[12px] text-[#989898]">
                     {notice.authorName} • {getTeamRoleLabel(notice.teamRole)}
                   </Text>
-                  <Text className="text-[12px] text-[#989898]">
+                  <Text className="text-[11px] text-[#989898]">
                     {formatDate(notice.createdAt)}
                   </Text>
                 </View>
@@ -606,7 +606,7 @@ export default function TeamDetailScreen() {
             className="w-full max-w-[300px] rounded-2xl border-[0.5px] border-[#EDF1F5] bg-white px-6 py-6"
             style={{ height: "50%" }}
           >
-            <View className="mb-2 flex-row items-center justify-between">
+            <View className="mb-4 flex-row items-center justify-between">
               <Text className="text-[20px] font-bold text-[#2C2C2C]">
                 {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 (
                 {dayLabel})

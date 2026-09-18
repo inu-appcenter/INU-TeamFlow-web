@@ -465,7 +465,7 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
             contentContainerStyle={{
               flexGrow: 1,
               justifyContent: "flex-end",
-              paddingHorizontal: 16,
+              paddingHorizontal: 10,
               paddingVertical: 12,
             }}
           />

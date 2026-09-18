@@ -2,16 +2,18 @@ import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
+import { useUnreadChatCount } from "@moimi/core/hooks/chat/useUnreadChatCount";
 
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
-
+  const unreadChatCount = useUnreadChatCount();
   return (
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}
+      badgeBackgroundColor="#5E92F0"
     >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>홈</NativeTabs.Trigger.Label>
@@ -43,6 +45,11 @@ export default function AppTabs() {
           src={require("@/assets/images/tabIcons/chat.png")}
           renderingMode="template"
         />
+        {unreadChatCount > 0 && (
+          <NativeTabs.Trigger.Badge>
+            {unreadChatCount > 99 ? "99+" : String(unreadChatCount)}
+          </NativeTabs.Trigger.Badge>
+        )}
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="mypage">

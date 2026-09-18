@@ -148,7 +148,10 @@ export default function ApplicationDetailScreen() {
         style={{ backgroundColor: headerColor, paddingTop: 60 }}
         className="flex-row items-center justify-between px-5 pb-4"
       >
-        <Pressable onPress={() => router.back()} className="active:scale-90">
+        <Pressable
+          onPress={() => router.back()}
+          className="transition-transform duration-150 ease-out active:scale-90"
+        >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
         </Pressable>
       </View>
@@ -181,7 +184,7 @@ export default function ApplicationDetailScreen() {
                   <Pressable
                     onPress={handleStartDirectChat}
                     disabled={createDirectChatRoom.isPending}
-                    className="rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] px-3 py-1.5 active:opacity-70"
+                    className="rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] px-3 py-1.5 active:opacity-70"
                     style={{
                       opacity: createDirectChatRoom.isPending ? 0.5 : 1,
                     }}
@@ -219,7 +222,7 @@ export default function ApplicationDetailScreen() {
             )}
           </View>
 
-          <View className="mt-6 border-b-[0.5px] border-[#D6DDE5]" />
+          <View className="mt-6 border-b border-[#D6DDE5]/40" />
 
           <View className="mt-6">
             <Text className="text-[14px] leading-6 text-[#2C2C2C]">
@@ -227,14 +230,14 @@ export default function ApplicationDetailScreen() {
             </Text>
           </View>
 
-          <View className="mt-6 border-b-[0.5px] border-[#D6DDE5]" />
+          <View className="mt-6 border-b border-[#D6DDE5]/40" />
 
           {application.isRecruiter && isWaiting && (
             <View className="mb-4 mt-8 flex-row justify-center gap-4">
               <Pressable
                 onPress={() => handleUpdateStatus("DECLINED")}
                 disabled={updateApplicationStatus.isPending}
-                className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-8 py-3 active:opacity-70"
+                className="rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] px-8 py-3 active:opacity-70"
                 style={{ opacity: updateApplicationStatus.isPending ? 0.5 : 1 }}
               >
                 {updateApplicationStatus.isPending ? (

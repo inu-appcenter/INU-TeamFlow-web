@@ -217,7 +217,7 @@ export default function CalendarAddModal({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 24 }}
           >
-            <View className="mb-3 mt-6 flex-row gap-3">
+            <View className="mb-3 mt-8 flex-row gap-3">
               <TextInput
                 value={form.title}
                 onChangeText={(v) => {
@@ -345,7 +345,7 @@ export default function CalendarAddModal({
             <View className="mb-8 mt-6 flex-row justify-end">
               <Pressable
                 onPress={handleSave}
-                className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 active:scale-95"
+                className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-[#2C2C2C]">
                   저장
