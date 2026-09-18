@@ -5,6 +5,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { DevSettings } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { getMyProfile } from "@moimi/core/api/user";
 import type { UserMeResponse } from "@moimi/core/types/user";
 import { secureTokenStorage, setAccessToken } from "@/lib/tokenStorage";
@@ -21,6 +23,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<UserMeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (token: string) => {
     await setAccessToken(token);
+    await queryClient.invalidateQueries({ queryKey: ["myInfo"] });
     await fetchUser();
   };
 
@@ -58,6 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await secureTokenStorage.removeToken();
     setUser(null);
+    queryClient.clear();
+    DevSettings.reload();
   };
 
   return (

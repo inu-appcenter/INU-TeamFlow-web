@@ -114,7 +114,7 @@ function InquiryDetailModal({
                 {detail.createdAt.slice(0, 10)} 문의
               </p>
 
-              <p className="mt-3 rounded-xl bg-[#F6F8FA] px-4 py-3 text-sm leading-6 whitespace-pre-wrap text-[#2C2C2C]">
+              <p className="mt-3 rounded-xl bg-[#Ffffff] px-4 py-3 text-sm leading-6 whitespace-pre-wrap text-[#2C2C2C]">
                 {detail.detail}
               </p>
 

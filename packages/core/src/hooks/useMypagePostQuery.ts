@@ -1,16 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  cancelApplication,
   getMyApplications,
   getMyRecruitments,
   getMyTeamNotices,
-} from '@moimi/core/api/mypagePost';
+} from "@moimi/core/api/mypagePost";
+import { cancelApplication } from "@moimi/core/api/recruitment";
 
 export const mypagePostKeys = {
-  all: () => ['mypage-posts'] as const,
-  recruitments: () => ['mypage-posts', 'recruitments'] as const,
-  applications: () => ['mypage-posts', 'applications'] as const,
-  notices: () => ['mypage-posts', 'notices'] as const,
+  all: () => ["mypage-posts"] as const,
+  recruitments: () => ["mypage-posts", "recruitments"] as const,
+  applications: () => ["mypage-posts", "applications"] as const,
+  notices: () => ["mypage-posts", "notices"] as const,
 };
 
 export const useMyRecruitments = () =>
@@ -33,14 +33,10 @@ export const useMyTeamNotices = () =>
 
 export const useCancelApplication = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (applicationId: number) => cancelApplication(applicationId),
-
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['myApplications'],
-      });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
     },
   });
 };

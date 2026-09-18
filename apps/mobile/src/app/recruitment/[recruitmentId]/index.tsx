@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { View, Text, ScrollView, Pressable, Modal } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, EllipsisVertical, Bookmark } from "lucide-react-native";
+import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
 import {
   useRecruitmentDetail,
   useDeleteRecruitment,
@@ -11,6 +11,7 @@ import { useCreateDirectChatRoom } from "@moimi/core/hooks/chat/useCreateDirectC
 import { categoryMap, categoryColorMap } from "@moimi/core/constants/category";
 import { formatDate } from "@/utils/date/formatDate";
 import { getDday } from "@/utils/date/getDday";
+import ScrapButton from "@/components/ScrapButton";
 
 function InfoRow({
   label,
@@ -92,12 +93,11 @@ export default function RecruitmentDetailScreen() {
 
         <View className="flex-row items-center gap-4">
           {!isRecruiter && (
-            <Pressable
-              onPress={() => console.log("TODO: 스크랩 토글")}
-              className="active:scale-90 transition-transform duration-150 ease-out"
-            >
-              <Bookmark size={20} color="#2C2C2C" />
-            </Pressable>
+            <ScrapButton
+              type="recruitment"
+              id={recruitmentIdNum}
+              initialScrapped={recruitment.isScrap}
+            />
           )}
 
           <Pressable

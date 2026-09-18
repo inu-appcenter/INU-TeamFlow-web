@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, EllipsisVertical, Bookmark } from "lucide-react-native";
+import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
 import {
   useInfoPostDetail,
   useDeleteInfoPost,
@@ -19,6 +19,7 @@ import {
   infoPostCategoryMap,
 } from "@moimi/core/constants/infoPost";
 import { formatDate } from "@/utils/date/formatDate";
+import ScrapButton from "@/components/ScrapButton";
 
 function InfoRow({
   label,
@@ -87,12 +88,11 @@ export default function InfoPostDetailScreen() {
 
         <View className="flex-row items-center gap-4">
           {!infoPost.isAuthor && (
-            <Pressable
-              onPress={() => console.log("TODO: 스크랩 토글")}
-              className="active:scale-90"
-            >
-              <Bookmark size={20} color="#2C2C2C" />
-            </Pressable>
+            <ScrapButton
+              type="infoPost"
+              id={infoPostIdNum}
+              initialScrapped={infoPost.isScrap}
+            />
           )}
 
           <Pressable
