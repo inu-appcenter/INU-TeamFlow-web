@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
           isBack={false}
         />
 
-        <article className="mt-6 rounded-2xl bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12">
+        <article className="mt-6 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white px-5 py-8 sm:px-10 sm:py-12">
           {/* 문서 상단 */}
           <header className="border-b border-gray-200 pb-8">
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">

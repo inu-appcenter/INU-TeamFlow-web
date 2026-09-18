@@ -205,19 +205,19 @@ export default function Register() {
                     ? '로그인 페이지로 돌아가기'
                     : '약관 동의로 돌아가기'
                 }
-                className="cursor-pointer pt-6 pl-5 text-[#2C2C2C]/80 transition-all duration-150 hover:text-[#2C2C2C] active:scale-90"
+                className="cursor-pointer pt-5 pl-5 text-[#2C2C2C]/60 transition-all duration-150 hover:text-[#2C2C2C] active:scale-90"
               >
                 <ChevronLeft size={28} strokeWidth={2.5} />
               </button>
 
-              <div className="-mt-6 mb-6 flex items-center">
+              <div className="-mt-6 mb-4 flex items-center">
                 <h1 className="relative left-1/2 -translate-x-1/2 text-[24px] font-semibold sm:text-[28px]">
                   {REGISTER_TEXT.TITLE}
                 </h1>
               </div>
             </div>
 
-            <div className="mx-auto mb-7 flex w-full max-w-80 items-center px-2 sm:mb-8 sm:px-4">
+            <div className="mx-auto mb-4 flex w-full max-w-80 items-center px-2 sm:px-4">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-full bg-[#5E92F0] text-[13px] font-semibold text-white">
                   1
@@ -260,14 +260,12 @@ export default function Register() {
             </div>
             {step === 'terms' && (
               <div className="px-4 pb-6 sm:px-7.5 sm:pb-7">
-                <div className="mb-6">
-                  <h2 className="mb-1 text-[18px] font-semibold text-[#2C2C2C] sm:text-[20px]">
-                    모이미 이용을 위해
-                    <br />
-                    약관을 확인해주세요
+                <div className="mb-4">
+                  <h2 className="mb-1 text-center text-[18px] font-semibold text-[#2C2C2C] sm:text-[20px]">
+                    모이미 이용을 위해 약관을 확인해주세요
                   </h2>
 
-                  <p className="text-[14px] text-[#989898]">
+                  <p className="text-center text-[14px] text-[#989898]">
                     필수 항목에 동의하면 다음 단계로 이동할 수 있어요
                   </p>
                 </div>
@@ -389,17 +387,10 @@ export default function Register() {
                   type="button"
                   disabled={!isRequiredAgreed}
                   onClick={() => setStep('info')}
-                  className="group mx-auto mt-7 flex min-w-24 cursor-pointer items-center justify-center rounded-xl bg-[#5E92F0] px-6 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+                  className="group mx-auto mt-7 flex cursor-pointer items-center justify-center rounded-xl bg-[#5E92F0] px-10 py-2 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
                 >
                   <span className="inline-flex items-center justify-center">
                     다음
-                    <span className="ml-0 inline-flex w-0 items-center justify-center overflow-hidden opacity-0 transition-all duration-200 group-hover:ml-1.5 group-hover:w-4 group-hover:opacity-100">
-                      <ChevronRight
-                        size={20}
-                        className="-mr-2 shrink-0"
-                        strokeWidth={2.5}
-                      />
-                    </span>
                   </span>
                 </button>
               </div>

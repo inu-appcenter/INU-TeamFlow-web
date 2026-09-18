@@ -106,7 +106,7 @@ export default function PolicyModal({ type, onClose }: PolicyModalProps) {
                   {policy.title}
                 </h2>
 
-                <p className="mt-1 text-[13px] text-[#989898]">
+                <p className="-mb-1 text-[13px] text-[#989898]">
                   내용을 확인한 후 닫아주세요.
                 </p>
               </div>
@@ -116,7 +116,7 @@ export default function PolicyModal({ type, onClose }: PolicyModalProps) {
                 type="button"
                 onClick={onClose}
                 aria-label="정책 닫기"
-                className="shrink-0 cursor-pointer rounded-lg p-1.5 text-[#989898] transition-all hover:bg-[#F0F2F5] hover:text-[#2C2C2C] active:scale-90"
+                className="shrink-0 cursor-pointer rounded-lg text-[#989898] transition-all hover:bg-[#F0F2F5] hover:text-[#2C2C2C] active:scale-90"
               >
                 <X size={21} />
               </button>

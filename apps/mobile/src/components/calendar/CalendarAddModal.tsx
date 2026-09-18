@@ -195,7 +195,7 @@ export default function CalendarAddModal({
         <Pressable onPress={handleClose} className="flex-1" />
         <View
           style={{ height: "65%" }}
-          className="relative rounded-t-3xl border-[0.5px] border-[#D6DDE5]/60 bg-white px-6 pt-10"
+          className="relative rounded-t-3xl border-[0.5px] border-[#D6DDE5]/60 bg-white px-5"
         >
           {errorMessage && (
             <View
@@ -217,7 +217,7 @@ export default function CalendarAddModal({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 24 }}
           >
-            <View className="mb-3 flex-row gap-3">
+            <View className="mb-3 mt-6 flex-row gap-3">
               <TextInput
                 value={form.title}
                 onChangeText={(v) => {
@@ -226,7 +226,7 @@ export default function CalendarAddModal({
                 }}
                 placeholder="일정을 입력해주세요"
                 placeholderTextColor="#2C2C2C80"
-                className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C]"
+                className="h-[50px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C]"
               />
 
               <ColorPicker
@@ -342,7 +342,7 @@ export default function CalendarAddModal({
               className="w-full rounded-2xl bg-[#F6F8FA] px-6 py-5 text-[16px] font-semibold text-[#2C2C2C]"
             />
 
-            <View className="mb-4 mt-6 flex-row justify-end">
+            <View className="mb-8 mt-6 flex-row justify-end">
               <Pressable
                 onPress={handleSave}
                 className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 active:scale-95"

@@ -15,14 +15,18 @@ import {
   ChevronRight,
   Plus,
   Menu,
-  EllipsisVertical,
   Pencil,
+  Check,
 } from "lucide-react-native";
+import { useCreateVote } from "@moimi/core/hooks/useVoteQuery";
 import { useCreateInvitation } from "@moimi/core/hooks/team/useTeamInvitationQuery";
 import {
   useTeamDetail,
   useTeamMembers,
 } from "@moimi/core/hooks/team/useTeamQuery";
+import VoteAddModal, {
+  type EventVoteCreateRequest,
+} from "@/components/VoteAddModal";
 import { useTeamNotices } from "@moimi/core/hooks/useNoticeQuery";
 import { useTeamVotes } from "@moimi/core/hooks/useVoteQuery";
 import {
@@ -80,6 +84,9 @@ export default function TeamDetailScreen() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
+  const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
+  const [isVoteAddOpen, setIsVoteAddOpen] = useState(false);
+
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const { data: teamMembers = [] } = useTeamMembers(teamId);
   const { data: teamNoticesAll = [] } = useTeamNotices(teamId);
@@ -90,6 +97,7 @@ export default function TeamDetailScreen() {
   const { mutateAsync: deleteEvent } = useDeleteTeamEvent(teamId);
   const { mutateAsync: createInvitation, isPending: isInviting } =
     useCreateInvitation(teamId);
+  const { mutateAsync: createVote } = useCreateVote(teamId);
 
   const [selectedDate, setSelectedDate] = useState(today);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -199,6 +207,15 @@ export default function TeamDetailScreen() {
     } catch (err) {
       console.error("일정 생성 실패", err);
     }
+  };
+
+  const handleCreateVote = async (request: EventVoteCreateRequest) => {
+    try {
+      await createVote(request);
+    } catch (err) {
+      console.error("투표 생성 실패", err);
+    }
+    setIsVoteAddOpen(false);
   };
 
   const handleEditSchedule = async (
@@ -361,8 +378,8 @@ export default function TeamDetailScreen() {
             <View className="flex-row items-center gap-4">
               {isAdmin && (
                 <Pressable
-                  onPress={() => setIsAddOpen(true)}
-                  className="flex-row items-center gap-1 active:scale-95"
+                  onPress={() => setIsAddSelectOpen(true)}
+                  className="flex-row items-center gap-1 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Plus size={13} color="#989898" />
                   <Text className="text-[12px] font-medium text-[#989898]">
@@ -619,6 +636,74 @@ export default function TeamDetailScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <Modal
+        transparent
+        visible={isAddSelectOpen}
+        animationType="fade"
+        onRequestClose={() => setIsAddSelectOpen(false)}
+      >
+        <Pressable
+          onPress={() => setIsAddSelectOpen(false)}
+          className="flex-1 items-center justify-center bg-black/20 px-6"
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="w-full max-w-[360px] rounded-3xl bg-white p-6"
+          >
+            <Text className="mb-4 text-center  text-[18px] font-bold text-[#2C2C2C]">
+              어떻게 일정을 추가할까요?
+            </Text>
+
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={() => {
+                  setIsAddSelectOpen(false);
+                  setIsAddOpen(true);
+                }}
+                className="flex-1 items-center justify-center rounded-2xl bg-[#F8F9FB] py-4 transition-transform duration-150 ease-out active:scale-95"
+              >
+                <View className="mb-2 h-8 w-8 items-center justify-center rounded-full bg-[#EEF1F5]">
+                  <Plus size={18} strokeWidth={2.5} color="#5E92F0" />
+                </View>
+                <Text className="text-[15px] font-bold text-[#2C2C2C]">
+                  기본 일정 추가
+                </Text>
+                <Text className="mt-1 text-center text-[9px] text-[#989898]">
+                  일정을 바로 생성할 수 있어요
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => {
+                  setIsAddSelectOpen(false);
+                  setIsVoteAddOpen(true);
+                }}
+                className="flex-1 items-center justify-center rounded-2xl bg-[#F8F9FB] py-4 transition-transform duration-150 ease-out active:scale-95"
+              >
+                <View className="mb-2 h-8 w-8 items-center justify-center rounded-full bg-[#EEF1F5]">
+                  <Check size={18} strokeWidth={2.5} color="#5E92F0" />
+                </View>
+                <Text className="text-[15px] font-bold text-[#2C2C2C]">
+                  일정 투표 생성
+                </Text>
+                <Text className="mt-1 text-center text-[9px] text-[#989898]">
+                  일정을 투표 후 생성할 수 있어요
+                </Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {isAdmin && (
+        <VoteAddModal
+          open={isVoteAddOpen}
+          onClose={() => setIsVoteAddOpen(false)}
+          onCreate={handleCreateVote}
+          members={teamMembers}
+        />
+      )}
 
       {isAdmin && (
         <CalendarAddModal
