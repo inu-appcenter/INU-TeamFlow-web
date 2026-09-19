@@ -10,8 +10,10 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, X } from "lucide-react-native";
 import { useMyTeams } from "@moimi/core/hooks/team/useTeamQuery";
+import InfoPostLinkModal from "@/components/InfoPostLinkModal";
+import type { InfoPostSummaryResponse } from "@moimi/core/types/infoPost";
 import {
   categoryMap,
   categoryColorMap,
@@ -61,9 +63,15 @@ export default function RecruitmentForm({
     }
   );
 
-  const [selectedInfoPostTitle] = useState(
+  const [selectedInfoPostTitle, setSelectedInfoPostTitle] = useState(
     initialData?.announcementTitle ?? ""
   );
+  const [isInfoPostModalOpen, setIsInfoPostModalOpen] = useState(false);
+
+  const handleSelectInfoPost = (post: InfoPostSummaryResponse) => {
+    setForm((prev) => ({ ...prev, announcementId: post.infoPostId }));
+    setSelectedInfoPostTitle(post.title);
+  };
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -187,7 +195,7 @@ export default function RecruitmentForm({
               </Text>
             </View>
             <Pressable
-              onPress={() => console.log("TODO: 공고 연결하기 모달 (2단계)")}
+              onPress={() => setIsInfoPostModalOpen(true)}
               disabled={mode === "edit"}
               className={`h-[40px] justify-center rounded-xl px-4 ${
                 mode === "edit"
@@ -378,15 +386,10 @@ export default function RecruitmentForm({
             style={{ maxHeight: "70%" }}
             className="rounded-t-2xl bg-white pb-8"
           >
-            <View className="flex-row items-center justify-between border-b-[0.5px] border-[#D6DDE5] px-5 py-4">
+            <View className="flex-row items-center justify-between border-b-[0.5px] border-[#D6DDE5] px-5 p-4">
               <Text className="text-[16px] font-bold text-[#2C2C2C]">
                 팀 선택
               </Text>
-              <Pressable onPress={() => setIsTeamModalOpen(false)}>
-                <Text className="text-[14px] font-semibold text-[#5E92F0]">
-                  닫기
-                </Text>
-              </Pressable>
             </View>
             <ScrollView contentContainerStyle={{ paddingVertical: 8 }}>
               {manageableTeams.map((team) => {
@@ -538,6 +541,12 @@ export default function RecruitmentForm({
           </Pressable>
         </Modal>
       )}
+      <InfoPostLinkModal
+        visible={isInfoPostModalOpen}
+        onClose={() => setIsInfoPostModalOpen(false)}
+        selectedInfoPostId={form.announcementId}
+        onSelect={handleSelectInfoPost}
+      />
     </View>
   );
 }

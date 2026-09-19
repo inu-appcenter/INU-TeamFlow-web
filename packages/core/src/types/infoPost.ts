@@ -1,13 +1,13 @@
 export type InfoPostCategory =
-  | 'CONTEST'
-  | 'CLUB'
-  | 'EXTERNAL_ACTIVITY'
-  | 'INTERN'
-  | 'CAREER_ADVICE'
-  | 'CASUAL_TALK'
-  | 'INFO_SHARING';
+  | "CONTEST"
+  | "CLUB"
+  | "EXTERNAL_ACTIVITY"
+  | "INTERN"
+  | "CAREER_ADVICE"
+  | "CASUAL_TALK"
+  | "INFO_SHARING";
 
-export type InfoPostType = 'NOTICE' | 'FREE';
+export type InfoPostType = "NOTICE" | "FREE";
 
 export interface InfoPostSummaryResponse {
   infoPostId: number;
@@ -35,6 +35,7 @@ export interface InfoPostDetailResponse {
   infoPostId: number;
   category: InfoPostCategory;
   linkable: boolean;
+  sourceUrl: string | null;
   title: string;
   content: string;
   images: InfoPostImage[];

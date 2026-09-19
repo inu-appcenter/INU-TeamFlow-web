@@ -5,7 +5,10 @@ import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 
 import Card from '@/components/main/Card';
-import { useDeleteInfoPost, useInfoPostDetail } from '@moimi/core/hooks/useInfoPostQuery';
+import {
+  useDeleteInfoPost,
+  useInfoPostDetail,
+} from '@moimi/core/hooks/useInfoPostQuery';
 import {
   infoPostCategoryColorMap,
   infoPostCategoryMap,
@@ -217,6 +220,20 @@ export default function InfoPostDetailPage() {
               <span className="text-[#2C2C2C]">
                 연결된 모집글 {infoPost.recruitmentCount}개
               </span>
+
+              {infoPost.sourceUrl && (
+                <>
+                  <span className="text-[#989898]">원문 링크</span>
+                  <a
+                    href={infoPost.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all text-[#5E92F0] underline underline-offset-2 hover:text-[#4C82E5]"
+                  >
+                    {infoPost.sourceUrl}
+                  </a>
+                </>
+              )}
             </div>
 
             <div className="mt-8 border-b-[0.5px] border-[#D6DDE5]" />

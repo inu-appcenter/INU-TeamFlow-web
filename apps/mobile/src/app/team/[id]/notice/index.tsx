@@ -339,7 +339,7 @@ export default function TeamNoticeScreen() {
 
         {/* 페이지네이션 */}
         {totalPages > 0 && (
-          <View className="mb-8 mt-6 flex-row items-center justify-center gap-2">
+          <View className="mb-8 mt-6 flex-row items-center justify-center gap-3">
             <Pressable
               onPress={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
@@ -347,7 +347,7 @@ export default function TeamNoticeScreen() {
               style={{ opacity: currentPage === 1 ? 0.4 : 1 }}
               className="items-center justify-center transition-transform duration-150 ease-out active:scale-90"
             >
-              <ChevronLeft size={22} strokeWidth={2.5} color="#2c2c2c66" />
+              <ChevronLeft size={20} strokeWidth={2.5} color="#2c2c2c66" />
             </Pressable>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
@@ -358,7 +358,7 @@ export default function TeamNoticeScreen() {
                 className="items-center justify-center px-1 transition-transform duration-150 ease-out active:scale-90"
               >
                 <Text
-                  className={`text-[16px] font-semibold ${
+                  className={`text-[15px] font-semibold ${
                     currentPage === n ? "text-[#5E92F0]" : "text-[#2c2c2c80]"
                   }`}
                 >
@@ -374,7 +374,7 @@ export default function TeamNoticeScreen() {
               style={{ opacity: currentPage === totalPages ? 0.4 : 1 }}
               className="items-center justify-center transition-transform duration-150 ease-out active:scale-90"
             >
-              <ChevronRight size={22} strokeWidth={2.5} color="#2c2c2c66" />
+              <ChevronRight size={20} strokeWidth={2.5} color="#2c2c2c66" />
             </Pressable>
           </View>
         )}
