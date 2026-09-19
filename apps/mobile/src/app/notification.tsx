@@ -36,6 +36,7 @@ const notificationTabs: { label: string; value: NotificationFilterType }[] = [
   { label: "신청", value: "APPLICATION" },
   { label: "일정", value: "CALENDAR" },
   { label: "채팅", value: "CHAT" },
+  { label: "신고", value: "REPORT" },
 ];
 
 const notificationTypeLabel: Record<NotificationType, string> = {

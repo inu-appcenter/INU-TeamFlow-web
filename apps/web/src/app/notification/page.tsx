@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
@@ -37,6 +37,7 @@ const notificationTabs: {
   { label: '신청', value: 'APPLICATION' },
   { label: '일정', value: 'CALENDAR' },
   { label: '채팅', value: 'CHAT' },
+  { label: '신고', value: 'REPORT' },
 ];
 
 const notificationTypeLabel: Record<NotificationType, string> = {
@@ -62,6 +63,14 @@ export default function NotificationPage() {
 
   const [activeTab, setActiveTab] = useState<NotificationFilterType>('ALL');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  useEffect(() => {
+    tabRefs.current[activeTab]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  }, [activeTab]);
 
   const { errorMessage, showErrorMessage } = useErrorToast();
 
@@ -223,38 +232,46 @@ export default function NotificationPage() {
         )}
 
         <section className="mb-3 rounded-xl border-[0.5px] border-[#D6DDE5] bg-white px-4 pt-4 sm:px-6">
-          <div className="relative flex border-b-[0.5px] border-[#D6DDE5]">
-            {notificationTabs.map((tab) => {
-              const isActive = activeTab === tab.value;
+          <div className="relative">
+            <div className="flex [scrollbar-width:none] overflow-x-auto border-b-[0.5px] border-[#D6DDE5] pr-6 sm:pr-0 [&::-webkit-scrollbar]:hidden">
+              {notificationTabs.map((tab) => {
+                const isActive = activeTab === tab.value;
 
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => handleTabChange(tab.value)}
-                  disabled={isMutationPending}
-                  className={`relative flex-1 cursor-pointer pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:text-xl ${
-                    isActive
-                      ? 'text-[#5E92F0]'
-                      : 'text-[#CBD2DA] hover:text-[#5E92F0]'
-                  } disabled:cursor-not-allowed disabled:opacity-60`}
-                >
-                  {tab.label}
+                return (
+                  <button
+                    key={tab.value}
+                    ref={(el) => {
+                      tabRefs.current[tab.value] = el;
+                    }}
+                    type="button"
+                    onClick={() => handleTabChange(tab.value)}
+                    disabled={isMutationPending}
+                    className={`relative shrink-0 cursor-pointer px-5 pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:flex-1 sm:px-0 sm:text-xl ${
+                      isActive
+                        ? 'text-[#5E92F0]'
+                        : 'text-[#CBD2DA] hover:text-[#5E92F0]'
+                    } disabled:cursor-not-allowed disabled:opacity-60`}
+                  >
+                    {tab.label}
 
-                  {isActive && (
-                    <motion.div
-                      layoutId="notificationTabIndicator"
-                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 600,
-                        damping: 50,
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
+                    {isActive && (
+                      <motion.div
+                        layoutId="notificationTabIndicator"
+                        className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 600,
+                          damping: 50,
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 모바일: 오른쪽 끝 페이드 (더 스크롤 가능하다는 힌트) */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-r from-white/0 to-white sm:hidden" />
           </div>
 
           <div className="flex min-h-16 flex-wrap items-center gap-2 py-3">
