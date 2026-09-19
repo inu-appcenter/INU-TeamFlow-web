@@ -7,6 +7,7 @@ import {
   Modal,
   Image,
   Alert,
+  Linking,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
@@ -20,6 +21,17 @@ import {
 } from "@moimi/core/constants/infoPost";
 import { formatDate } from "@/utils/date/formatDate";
 import ScrapButton from "@/components/ScrapButton";
+
+const getSafeUrl = (url?: string | null) => {
+  if (!url) return null;
+  const withProtocol = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  try {
+    const { protocol } = new URL(withProtocol);
+    return protocol === "http:" || protocol === "https:" ? withProtocol : null;
+  } catch {
+    return null;
+  }
+};
 
 function InfoRow({
   label,
@@ -76,6 +88,7 @@ export default function InfoPostDetailScreen() {
     (a, b) => a.sortOrder - b.sortOrder
   );
 
+  const safeUrl = getSafeUrl(infoPost.sourceUrl);
   return (
     <View className="flex-1 bg-white">
       <View
@@ -140,6 +153,20 @@ export default function InfoPostDetailScreen() {
               연결된 모집글 {infoPost.recruitmentCount}개
             </Text>
           </InfoRow>
+
+          {safeUrl && (
+            <InfoRow label="원문 링크">
+              <Pressable
+                onPress={() => Linking.openURL(safeUrl).catch(() => {})}
+                hitSlop={8}
+                className="active:opacity-60 "
+              >
+                <Text className="text-[14px]  text-[#5E92F0] underline">
+                  {infoPost.sourceUrl}
+                </Text>
+              </Pressable>
+            </InfoRow>
+          )}
         </View>
 
         <View className="mt-6 border-b-[0.5px] border-[#D6DDE5]" />

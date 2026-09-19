@@ -296,7 +296,7 @@ export default function InfoPostListScreen() {
         )}
 
         {totalPages > 0 && (
-          <View className="mt-4 flex-row items-center justify-center gap-2 py-4">
+          <View className="mt-4 flex-row items-center justify-center gap-3 py-4">
             <Pressable
               onPress={() =>
                 setPage(Math.max(1, blockStart - PAGE_WINDOW_SIZE))
@@ -304,7 +304,7 @@ export default function InfoPostListScreen() {
               disabled={blockStart === 1}
               className="items-center justify-center transition-transform duration-150 ease-out active:scale-90 disabled:opacity-40"
             >
-              <ChevronLeft size={18} strokeWidth={2.5} color="#2C2C2C99" />
+              <ChevronLeft size={20} strokeWidth={2.5} color="#2C2C2C99" />
             </Pressable>
 
             {visiblePages.map((n) => (
@@ -330,7 +330,7 @@ export default function InfoPostListScreen() {
               disabled={blockEnd === totalPages}
               className="items-center justify-center transition-transform duration-150 ease-out active:scale-90 disabled:opacity-40"
             >
-              <ChevronRight size={18} strokeWidth={2.5} color="#2C2C2C99" />
+              <ChevronRight size={20} strokeWidth={2.5} color="#2C2C2C99" />
             </Pressable>
           </View>
         )}
