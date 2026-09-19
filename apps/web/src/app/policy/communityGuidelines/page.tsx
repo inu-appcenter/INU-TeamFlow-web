@@ -1,4 +1,5 @@
 import Header from '@/components/common/Header';
+import { Suspense } from 'react';
 
 // Header 연결을 위한 입력 공간
 const pageName = '커뮤니티 이용규칙';
@@ -89,13 +90,15 @@ export default function CommunityGuidelines() {
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto mb-10 max-w-[1180px]">
-        <Header
-          pageName={pageName}
-          isSearch={isSearch}
-          isCreate={isCreate}
-          isCategory={isCategory}
-          isBack={false}
-        />
+        <Suspense fallback={<div className="mt-12 mb-4 h-8" />}>
+          <Header
+            pageName={pageName}
+            isSearch={isSearch}
+            isCreate={isCreate}
+            isCategory={isCategory}
+            isBack={false}
+          />
+        </Suspense>
 
         <article className="mt-6 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white px-5 py-8 sm:px-10 sm:py-12">
           {/* 소개 */}

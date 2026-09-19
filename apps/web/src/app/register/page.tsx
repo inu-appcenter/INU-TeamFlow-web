@@ -352,7 +352,7 @@ export default function Register() {
                     </span>
                   </button>
                 </div>
-                <p className="mt-2 px-1 text-[12px] leading-5 text-[#989898]">
+                <p className="mt-2 px-1 text-[10px] leading-5 text-[#989898] sm:text-[12px]">
                   알림별 수신 여부는 가입 후 알림 설정에서 언제든 변경할 수
                   있어요
                 </p>
@@ -387,7 +387,7 @@ export default function Register() {
                   type="button"
                   disabled={!isRequiredAgreed}
                   onClick={() => setStep('info')}
-                  className="group mx-auto mt-7 flex cursor-pointer items-center justify-center rounded-xl bg-[#5E92F0] px-10 py-2 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+                  className="group mt-7 flex w-full cursor-pointer items-center justify-center rounded-xl bg-[#5E92F0] px-10 py-3 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] sm:mx-auto sm:w-auto sm:py-2"
                 >
                   <span className="inline-flex items-center justify-center">
                     다음
@@ -510,7 +510,7 @@ export default function Register() {
                 <label className="mx-7.5 mb-1 block text-[14px] font-medium text-[#989898] max-[640px]:text-[12px]">
                   학과
                 </label>
-                <div className="mx-7.5 mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="mx-7.5 mb-5 grid grid-cols-1 gap-3 max-[640px]:gap-1.5 sm:grid-cols-2">
                   <div className="relative">
                     <select
                       value={college}
@@ -518,7 +518,7 @@ export default function Register() {
                         setCollege(e.target.value);
                         setDepartment('');
                       }}
-                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
+                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] max-[640px]:h-12 max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
                     >
                       <option value="">단과대 선택</option>
                       {colleges.map((college) => (
@@ -539,7 +539,7 @@ export default function Register() {
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
                       disabled={!college}
-                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] disabled:text-[#B0B8C1] max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
+                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] disabled:text-[#B0B8C1] max-[640px]:h-12 max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
                     >
                       <option value="">학과 선택</option>
                       {currentCollege?.departments.map((department) => (
@@ -559,7 +559,7 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="group relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+                  className="group mx-7.5 mb-7 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-3 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] sm:mx-auto sm:w-[25%] sm:min-w-22 sm:py-2.5"
                 >
                   <span className="inline-flex items-center justify-center">
                     {REGISTER_TEXT.REGISTER_BUTTON}

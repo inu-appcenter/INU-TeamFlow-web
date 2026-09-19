@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable, Linking } from "react-native";
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Bell } from "lucide-react-native";
 import { useMyTeamNotices } from "@moimi/core/hooks/useNoticeQuery";
@@ -22,6 +22,47 @@ import { getTeamRoleLabel } from "@/utils/user/teamRole";
 import { Image } from "react-native";
 
 const LOGO = require("@/assets/images/logo.webp");
+
+const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "";
+
+const POLICY_LINKS = [
+  { label: "이용약관", path: "/policy/terms", bold: false },
+  { label: "개인정보처리방침", path: "/policy/privacyPolicy", bold: true },
+  {
+    label: "커뮤니티 이용규칙",
+    path: "/policy/communityGuidelines",
+    bold: false,
+  },
+  { label: "청소년 보호정책", path: "/policy/youthProtection", bold: false },
+];
+
+function PolicyFooter() {
+  return (
+    <View className="mt-4 flex-row flex-wrap items-center justify-center gap-x-3 gap-y-2 px-2 py-4">
+      {POLICY_LINKS.map((link, index) => (
+        <View key={link.path} className="flex-row items-center gap-x-3">
+          <Pressable
+            onPress={() => Linking.openURL(`${WEB_URL}${link.path}`)}
+            hitSlop={8}
+            className="active:opacity-60"
+          >
+            <Text
+              className={`text-[10px] ${
+                link.bold ? "font-semibold text-[#2C2C2C]" : "text-[#989898]"
+              }`}
+            >
+              {link.label}
+            </Text>
+          </Pressable>
+
+          {index < POLICY_LINKS.length - 1 && (
+            <Text className="text-[10px] text-[#D6DDE5]">|</Text>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
 
 function SectionCard({
   title,
@@ -356,6 +397,7 @@ export default function MainScreen() {
             <EmptyState text="아직 등록된 정보글이 없어요" />
           )}
         </SectionCard>
+        <PolicyFooter />
       </ScrollView>
     </View>
   );
