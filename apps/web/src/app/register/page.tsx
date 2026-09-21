@@ -259,7 +259,7 @@ export default function Register() {
               </div>
             </div>
             {step === 'terms' && (
-              <div className="px-4 pb-6 sm:px-7.5 sm:pb-7">
+              <div className="px-7.5 pb-6 sm:px-7.5 sm:pb-7">
                 <div className="mb-4">
                   <h2 className="mb-1 text-center text-[18px] font-semibold text-[#2C2C2C] sm:text-[20px]">
                     모이미 이용을 위해 약관을 확인해주세요
@@ -284,7 +284,7 @@ export default function Register() {
 
                 <div className="overflow-hidden rounded-xl border border-[#ECEFF2]">
                   {/* 이용약관 */}
-                  <div className="flex items-center px-4 py-4 sm:px-5">
+                  <div className="flex items-center px-5 py-4">
                     <button
                       type="button"
                       role="checkbox"
@@ -306,7 +306,7 @@ export default function Register() {
                       type="button"
                       onClick={() => setOpenedPolicy('terms')}
                       aria-label="서비스 이용약관 보기"
-                      className="cursor-pointer p-1 text-[#A0A7B2] transition-colors hover:text-[#5E92F0]"
+                      className="-mr-1 cursor-pointer p-1 text-[#A0A7B2] transition-colors hover:text-[#5E92F0]"
                     >
                       <ChevronRight size={18} />
                     </button>
