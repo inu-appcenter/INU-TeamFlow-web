@@ -193,7 +193,7 @@ export default function Register() {
         </div>
       )}
 
-      <section className="mx-auto flex min-h-[calc(100dvh-32px)] w-full max-w-3xl flex-col justify-center px-0 sm:px-5">
+      <section className="mx-auto flex min-h-[calc(100dvh-32px)] w-full max-w-3xl flex-col justify-center px-0 px-5 max-[640px]:px-2">
         <Card className="animate-modal-pop overflow-hidden p-0 transition-all duration-200">
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div>

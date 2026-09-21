@@ -92,7 +92,7 @@ export default function Login() {
         </div>
       )}
 
-      <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5">
+      <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5 max-[640px]:px-2">
         <Card className="animate-modal-pop flex flex-col overflow-hidden p-0 transition-all duration-200">
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div className="mb-6 flex items-center">
