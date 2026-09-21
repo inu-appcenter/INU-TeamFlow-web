@@ -43,7 +43,7 @@ export default function DesktopRecommendModal() {
 
   return (
     <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/30 px-6">
-      <div className="animate-modal-pop w-full max-w-sm rounded-2xl bg-white px-6 pt-8 pb-6 text-center">
+      <div className="animate-modal-pop w-full max-w-sm rounded-2xl bg-white px-6 pt-6 pb-5 text-center">
         <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[#EEF3FE] text-[#5E92F0]">
           <Monitor size={24} />
         </div>
