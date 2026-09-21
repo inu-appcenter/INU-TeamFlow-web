@@ -337,7 +337,7 @@ export default function InfoPostLinkModal({
                           </Text>
 
                           <Text className="text-[11px] text-[#989898]">
-                            연결된 모집글 {post.recruitmentCount}개
+                            연결된 모집글 {post.recruitmentCount ?? 0}개
                           </Text>
                         </View>
 

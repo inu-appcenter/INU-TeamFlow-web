@@ -198,7 +198,7 @@ export default function InfoPostDetailPage() {
 
           {/* 본문 */}
           <div className="px-8 py-7 sm:px-10 sm:py-10">
-            <h1 className="text-[24px]] font-bold text-[#2C2C2C] sm:text-3xl">
+            <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">
               {infoPost.title}
             </h1>
 
@@ -218,7 +218,7 @@ export default function InfoPostDetailPage() {
 
               <span className="text-[#989898]">모집글</span>
               <span className="text-[#2C2C2C]">
-                연결된 모집글 {infoPost.recruitmentCount}개
+                연결된 모집글 {infoPost.recruitmentCount ?? 0}개
               </span>
 
               {infoPost.sourceUrl && (

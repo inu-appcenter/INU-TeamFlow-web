@@ -312,7 +312,7 @@ export default function MyApplicationDetailScreen() {
                 onPress={() => setShowCancelConfirm(false)}
                 className="flex-1 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
-                <Text className="text-center text-[14px] font-semibold text-[#2C2C2C]]">
+                <Text className="text-center text-[14px] font-semibold text-[#2C2C2C]">
                   아니오
                 </Text>
               </Pressable>

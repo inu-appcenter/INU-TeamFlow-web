@@ -84,8 +84,8 @@ export default function SchoolAuthenticationScreen() {
         className="flex-1"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 120,
-          paddingBottom: 20,
+          paddingTop: 110,
+          paddingBottom: 25,
         }}
         keyboardShouldPersistTaps="handled"
       >
@@ -96,7 +96,7 @@ export default function SchoolAuthenticationScreen() {
             resizeMode="contain"
           />
         </View>
-        <View className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white px-6 py-6">
+        <View className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white px-6 py-8">
           <View className="mb-6 items-center">
             <Text className="text-[20px] font-semibold text-[#2C2C2C]">
               학교 인증
@@ -115,13 +115,13 @@ export default function SchoolAuthenticationScreen() {
             placeholder="학번을 입력하세요"
             placeholderTextColor="#B0B8C1"
             keyboardType="number-pad"
-            className="mb-4 h-12 rounded-full  bg-[#F6F8FA] px-5 text-[#2C2C2C]"
+            className="mb-4 h-[50px] rounded-full  bg-[#F6F8FA] px-5 text-[#2C2C2C]"
           />
 
           <Text className="mb-1 text-[13px] font-medium text-[#989898]">
             비밀번호
           </Text>
-          <View className="mb-4 flex-row items-center rounded-full  bg-[#F6F8FA] pr-3">
+          <View className="mb-6 flex-row items-center rounded-full  bg-[#F6F8FA] pr-3">
             <TextInput
               value={portalPassword}
               onChangeText={setPortalPassword}
@@ -129,7 +129,7 @@ export default function SchoolAuthenticationScreen() {
               placeholderTextColor="#B0B8C1"
               secureTextEntry={!isPasswordVisible}
               autoCapitalize="none"
-              className="flex-1 px-5 h-12 text-[#2C2C2C]"
+              className="flex-1 px-5 h-[50px] text-[#2C2C2C]"
             />
             <Pressable
               onPress={() => setIsPasswordVisible((prev) => !prev)}
@@ -143,7 +143,7 @@ export default function SchoolAuthenticationScreen() {
             </Pressable>
           </View>
 
-          <Text className="mb-2 text-center text-[11px] leading-5 text-[#B0B0B0]">
+          <Text className="mb-1 text-center text-[11px] leading-5 text-[#B0B0B0]">
             입력한 정보는 학교 인증 목적으로만 사용됩니다
           </Text>
 
@@ -151,9 +151,9 @@ export default function SchoolAuthenticationScreen() {
             onPress={handleVerifySchool}
             disabled={isPending}
             style={{ opacity: isPending ? 0.6 : 1 }}
-            className="items-center rounded-xl bg-[#5E92F0] py-4 active:scale-95"
+            className="bg-[#5E92F0] items-center self-center rounded-xl px-14 h-[42px] justify-center transition-transform duration-150 ease-out active:scale-90"
           >
-            <Text className="text-[15px] font-semibold text-white">
+            <Text className="text-[15px] font-bold text-white">
               {isPending ? "인증 중..." : "인증하기"}
             </Text>
           </Pressable>
