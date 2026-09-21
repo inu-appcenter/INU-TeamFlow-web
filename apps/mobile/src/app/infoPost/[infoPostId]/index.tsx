@@ -150,7 +150,7 @@ export default function InfoPostDetailScreen() {
           </InfoRow>
           <InfoRow label="모집글">
             <Text className="text-[14px] text-[#2C2C2C]">
-              연결된 모집글 {infoPost.recruitmentCount}개
+              연결된 모집글 {infoPost.recruitmentCount ?? 0}개
             </Text>
           </InfoRow>
 
