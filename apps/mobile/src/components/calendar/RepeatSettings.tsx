@@ -57,7 +57,7 @@ export default function RepeatSettings({
               selectedValue={repeatType}
               onValueChange={(v) => onRepeatTypeChange(v as RepeatType)}
               mode="dropdown"
-              style={{ height: 40 }}
+              style={{ height: 80 }}
               dropdownIconColor="#2C2C2C"
             >
               {options.map((o) => (
