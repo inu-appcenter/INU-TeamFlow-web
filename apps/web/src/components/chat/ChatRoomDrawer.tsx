@@ -51,6 +51,10 @@ export default function ChatRoomDrawer({
   const [nameDraft, setNameDraft] = useState(roomName);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
+  const searchKeyword = useMemo(
+    () => keyword.replace(/[ㄱ-ㅎㅏ-ㅣ]+$/, '').trim(),
+    [keyword]
+  );
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [showImageOverlay, setShowImageOverlay] = useState(false);
@@ -80,8 +84,8 @@ export default function ChatRoomDrawer({
 
   const { data: availableMembers = [] } = useChatRoomAvailableMembers(
     roomId,
-    keyword,
-    roomType === 'GROUP'
+    searchKeyword,
+    roomType === 'GROUP' && isInviteOpen && !!searchKeyword
   );
 
   const { mutateAsync: addMembers, isPending: isAdding } =
@@ -381,7 +385,7 @@ export default function ChatRoomDrawer({
                   </div>
                 )}
 
-                {roomType === 'GROUP' && isInviteOpen && keyword && (
+                {roomType === 'GROUP' && isInviteOpen && searchKeyword && (
                   <div className="thin-scrollbar mx-3 mt-2 mb-2 flex max-h-[160px] flex-col overflow-y-auto rounded-xl border-[0.5px] border-[#D6DDE5] bg-white">
                     {availableMembers.map((user) => {
                       const isSelected = selectedIds.has(user.userId);
