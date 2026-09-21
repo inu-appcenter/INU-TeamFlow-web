@@ -42,7 +42,9 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   const { data: anchor, isLoading } = useChatMessageAnchor(roomId);
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const topSentinelRef = useRef<HTMLDivElement>(null);
+  const [topSentinelEl, setTopSentinelEl] = useState<HTMLDivElement | null>(
+    null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [roomInfo, setRoomInfo] = useState<{
@@ -130,10 +132,10 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   // 위로 스크롤 시 이전 메시지 로드
   const prevScrollHeightRef = useRef(0);
 
+  // (2) observer effect 교체
   useEffect(() => {
     const container = scrollRef.current;
-    const sentinel = topSentinelRef.current;
-    if (!container || !sentinel) return;
+    if (!container || !topSentinelEl) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -142,12 +144,12 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
           fetchNextPage();
         }
       },
-      { root: container, threshold: 0 }
+      { root: container, threshold: 0, rootMargin: '300px 0px 0px 0px' }
     );
 
-    observer.observe(sentinel);
+    observer.observe(topSentinelEl);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [topSentinelEl, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 스크롤이 맨 아래에서 떨어지면 "아래로" 버튼 표시
   useEffect(() => {
@@ -273,7 +275,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
             </div>
           ) : (
             <div className="flex flex-col gap-0.5">
-              <div ref={topSentinelRef} className="h-1" />
+              <div ref={setTopSentinelEl} className="h-1" />
               {isFetchingNextPage && (
                 <div className="py-2 text-center text-xs text-[#9C9C9C]">
                   불러오는 중...
@@ -318,7 +320,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
                     )}
 
                     {message.messageType === 'SYSTEM' ? (
-                      <div className="my-2 flex items-center justify-center">
+                      <div className="mt-5 mb-1 flex items-center justify-center">
                         <span className="rounded-full bg-[#F6F8FB] px-3 py-1.5 text-xs font-medium text-[#989898]">
                           {message.content}
                         </span>

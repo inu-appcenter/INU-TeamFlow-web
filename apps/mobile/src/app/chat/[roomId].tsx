@@ -279,7 +279,7 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
         )}
 
         {item.messageType === "SYSTEM" ? (
-          <View className="mt-3 mb-1 items-center justify-center">
+          <View className="mt-6 items-center justify-center">
             <Text className="overflow-hidden rounded-full bg-[#ffffff] px-3 py-1.5 text-[11px] font-medium text-[#989898]">
               {item.content}
             </Text>
