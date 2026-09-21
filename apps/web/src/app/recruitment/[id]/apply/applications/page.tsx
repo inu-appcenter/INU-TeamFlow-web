@@ -54,7 +54,7 @@ export default function RecruitmentApplications() {
       <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
           <div
-            className="flex h-16 items-center gap-4 px-6 sm:h-18"
+            className="flex h-18 items-center gap-4 px-6"
             style={{
               backgroundColor: recruitment
                 ? (categoryColorMap[recruitment.category] ?? '#E9E9E9')

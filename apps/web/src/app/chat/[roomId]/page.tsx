@@ -457,7 +457,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center gap-2 bg-[#F6F8FA] px-6 py-4 pb-10">
+        <div className="flex items-center gap-2 bg-[#F6F8FA] px-6 py-3 pb-10">
           <button
             onClick={handleImageClick}
             className="shrink-0 cursor-pointer px-2"
@@ -481,17 +481,18 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
               }
             }}
             placeholder="메시지를 입력하세요"
-            className="flex-1 rounded-full bg-white px-4 py-2.5 text-[15px] placeholder:text-[#b0b0b0] focus:outline-none"
+            className="min-w-0 flex-1 rounded-full bg-white px-4 py-2.5 text-[15px] placeholder:text-[#b0b0b0] focus:outline-none"
           />
 
           <button
             onClick={handleSend}
             disabled={!draft.trim() || isUploading || !isConnected}
-            className="cursor-pointer px-2 disabled:opacity-30"
+            className="shrink-0 cursor-pointer px-2 disabled:opacity-30"
           >
             <Send size={22} className="text-[#5E92F0]" />
           </button>
         </div>
+
         <ChatRoomDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}

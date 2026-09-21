@@ -10,7 +10,7 @@ export default function TeamListSkeleton({ count = 4 }: { count?: number }) {
 
           <div className="p-5">
             <div className="mb-2 flex items-center justify-between">
-              <div className="h-5 w-2/5 rounded bg-[#E5E9EF]" />
+              <div className="h-6 w-2/5 rounded bg-[#E5E9EF]" />
               <div className="h-5 w-5 rounded bg-[#E5E9EF]" />
             </div>
 
