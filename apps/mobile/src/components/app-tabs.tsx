@@ -12,7 +12,10 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}
+      iconColor={{ default: colors.textSecondary, selected: "#5E92F0" }}
+      labelStyle={{
+        default: { color: colors.textSecondary },
+      }}
       badgeBackgroundColor="#5E92F0"
     >
       <NativeTabs.Trigger name="index">

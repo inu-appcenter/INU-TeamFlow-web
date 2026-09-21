@@ -44,7 +44,7 @@ function NoticeSearchBar({
               selectedValue={searchType}
               onValueChange={(value) => onSearchTypeChange(value as SearchType)}
               mode="dropdown"
-              style={{ height: 40 }}
+              style={{ height: 80 }}
               dropdownIconColor="#2C2C2C"
             >
               {searchFilter.map((option) => (

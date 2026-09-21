@@ -161,7 +161,7 @@ function SearchBar({
               selectedValue={searchType}
               onValueChange={(v) => onSearchTypeChange(v as SearchType)}
               mode="dropdown"
-              style={{ height: 40 }}
+              style={{ height: 80 }}
               dropdownIconColor="#2C2C2C"
             >
               {searchFilter.map((o) => (
