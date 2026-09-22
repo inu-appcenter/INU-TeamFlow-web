@@ -4,7 +4,10 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, X, Check, Search } from 'lucide-react';
 import { useCreateGroupChatRoom } from '@moimi/core/hooks/chat/useCreateGroupChatRoom';
-import { useMyTeams, useTeamMembers } from '@moimi/core/hooks/team/useTeamQuery';
+import {
+  useMyTeams,
+  useTeamMembers,
+} from '@moimi/core/hooks/team/useTeamQuery';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
@@ -263,7 +266,16 @@ export default function GroupChatCreateModal({ onClose }: Props) {
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#D6DDE5] text-sm font-bold text-[#3F4852]">
-                              {member.userNickname.slice(0, 1)}
+                              {member.profileImageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={member.profileImageUrl}
+                                  alt={member.userNickname}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                member.userNickname.slice(0, 1)
+                              )}
                             </div>
                             <div>
                               <div className="flex items-center gap-1">

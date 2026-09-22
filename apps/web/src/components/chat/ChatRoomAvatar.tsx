@@ -43,10 +43,7 @@ export default function ChatRoomAvatar({
         className={`grid shrink-0 grid-cols-2 grid-rows-2 gap-1 ${sizeClassName}`}
       >
         {tiles.map((url, i) => (
-          <div
-            key={url ?? `empty-${i}`}
-            className="overflow-hidden rounded-md bg-[#D6DDE5]"
-          >
+          <div key={i} className="overflow-hidden rounded-md bg-[#D6DDE5]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={url ?? '/images/default-profile.png'}
