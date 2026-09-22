@@ -43,7 +43,7 @@ export default function RepeatSettings({
 
   return (
     <>
-      <View className="mb-3 h-[55px] flex-row items-center justify-between rounded-2xl bg-[#F6F8FA] px-6">
+      <View className="mb-3 h-[50px] flex-row items-center justify-between rounded-2xl bg-[#F6F8FA] px-6">
         <View className="flex-row items-center gap-3">
           <Repeat size={18} color="#2C2C2C" />
           <Text className="text-[16px] font-semibold text-[#2C2C2C]">
@@ -57,7 +57,7 @@ export default function RepeatSettings({
               selectedValue={repeatType}
               onValueChange={(v) => onRepeatTypeChange(v as RepeatType)}
               mode="dropdown"
-              style={{ height: 40 }}
+              style={{ height: 80 }}
               dropdownIconColor="#2C2C2C"
             >
               {options.map((o) => (

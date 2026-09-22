@@ -25,7 +25,7 @@ import { getDepartmentName } from "@/utils/user/getDepartmentName";
 import VoteForm from "@/components/VoteForm";
 import VoteResult from "@/components/VoteResult";
 
-const LABEL_COL_WIDTH = 20;
+const LABEL_COL_WIDTH = 22;
 const DATE_COL_WIDTH = 72;
 const COLUMN_GAP = 4;
 type ParticipantTab = "completed" | "uncompleted";
@@ -357,7 +357,7 @@ export default function VoteDetailScreen() {
 
                 <View className="mt-6 flex-row ">
                   {/* 고정 라벨 컬럼 (스크롤 안 됨) */}
-                  <View style={{ width: LABEL_COL_WIDTH }}>
+                  <View style={{ width: LABEL_COL_WIDTH }} className="pr-2">
                     <View style={{ height: 18 }} />
                     <View style={{ marginTop: 8, gap: 4 }}>
                       {voteHours.map((hour) => (
@@ -384,7 +384,7 @@ export default function VoteDetailScreen() {
                   >
                     <View>
                       <View
-                        className="flex-row pl-2"
+                        className="flex-row"
                         style={{ gap: COLUMN_GAP, height: 18 }}
                       >
                         {voteDates.map((date) => (
@@ -402,7 +402,7 @@ export default function VoteDetailScreen() {
                       </View>
 
                       <View
-                        className="flex-row pl-2"
+                        className="flex-row "
                         style={{ gap: COLUMN_GAP, marginTop: 8 }}
                       >
                         {voteDates.map((date) => (
@@ -497,7 +497,7 @@ export default function VoteDetailScreen() {
                     onPress={() => vote.isOpened && setIsSelectingResult(true)}
                     disabled={!vote.isOpened}
                     style={{ width: 140 }}
-                    className={`flex-1 justify-center items-center rounded-xl h-12 ${
+                    className={`flex-1 mb-12 justify-center items-center rounded-xl h-12 ${
                       vote.isOpened
                         ? "border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5]"
                         : "bg-[#EEF1F5]"

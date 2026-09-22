@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
@@ -93,11 +94,21 @@ export default function Header({
   );
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
+  // 선택된 탭을 가로 스크롤 영역 가운데로 (모바일 슬라이드용)
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  useEffect(() => {
+    tabRefs.current[selectedCategory]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  }, [selectedCategory]);
+
   return (
     <main>
       {/* 헤더 */}
-      <header className="mt-12 mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <header className="mt-12 mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex shrink-0 items-center gap-4">
           {isBack && (
             <button
               onClick={() => router.push(`/${parentRoute}`)}
@@ -109,9 +120,9 @@ export default function Header({
 
           <h1 className="text-2xl font-bold text-[#2C2C2C]">{pageName}</h1>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="flex w-full min-w-0 items-center justify-end gap-3 sm:w-auto sm:flex-1 sm:flex-wrap">
           {isSearch && (
-            <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-white md:w-100 md:flex-none">
+            <div className="flex h-10 flex-1 items-center overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-white sm:w-100 sm:flex-none">
               <div className="relative h-full">
                 <select
                   value={searchType}
@@ -160,35 +171,43 @@ export default function Header({
       {isCategory && (
         <div className="mb-4 rounded-t-2xl bg-white pt-4">
           {/* 카테고리 */}
-          <div className="relative flex">
-            {categories?.map((category) => {
-              const isActive = selectedCategory === category.value;
+          <div className="relative">
+            <div className="flex [scrollbar-width:none] overflow-x-auto pr-6 sm:pr-0 [&::-webkit-scrollbar]:hidden">
+              {categories?.map((category) => {
+                const isActive = selectedCategory === category.value;
 
-              return (
-                <button
-                  key={category.value}
-                  onClick={() => onCategoryChange?.(category.value)}
-                  className={`relative z-50 flex-1 cursor-pointer pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:text-xl ${
-                    isActive
-                      ? 'text-[#5E92F0]'
-                      : 'text-[#CBD2DA] hover:text-[#5E92F0]'
-                  }`}
-                >
-                  {category.label}
-                  {isActive && (
-                    <motion.div
-                      layoutId="categoryIndicator"
-                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 600,
-                        damping: 50,
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={category.value}
+                    ref={(el) => {
+                      tabRefs.current[category.value] = el;
+                    }}
+                    onClick={() => onCategoryChange?.(category.value)}
+                    className={`relative z-50 shrink-0 cursor-pointer px-5 pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:flex-1 sm:px-0 sm:text-xl ${
+                      isActive
+                        ? 'text-[#5E92F0]'
+                        : 'text-[#CBD2DA] hover:text-[#5E92F0]'
+                    }`}
+                  >
+                    {category.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="categoryIndicator"
+                        className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 600,
+                          damping: 50,
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 모바일: 오른쪽 끝 페이드 (더 스크롤 가능하다는 힌트) */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-50 w-8 bg-gradient-to-r from-white/0 to-white sm:hidden" />
           </div>
         </div>
       )}

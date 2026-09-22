@@ -10,6 +10,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { ChatSocketProvider } from '@/contexts/ChatSocketContext';
 import { pretendard } from '@/lib/fonts';
 import { useMetadata } from '@/hooks/useMetadata';
+import DesktopRecommendModal from '@/components/common/DesktopRecommendModal';
 
 export default function RootLayout({
   children,
@@ -24,7 +25,10 @@ export default function RootLayout({
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <AuthGuard>
-              <ChatSocketProvider>{children}</ChatSocketProvider>
+              <ChatSocketProvider>
+                {children}
+                <DesktopRecommendModal />
+              </ChatSocketProvider>
             </AuthGuard>
           </AuthProvider>
         </QueryClientProvider>

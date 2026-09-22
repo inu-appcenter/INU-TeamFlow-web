@@ -75,7 +75,7 @@ function NoticeSearchBar({
               selectedValue={searchType}
               onValueChange={(value) => onSearchTypeChange(value as SearchType)}
               mode="dropdown"
-              style={{ height: 40 }}
+              style={{ height: 80 }}
               dropdownIconColor="#2C2C2C"
             >
               {searchFilter.map((option) => (
@@ -255,7 +255,7 @@ export default function TeamNoticeScreen() {
           {isAdmin && (
             <Pressable
               onPress={() => router.push(`/team/${teamId}/notice/write`)}
-              className="h-12 w-12 items-center justify-center rounded-full bg-[#5E92F0] active:scale-95"
+              className="h-12 w-12 items-center justify-center rounded-full bg-[#5E92F0] transition-transform duration-150 ease-out active:scale-95"
             >
               <Plus size={18} strokeWidth={2.5} color="#fff" />
             </Pressable>
@@ -264,8 +264,8 @@ export default function TeamNoticeScreen() {
 
         {/* 미확인 공지 배너 */}
         {unreadCount > 0 && (
-          <View className="mb-3 flex-row items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0]/5 px-6 py-4">
-            <Mail size={20} strokeWidth={2.5} color="#5E92F0" />
+          <View className="mb-3 flex-row items-center gap-3 rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0]/5 px-5 py-4">
+            <Mail size={18} strokeWidth={2.5} color="#5E92F0" />
             <Text className="flex-1 text-[14px] font-semibold text-[#2C2C2C]">
               아직 읽지 않은 공지가{" "}
               <Text className="font-bold text-[#5E92F0]">{unreadCount}건</Text>{" "}
@@ -339,15 +339,15 @@ export default function TeamNoticeScreen() {
 
         {/* 페이지네이션 */}
         {totalPages > 0 && (
-          <View className="mb-8 mt-6 flex-row items-center justify-center gap-2">
+          <View className="mb-8 mt-6 flex-row items-center justify-center gap-3">
             <Pressable
               onPress={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               hitSlop={8}
               style={{ opacity: currentPage === 1 ? 0.4 : 1 }}
-              className="items-center justify-center active:scale-90"
+              className="items-center justify-center transition-transform duration-150 ease-out active:scale-90"
             >
-              <ChevronLeft size={22} strokeWidth={2.5} color="#2c2c2c66" />
+              <ChevronLeft size={20} strokeWidth={2.5} color="#2c2c2c66" />
             </Pressable>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
@@ -355,10 +355,10 @@ export default function TeamNoticeScreen() {
                 key={n}
                 onPress={() => setPage(n)}
                 hitSlop={6}
-                className="items-center justify-center px-1 active:scale-90"
+                className="items-center justify-center px-1 transition-transform duration-150 ease-out active:scale-90"
               >
                 <Text
-                  className={`text-[16px] font-semibold ${
+                  className={`text-[15px] font-semibold ${
                     currentPage === n ? "text-[#5E92F0]" : "text-[#2c2c2c80]"
                   }`}
                 >
@@ -372,9 +372,9 @@ export default function TeamNoticeScreen() {
               disabled={currentPage === totalPages}
               hitSlop={8}
               style={{ opacity: currentPage === totalPages ? 0.4 : 1 }}
-              className="items-center justify-center active:scale-90"
+              className="items-center justify-center transition-transform duration-150 ease-out active:scale-90"
             >
-              <ChevronRight size={22} strokeWidth={2.5} color="#2c2c2c66" />
+              <ChevronRight size={20} strokeWidth={2.5} color="#2c2c2c66" />
             </Pressable>
           </View>
         )}

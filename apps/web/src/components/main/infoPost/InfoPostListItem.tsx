@@ -36,7 +36,7 @@ export default function InfoPostListItem({
         </h3>
 
         <p className="mt-1 truncate text-xs text-[#989898]">
-          참조 모집글 {infoPost.recruitmentCount}개
+          참조 모집글 {infoPost.recruitmentCount ?? 0}개
         </p>
       </div>
 

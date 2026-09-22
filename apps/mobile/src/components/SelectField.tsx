@@ -29,7 +29,7 @@ export default function SelectField({
     <>
       <Pressable
         onPress={() => !disabled && setIsOpen(true)}
-        className={`h-[53px] w-full flex-row items-center justify-between rounded-full px-5 ${
+        className={`h-[50px] w-full flex-row items-center justify-between rounded-full px-5 ${
           disabled ? "bg-[#F6F8FA]" : "bg-[#F6F8FA]"
         }`}
       >

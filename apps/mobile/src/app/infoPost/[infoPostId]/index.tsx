@@ -7,9 +7,10 @@ import {
   Modal,
   Image,
   Alert,
+  Linking,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, EllipsisVertical, Bookmark } from "lucide-react-native";
+import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
 import {
   useInfoPostDetail,
   useDeleteInfoPost,
@@ -19,6 +20,18 @@ import {
   infoPostCategoryMap,
 } from "@moimi/core/constants/infoPost";
 import { formatDate } from "@/utils/date/formatDate";
+import ScrapButton from "@/components/ScrapButton";
+
+const getSafeUrl = (url?: string | null) => {
+  if (!url) return null;
+  const withProtocol = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  try {
+    const { protocol } = new URL(withProtocol);
+    return protocol === "http:" || protocol === "https:" ? withProtocol : null;
+  } catch {
+    return null;
+  }
+};
 
 function InfoRow({
   label,
@@ -75,29 +88,32 @@ export default function InfoPostDetailScreen() {
     (a, b) => a.sortOrder - b.sortOrder
   );
 
+  const safeUrl = getSafeUrl(infoPost.sourceUrl);
   return (
     <View className="flex-1 bg-white">
       <View
         style={{ backgroundColor: headerColor, paddingTop: 60 }}
         className="flex-row items-center justify-between px-5 pb-4"
       >
-        <Pressable onPress={() => router.back()} className="active:scale-90">
+        <Pressable
+          onPress={() => router.back()}
+          className="transition-transform duration-150 ease-out active:scale-90"
+        >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
         </Pressable>
 
         <View className="flex-row items-center gap-4">
           {!infoPost.isAuthor && (
-            <Pressable
-              onPress={() => console.log("TODO: 스크랩 토글")}
-              className="active:scale-90"
-            >
-              <Bookmark size={20} color="#2C2C2C" />
-            </Pressable>
+            <ScrapButton
+              type="infoPost"
+              id={infoPostIdNum}
+              initialScrapped={infoPost.isScrap}
+            />
           )}
 
           <Pressable
             onPress={() => setIsMenuOpen(true)}
-            className="active:scale-90"
+            className="transition-transform duration-150 ease-out active:scale-90"
           >
             <EllipsisVertical size={20} color="#2C2C2C" />
           </Pressable>
@@ -134,9 +150,23 @@ export default function InfoPostDetailScreen() {
           </InfoRow>
           <InfoRow label="모집글">
             <Text className="text-[14px] text-[#2C2C2C]">
-              연결된 모집글 {infoPost.recruitmentCount}개
+              연결된 모집글 {infoPost.recruitmentCount ?? 0}개
             </Text>
           </InfoRow>
+
+          {safeUrl && (
+            <InfoRow label="원문 링크">
+              <Pressable
+                onPress={() => Linking.openURL(safeUrl).catch(() => {})}
+                hitSlop={8}
+                className="active:opacity-60 "
+              >
+                <Text className="text-[14px]  text-[#5E92F0] underline">
+                  {infoPost.sourceUrl}
+                </Text>
+              </Pressable>
+            </InfoRow>
+          )}
         </View>
 
         <View className="mt-6 border-b-[0.5px] border-[#D6DDE5]" />
@@ -238,7 +268,7 @@ export default function InfoPostDetailScreen() {
             <View className="mt-4 flex-row gap-3">
               <Pressable
                 onPress={() => setIsDeleteConfirmOpen(false)}
-                className="flex-1 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 active:scale-95"
+                className="flex-1 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-center text-[14px] font-semibold text-[#2C2C2C]">
                   취소
@@ -250,7 +280,7 @@ export default function InfoPostDetailScreen() {
                   handleDelete();
                 }}
                 disabled={isDeleting}
-                className="flex-1 rounded-xl bg-[#E22222] py-4 active:scale-95"
+                className="flex-1 rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-center text-[14px] font-semibold text-white">
                   삭제

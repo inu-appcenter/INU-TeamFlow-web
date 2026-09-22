@@ -372,10 +372,10 @@ export default function TeamNoticeWriteScreen() {
             <Text className="text-center text-[18px] font-bold text-[#2C2C2C]">
               공지를 작성할까요?
             </Text>
-            <View className="mt-5 flex-row gap-3">
+            <View className="mt-4 flex-row gap-3">
               <Pressable
                 onPress={() => setIsConfirmOpen(false)}
-                className="flex-1 items-center rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3"
+                className="flex-1 items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4"
               >
                 <Text className="text-[14px] font-semibold text-[#2C2C2C]">
                   취소
@@ -386,7 +386,7 @@ export default function TeamNoticeWriteScreen() {
                   setIsConfirmOpen(false);
                   await handleSubmit();
                 }}
-                className="flex-1 items-center rounded-xl bg-[#5E92F0] py-3"
+                className="flex-1 items-center rounded-xl bg-[#5E92F0] py-4"
               >
                 <Text className="text-[14px] font-semibold text-white">
                   작성

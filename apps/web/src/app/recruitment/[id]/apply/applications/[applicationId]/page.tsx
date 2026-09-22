@@ -15,6 +15,7 @@ import type { ApplicationStatus } from '@moimi/core/types/recruitment';
 import { ApplicationDetailSkeleton } from '@/components/skeleton';
 import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
 import { getDepartmentName } from '@/utils/getDepartmentName';
+import { useCancelApplication } from '@moimi/core/hooks/useMypagePostQuery';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',
@@ -43,6 +44,15 @@ export default function ApplicationDetail() {
   const { mutate: updateStatus, isPending } = useUpdateApplicationStatus();
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
+  const { mutate: cancelApplicationMutate, isPending: isCancelling } =
+    useCancelApplication();
+
+  const handleCancelApplication = () => {
+    if (isCancelling) return;
+    const confirmed = window.confirm('신청을 취소하시겠습니까?');
+    if (!confirmed) return;
+    cancelApplicationMutate(applicationId);
+  };
 
   if (isLoading) return <ApplicationDetailSkeleton />;
 
@@ -188,6 +198,25 @@ export default function ApplicationDetail() {
                     </span>
                   ) : (
                     '수락'
+                  )}
+                </button>
+              </div>
+            )}
+
+            {!application.isRecruiter && isWaiting && (
+              <div className="mt-8 mb-8 flex justify-center">
+                <button
+                  onClick={handleCancelApplication}
+                  disabled={isCancelling}
+                  className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-6 py-2 text-base font-semibold text-[#E22222] transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isCancelling ? (
+                    <span className="flex items-center gap-2">
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                      신청 취소
+                    </span>
+                  ) : (
+                    '신청 취소'
                   )}
                 </button>
               </div>

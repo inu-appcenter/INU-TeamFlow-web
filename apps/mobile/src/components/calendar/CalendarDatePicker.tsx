@@ -41,7 +41,7 @@ export default function CalendarDatePicker({
     <View className="mb-3">
       <Pressable
         onPress={() => setIsOpen(true)}
-        className="h-[55px] justify-center rounded-2xl bg-[#F6F8FA] px-6"
+        className="h-[50px] justify-center rounded-2xl bg-[#F6F8FA] px-6"
       >
         <Text
           className="text-[16px] font-semibold"

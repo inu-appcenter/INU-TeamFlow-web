@@ -11,10 +11,11 @@ export const getChatClient = (): Client => {
   if (client) return client;
 
   client = new Client({
-    // brokerURL 대신 webSocketFactory를 쓰면 stomp.js가 기본으로 붙이는
-    // Sec-WebSocket-Protocol(v12.stomp 등) 서브프로토콜 없이 순수 WebSocket으로 연결한다.
-    // 프록시가 그 헤더를 제대로 못 넘겨서 연결이 끊기는 문제인지 확인하기 위한 테스트용 설정.
-    webSocketFactory: () => new WebSocket(WS_URL),
+    webSocketFactory: () =>
+      new WebSocket(WS_URL, ["v12.stomp", "v11.stomp", "v10.stomp"]),
+    forceBinaryWSFrames: true,
+    appendMissingNULLonIncoming: true,
+    connectionTimeout: 10000,
     reconnectDelay: 3000,
     heartbeatIncoming: 10000,
     heartbeatOutgoing: 10000,
@@ -106,4 +107,18 @@ export const subscribeChatRoomRead = (
   }
 
   return c.subscribe(`/sub/chat-rooms/${roomId}/read`, onMessage);
+};
+
+export const subscribeUserChatRooms = (
+  userId: number,
+  onMessage: (message: IMessage) => void
+): StompSubscription | null => {
+  const c = getChatClient();
+
+  if (!c.connected) {
+    console.warn("STOMP 미연결 상태에서 subscribe 시도 - 무시됨");
+    return null;
+  }
+
+  return c.subscribe(`/sub/users/${userId}/chat-rooms`, onMessage);
 };

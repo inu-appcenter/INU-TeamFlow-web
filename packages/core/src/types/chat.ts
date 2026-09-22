@@ -1,10 +1,10 @@
-import type { PresignedUrlRequest, PresignedUrlResponse } from './image';
-import type { TeamRole } from '../constants/teamEnum';
+import type { PresignedUrlRequest, PresignedUrlResponse } from "./image";
+import type { TeamRole } from "../constants/teamEnum";
 
 // ── 공통 enum ──
 // GROUP: 팀 멤버 중 골라서 만드는 소분과 채팅방 (팀 생성 시 자동 만들어지는 TEAM 전체방과 구분됨)
-export type ChatRoomType = 'TEAM' | 'DIRECT' | 'GROUP';
-export type ChatMessageType = 'TEXT' | 'IMAGE' | 'SYSTEM';
+export type ChatRoomType = "TEAM" | "DIRECT" | "GROUP";
+export type ChatMessageType = "TEXT" | "IMAGE" | "SYSTEM";
 
 // ── 채팅방 목록 ──
 export interface ChatRoomSummaryResponse {
@@ -55,7 +55,7 @@ export interface ChatMessageHistoryParams {
 
 export interface ChatMessageSliceResponse {
   content: ChatMessageResponse[];
-  hasNext: boolean;
+  last: boolean;
 }
 
 // POST /chat-rooms/{roomId}/read
@@ -113,3 +113,17 @@ export interface ChatRoomInviteRequest {
 }
 
 // DELETE /chat-rooms/{roomId}/members/me — 채팅방 퇴장 (body 없음)
+
+// STOMP SUB /sub/users/{userId}/chat-rooms
+export interface ChatRoomListPushPayload {
+  roomId: number;
+  lastMessage: {
+    content: string;
+    senderId: number;
+    senderName: string;
+    sentAt: string;
+  };
+  updatedAt: string;
+  unreadCount: number;
+  roomType: ChatRoomType;
+}

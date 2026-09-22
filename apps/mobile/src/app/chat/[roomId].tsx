@@ -70,6 +70,12 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
   }>();
 
   const { data: anchor, isLoading } = useChatMessageAnchor(roomId);
+  useEffect(() => {
+    console.log(
+      "[ChatRoomScreen] anchor 갱신, messages.length =",
+      anchor?.messages.length
+    );
+  }, [anchor]);
   const [draft, setDraft] = useState("");
   const insets = useSafeAreaInsets();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -86,8 +92,19 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
       hideSub.remove();
     };
   }, []);
+
   const flatListRef = useRef<FlatList<DisplayMessage>>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+
+  const prevMessageCountRef = useRef(0);
+  useEffect(() => {
+    const currentCount = anchor?.messages.length ?? 0;
+    if (currentCount > prevMessageCountRef.current && !showScrollToBottom) {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }
+    prevMessageCountRef.current = currentCount;
+  }, [anchor?.messages.length, showScrollToBottom]);
+
   const [isUploading, setIsUploading] = useState(false);
   const [roomInfo, setRoomInfo] = useState<{
     roomType: RoomType;
@@ -262,7 +279,7 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
         )}
 
         {item.messageType === "SYSTEM" ? (
-          <View className="mt-3 mb-1 items-center justify-center">
+          <View className="mt-6 items-center justify-center">
             <Text className="overflow-hidden rounded-full bg-[#ffffff] px-3 py-1.5 text-[11px] font-medium text-[#989898]">
               {item.content}
             </Text>
@@ -419,10 +436,10 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
         </Pressable>
       </View>
 
-      <View className="flex-1 bg-[#F0F2F5]">
+      <View className="flex-1 bg-[#F0F2F5] px-1">
         {isLoading || !anchor ? (
           <View className="flex-1 items-center justify-center">
-            <ActivityIndicator color="#5E92F0" />
+            <ActivityIndicator color="#989898" />
           </View>
         ) : (
           <FlatList
@@ -448,7 +465,7 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
             contentContainerStyle={{
               flexGrow: 1,
               justifyContent: "flex-end",
-              paddingHorizontal: 16,
+              paddingHorizontal: 10,
               paddingVertical: 12,
             }}
           />

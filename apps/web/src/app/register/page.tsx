@@ -197,7 +197,7 @@ export default function Register() {
         </div>
       )}
 
-      <section className="mx-auto flex min-h-[calc(100dvh-32px)] w-full max-w-3xl flex-col justify-center px-0 sm:px-5">
+      <section className="mx-auto flex min-h-[calc(100dvh-32px)] w-full max-w-3xl flex-col justify-center px-0 px-5 max-[640px]:px-2">
         <Card className="animate-modal-pop overflow-hidden p-0 transition-all duration-200">
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div>
@@ -209,19 +209,19 @@ export default function Register() {
                     ? '로그인 페이지로 돌아가기'
                     : '약관 동의로 돌아가기'
                 }
-                className="cursor-pointer pt-6 pl-5 text-[#2C2C2C]/80 transition-all duration-150 hover:text-[#2C2C2C] active:scale-90"
+                className="cursor-pointer pt-5 pl-5 text-[#2C2C2C]/60 transition-all duration-150 hover:text-[#2C2C2C] active:scale-90"
               >
                 <ChevronLeft size={28} strokeWidth={2.5} />
               </button>
 
-              <div className="-mt-6 mb-6 flex items-center">
+              <div className="-mt-6 mb-4 flex items-center">
                 <h1 className="relative left-1/2 -translate-x-1/2 text-[24px] font-semibold sm:text-[28px]">
                   {REGISTER_TEXT.TITLE}
                 </h1>
               </div>
             </div>
 
-            <div className="mx-auto mb-7 flex w-full max-w-80 items-center px-2 sm:mb-8 sm:px-4">
+            <div className="mx-auto mb-4 flex w-full max-w-80 items-center px-2 sm:px-4">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-full bg-[#5E92F0] text-[13px] font-semibold text-white">
                   1
@@ -263,15 +263,13 @@ export default function Register() {
               </div>
             </div>
             {step === 'terms' && (
-              <div className="px-4 pb-6 sm:px-7.5 sm:pb-7">
-                <div className="mb-6">
-                  <h2 className="mb-1 text-[18px] font-semibold text-[#2C2C2C] sm:text-[20px]">
-                    모이미 이용을 위해
-                    <br />
-                    약관을 확인해주세요
+              <div className="px-7.5 pb-6 sm:px-7.5 sm:pb-7">
+                <div className="mb-4">
+                  <h2 className="mb-1 text-center text-[18px] font-semibold text-[#2C2C2C] sm:text-[20px]">
+                    모이미 이용을 위해 약관을 확인해주세요
                   </h2>
 
-                  <p className="text-[14px] text-[#989898]">
+                  <p className="text-center text-[14px] text-[#989898]">
                     필수 항목에 동의하면 다음 단계로 이동할 수 있어요
                   </p>
                 </div>
@@ -290,7 +288,7 @@ export default function Register() {
 
                 <div className="overflow-hidden rounded-xl border border-[#ECEFF2]">
                   {/* 이용약관 */}
-                  <div className="flex items-center px-4 py-4 sm:px-5">
+                  <div className="flex items-center px-5 py-4">
                     <button
                       type="button"
                       role="checkbox"
@@ -312,7 +310,7 @@ export default function Register() {
                       type="button"
                       onClick={() => setOpenedPolicy('terms')}
                       aria-label="서비스 이용약관 보기"
-                      className="cursor-pointer p-1 text-[#A0A7B2] transition-colors hover:text-[#5E92F0]"
+                      className="-mr-1 cursor-pointer p-1 text-[#A0A7B2] transition-colors hover:text-[#5E92F0]"
                     >
                       <ChevronRight size={18} />
                     </button>
@@ -358,7 +356,7 @@ export default function Register() {
                     </span>
                   </button>
                 </div>
-                <p className="mt-2 px-1 text-[12px] leading-5 text-[#989898]">
+                <p className="mt-2 px-1 text-[10px] leading-5 text-[#989898] sm:text-[12px]">
                   알림별 수신 여부는 가입 후 알림 설정에서 언제든 변경할 수
                   있어요
                 </p>
@@ -393,17 +391,10 @@ export default function Register() {
                   type="button"
                   disabled={!isRequiredAgreed}
                   onClick={() => setStep('info')}
-                  className="group mx-auto mt-7 flex min-w-24 cursor-pointer items-center justify-center rounded-xl bg-[#5E92F0] px-6 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+                  className="group mt-7 flex w-full cursor-pointer items-center justify-center rounded-xl bg-[#5E92F0] px-10 py-3 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] sm:mx-auto sm:w-auto sm:py-2"
                 >
                   <span className="inline-flex items-center justify-center">
                     다음
-                    <span className="ml-0 inline-flex w-0 items-center justify-center overflow-hidden opacity-0 transition-all duration-200 group-hover:ml-1.5 group-hover:w-4 group-hover:opacity-100">
-                      <ChevronRight
-                        size={20}
-                        className="-mr-2 shrink-0"
-                        strokeWidth={2.5}
-                      />
-                    </span>
                   </span>
                 </button>
               </div>
@@ -523,7 +514,7 @@ export default function Register() {
                 <label className="mx-7.5 mb-1 block text-[14px] font-medium text-[#989898] max-[640px]:text-[12px]">
                   학과
                 </label>
-                <div className="mx-7.5 mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="mx-7.5 mb-5 grid grid-cols-1 gap-3 max-[640px]:gap-1.5 sm:grid-cols-2">
                   <div className="relative">
                     <select
                       value={college}
@@ -531,7 +522,7 @@ export default function Register() {
                         setCollege(e.target.value);
                         setDepartment('');
                       }}
-                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
+                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] max-[640px]:h-12 max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
                     >
                       <option value="">단과대 선택</option>
                       {colleges.map((college) => (
@@ -552,7 +543,7 @@ export default function Register() {
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
                       disabled={!college}
-                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] disabled:text-[#B0B8C1] max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
+                      className="h-13 w-full min-w-0 appearance-none rounded-xl bg-[#F6F8FA] px-5 pr-10 text-[15px] text-[#2C2C2C] transition-all duration-150 outline-none active:scale-[0.99] disabled:text-[#B0B8C1] max-[640px]:h-12 max-[640px]:py-2 max-[640px]:pr-8 max-[640px]:pl-3 max-[640px]:text-[13px]"
                     >
                       <option value="">학과 선택</option>
                       {currentCollege?.departments.map((department) => (
@@ -572,7 +563,7 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="group relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+                  className="group mx-7.5 mb-7 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-3 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] sm:mx-auto sm:w-[25%] sm:min-w-22 sm:py-2.5"
                 >
                   <span className="inline-flex items-center justify-center">
                     {REGISTER_TEXT.REGISTER_BUTTON}

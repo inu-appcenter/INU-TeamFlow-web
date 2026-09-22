@@ -94,7 +94,7 @@ export default function Login() {
         </div>
       )}
 
-      <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5">
+      <section className="mx-auto flex min-h-[calc(100dvh-16px)] max-w-3xl flex-col justify-center px-5 max-[640px]:px-2">
         <Card className="animate-modal-pop flex flex-col overflow-hidden p-0 transition-all duration-200">
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div className="mb-6 flex items-center">
@@ -170,7 +170,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoginPending}
-              className="group relative left-1/2 mb-7 w-[25%] min-w-22 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+              className="group mx-7.5 mb-7 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-3 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] sm:mx-auto sm:w-[25%] sm:min-w-22 sm:py-2.5"
             >
               <span className="inline-flex items-center justify-center">
                 {LOGIN_TEXT.TITLE}

@@ -670,7 +670,7 @@ export default function RecruitmentForm({
                           </p>
 
                           <p className="mt-auto text-[12px] text-[#989898]">
-                            연결된 모집글 {post.recruitmentCount}개
+                            연결된 모집글 {post.recruitmentCount ?? 0}개
                           </p>
 
                           <button

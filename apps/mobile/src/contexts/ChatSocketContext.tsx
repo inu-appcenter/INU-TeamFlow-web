@@ -5,7 +5,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getChatClient, connectChatClient } from "@/lib/chatSocket";
+import {
+  getChatClient,
+  connectChatClient,
+  disconnectChatClient,
+} from "@/lib/chatSocket";
 import { useMyInfo } from "@moimi/core/hooks/useAuthQuery";
 
 interface ChatSocketContextValue {
@@ -20,16 +24,6 @@ export const ChatSocketProvider = ({ children }: { children: ReactNode }) => {
   const { data: me } = useMyInfo();
   const userId = me?.userId;
   const [isConnected, setIsConnected] = useState(false);
-
-  // TEMP: stomp.js 없이 순수 WebSocket만으로 같은 증상이 나는지 확인용.
-  // 원인 확인되면 이 useEffect 통째로 지우면 됩니다.
-  useEffect(() => {
-    const testWs = new WebSocket("wss://api-moimi-dev.inuappcenter.kr/ws-chat");
-    testWs.onopen = () => console.log("[raw ws] opened");
-    testWs.onclose = (e) => console.log("[raw ws] closed", e.code, e.reason);
-    testWs.onerror = (e) => console.log("[raw ws] error", e);
-    return () => testWs.close();
-  }, []);
 
   useEffect(() => {
     console.log("[chatSocket] effect run, userId =", userId);
@@ -81,6 +75,9 @@ export const ChatSocketProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       mounted = false;
+      // userId가 바뀌었다는 건 로그아웃했거나 다른 계정으로 로그인했다는 뜻.
+      // 이전 세션 연결을 여기서 끊어야, 다음 effect가 새 토큰으로 재연결한다.
+      disconnectChatClient();
     };
   }, [userId]);
 

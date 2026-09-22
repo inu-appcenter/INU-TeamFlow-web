@@ -5,7 +5,7 @@ import Card from '@/components/main/Card';
 import { useMyTeams } from '@moimi/core/hooks/team/useTeamQuery';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { TeamListSkeleton } from '@/components/skeleton';
 import { motion } from 'motion/react';
@@ -23,6 +23,16 @@ export default function Team() {
   const { data: teams = [], isLoading } = useMyTeams();
   const { errorMessage, showErrorMessage } = useErrorToast();
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
+  // 선택된 탭을 가로 스크롤 영역 가운데로 (모바일 슬라이드용)
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  useEffect(() => {
+    tabRefs.current[selectedCategory]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  }, [selectedCategory]);
 
   const filteredTeams = teams.filter((team) => {
     if (selectedCategory === 'ALL') return true;
@@ -54,35 +64,43 @@ export default function Team() {
         </div>
 
         <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-none p-5">
-          <div className="relative flex border-b-[0.5px] border-[#D6DDE5]">
-            {categoryFilterOptions.map((category) => {
-              const isActive = selectedCategory === category.value;
+          <div className="relative">
+            <div className="flex [scrollbar-width:none] overflow-x-auto border-b-[0.5px] border-[#D6DDE5] pr-6 sm:pr-0 [&::-webkit-scrollbar]:hidden">
+              {categoryFilterOptions.map((category) => {
+                const isActive = selectedCategory === category.value;
 
-              return (
-                <button
-                  key={category.value}
-                  onClick={() => setSelectedCategory(category.value)}
-                  className={`relative z-50 flex-1 cursor-pointer pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:text-xl ${
-                    isActive
-                      ? 'text-[#5E92F0]'
-                      : 'text-[#CBD2DA] hover:text-[#5E92F0]'
-                  }`}
-                >
-                  {category.label}
-                  {isActive && (
-                    <motion.div
-                      layoutId="teamCategoryIndicator"
-                      className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 600,
-                        damping: 50,
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={category.value}
+                    ref={(el) => {
+                      tabRefs.current[category.value] = el;
+                    }}
+                    onClick={() => setSelectedCategory(category.value)}
+                    className={`relative z-50 shrink-0 cursor-pointer px-5 pb-4 text-center text-lg font-bold whitespace-nowrap transition sm:flex-1 sm:px-0 sm:text-xl ${
+                      isActive
+                        ? 'text-[#5E92F0]'
+                        : 'text-[#CBD2DA] hover:text-[#5E92F0]'
+                    }`}
+                  >
+                    {category.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="teamCategoryIndicator"
+                        className="absolute inset-x-0 bottom-0 h-0.5 bg-[#5E92F0]"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 600,
+                          damping: 50,
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 모바일: 오른쪽 끝 페이드 (더 스크롤 가능하다는 힌트) */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-50 w-8 bg-gradient-to-r from-white/0 to-white sm:hidden" />
           </div>
 
           <div

@@ -69,7 +69,7 @@ export default function RecruitmentApplyScreen() {
   if (isLoading || !recruitment) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
-        <ActivityIndicator color="#5E92F0" />
+        <ActivityIndicator color="#989898" />
       </View>
     );
   }

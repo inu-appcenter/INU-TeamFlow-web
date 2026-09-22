@@ -197,7 +197,7 @@ export default function TeamScreen() {
                 />
                 <View className="px-5 py-5">
                   <View className="mb-2 flex-row items-center justify-between">
-                    <Text className="text-[17px] font-bold text-[#2C2C2C]">
+                    <Text className="text-[16px] font-bold text-[#2C2C2C]">
                       {team.name}
                     </Text>
                     <ChevronRight size={20} strokeWidth={2.5} color="#2C2C2C" />
@@ -205,20 +205,20 @@ export default function TeamScreen() {
 
                   <Text
                     numberOfLines={1}
-                    className="mb-4 text-[13px] text-[#989898]"
+                    className="mb-4 text-[12px] text-[#989898]"
                   >
                     {team.description}
                   </Text>
 
                   <View className="flex-row items-center justify-between">
                     <View
-                      className="rounded-full px-3 py-2"
+                      className="rounded-full px-3 py-1.5"
                       style={{
                         backgroundColor: categoryColorMap[team.category],
                       }}
                     >
                       <Text
-                        className="text-[11px] font-semibold"
+                        className="text-[10px] font-semibold"
                         style={{
                           color: darkenColor(
                             categoryColorMap[team.category],

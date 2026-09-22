@@ -43,7 +43,9 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   const { data: anchor, isLoading } = useChatMessageAnchor(roomId);
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const topSentinelRef = useRef<HTMLDivElement>(null);
+  const [topSentinelEl, setTopSentinelEl] = useState<HTMLDivElement | null>(
+    null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [roomInfo, setRoomInfo] = useState<{
@@ -131,10 +133,10 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   // 위로 스크롤 시 이전 메시지 로드
   const prevScrollHeightRef = useRef(0);
 
+  // (2) observer effect 교체
   useEffect(() => {
     const container = scrollRef.current;
-    const sentinel = topSentinelRef.current;
-    if (!container || !sentinel) return;
+    if (!container || !topSentinelEl) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -143,12 +145,12 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
           fetchNextPage();
         }
       },
-      { root: container, threshold: 0 }
+      { root: container, threshold: 0, rootMargin: '300px 0px 0px 0px' }
     );
 
-    observer.observe(sentinel);
+    observer.observe(topSentinelEl);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [topSentinelEl, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 스크롤이 맨 아래에서 떨어지면 "아래로" 버튼 표시
   useEffect(() => {
@@ -276,7 +278,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
             </div>
           ) : (
             <div className="flex flex-col gap-0.5">
-              <div ref={topSentinelRef} className="h-1" />
+              <div ref={setTopSentinelEl} className="h-1" />
               {isFetchingNextPage && (
                 <div className="py-2 text-center text-xs text-[#9C9C9C]">
                   불러오는 중...
@@ -321,7 +323,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
                     )}
 
                     {message.messageType === 'SYSTEM' ? (
-                      <div className="my-2 flex items-center justify-center">
+                      <div className="mt-5 mb-1 flex items-center justify-center">
                         <span className="rounded-full bg-[#F6F8FB] px-3 py-1.5 text-xs font-medium text-[#989898]">
                           {message.content}
                         </span>
@@ -458,7 +460,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center gap-2 bg-[#F6F8FA] px-6 py-4 pb-10">
+        <div className="flex items-center gap-2 bg-[#F6F8FA] px-6 py-3 pb-10">
           <button
             onClick={handleImageClick}
             className="shrink-0 cursor-pointer px-2"
@@ -482,17 +484,18 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
               }
             }}
             placeholder="메시지를 입력하세요"
-            className="flex-1 rounded-full bg-white px-4 py-2.5 text-[15px] placeholder:text-[#b0b0b0] focus:outline-none"
+            className="min-w-0 flex-1 rounded-full bg-white px-4 py-2.5 text-[15px] placeholder:text-[#b0b0b0] focus:outline-none"
           />
 
           <button
             onClick={handleSend}
             disabled={!draft.trim() || isUploading || !isConnected}
-            className="cursor-pointer px-2 disabled:opacity-30"
+            className="shrink-0 cursor-pointer px-2 disabled:opacity-30"
           >
             <Send size={22} className="text-[#5E92F0]" />
           </button>
         </div>
+
         <ChatRoomDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}

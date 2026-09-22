@@ -550,7 +550,7 @@ export default function MyPage() {
                     <p className="text-[15px] font-semibold text-[#2C2C2C]">
                       프로필 정보
                     </p>
-                    <p className="mt-1 text-[13px] leading-5 text-[#989898]">
+                    <p className="mt-1 text-[11px] leading-5 text-[#989898] sm:text-[13px]">
                       이름, 이메일, 비밀번호, 학과 정보를 수정할 수 있어요
                     </p>
                   </div>
@@ -697,7 +697,7 @@ export default function MyPage() {
                 <button
                   type="button"
                   onClick={() => router.push('/admin')}
-                  className="group flex cursor-pointer items-center gap-1.5 border-r border-[#D6DDE5] pr-4 text-[12px] font-medium"
+                  className="group hidden cursor-pointer items-center gap-1.5 border-r border-[#D6DDE5] pr-4 text-[12px] font-medium lg:flex"
                 >
                   <LayoutDashboard
                     size={14}

@@ -306,11 +306,11 @@ export default function CalendarEditModal({
         <Pressable onPress={handleClose} className="flex-1" />
         <View
           style={{ height: "65%" }}
-          className="relative rounded-t-3xl border-[0.5px] border-[#D6DDE5]/60 bg-white px-6 pt-8"
+          className="relative rounded-t-3xl border-[0.5px] border-[#D6DDE5]/60 bg-white px-5"
         >
           {isEditingParticipants ? (
-            <View className="flex-1 pt-2 ">
-              <View className="mb-3 h-[55px] justify-center rounded-2xl bg-[#F6F8FA] px-6">
+            <View className="flex-1 ">
+              <View className="mb-3 h-[50px] mt-8 justify-center rounded-2xl bg-[#F6F8FA] px-6">
                 <Text className="text-[16px] font-semibold text-[#2C2C2C]">
                   참여할 인원을 선택해주세요
                 </Text>
@@ -412,15 +412,15 @@ export default function CalendarEditModal({
           ) : (
             <ScrollView
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ paddingTop: 8, paddingBottom: 24 }}
+              contentContainerStyle={{ paddingBottom: 24 }}
             >
-              <View className="mb-3 flex-row gap-3">
+              <View className="mb-3 flex-row gap-3 mt-8">
                 <TextInput
                   value={form.title}
                   onChangeText={(v) => setForm((p) => ({ ...p, title: v }))}
                   placeholder="일정을 입력해주세요"
                   placeholderTextColor="#2C2C2C80"
-                  className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C]"
+                  className="h-[50px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C]"
                 />
                 <ColorPicker
                   value={form.color}
@@ -499,7 +499,7 @@ export default function CalendarEditModal({
               {schedule.teamId && (
                 <Pressable
                   onPress={() => setIsEditingParticipants(true)}
-                  className="mb-3 h-[55px] flex-row items-center justify-between rounded-2xl bg-[#F6F8FA] px-6 active:scale-95"
+                  className="mb-3 h-[50px] flex-row items-center justify-between rounded-2xl bg-[#F6F8FA] px-6 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <View className="flex-row items-center gap-3">
                     <Users size={17} strokeWidth={2.5} color="#2C2C2C" />
@@ -527,10 +527,10 @@ export default function CalendarEditModal({
                 className="w-full rounded-2xl bg-[#F6F8FA] px-6 py-5 text-[16px] font-semibold text-[#2C2C2C]"
               />
 
-              <View className="mb-4 mt-6 flex-row justify-between">
+              <View className="mb-8 mt-6 flex-row justify-between">
                 <Pressable
                   onPress={handleDelete}
-                  className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 active:scale-95"
+                  className="h-11 items-center justify-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#EEF1F5] px-8 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[14px] font-semibold text-[#E22222]">
                     삭제
@@ -582,7 +582,7 @@ export default function CalendarEditModal({
               <View className="mt-4 gap-2.5">
                 <Pressable
                   onPress={() => handleScopeSelect("THIS_INSTANCE")}
-                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 active:scale-95"
+                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[15px] font-semibold text-[#2C2C2C]">
                     이 일정만
@@ -590,7 +590,7 @@ export default function CalendarEditModal({
                 </Pressable>
                 <Pressable
                   onPress={() => handleScopeSelect("THIS_AND_FOLLOWING")}
-                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 active:scale-95"
+                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[15px] font-semibold text-[#2C2C2C]">
                     이 일정부터 이후 일정 모두
@@ -598,7 +598,7 @@ export default function CalendarEditModal({
                 </Pressable>
                 <Pressable
                   onPress={() => handleScopeSelect("ALL_SERIES")}
-                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 active:scale-95"
+                  className="items-center rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA] py-3.5 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-[15px] font-semibold text-[#2C2C2C]">
                     전체 반복 일정

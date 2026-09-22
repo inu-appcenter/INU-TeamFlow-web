@@ -71,7 +71,7 @@ export default function InputField({
               onBlur={onBlur}
               type={typeOption}
               placeholder={placeHolder}
-              className={`h-13.25 w-full rounded-full bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C] outline-none placeholder:text-[#989898] max-[640px]:p-2 max-[640px]:text-[13px] ${
+              className={`max-[640px]h-13.25 h-12 w-full rounded-full bg-[#F6F8FA] px-4 px-5 text-[15px] text-[#2C2C2C] outline-none placeholder:text-[#989898] max-[640px]:py-2 max-[640px]:text-[13px] ${
                 rightElement || check ? 'pr-14' : ''
               }`}
             />
@@ -100,7 +100,7 @@ export default function InputField({
           <select
             value={selectedCollege}
             onChange={(e) => setSelectedCollege(e.target.value)}
-            className="h-12 w-[calc(50%-30px)] rounded-xl bg-[#F6F8FA] px-4 outline-none max-[640px]:p-0 max-[640px]:text-[14px]"
+            className="h-10 w-[calc(50%-30px)] rounded-xl bg-[#F6F8FA] px-4 outline-none max-[640px]:h-12 max-[640px]:p-0 max-[640px]:text-[14px]"
           >
             <option value="">{INPUT_FIELD_TEXT.COLLEGE_SELECT}</option>
 
@@ -114,7 +114,7 @@ export default function InputField({
           <select
             value={value}
             onChange={onChange}
-            className="h-12 w-[calc(50%-30px)] rounded-xl bg-[#F6F8FA] px-4 outline-none max-[640px]:p-0 max-[640px]:text-[14px]"
+            className="h-10 w-[calc(50%-30px)] rounded-xl bg-[#F6F8FA] px-4 outline-none max-[640px]:h-12 max-[640px]:p-0 max-[640px]:text-[14px]"
           >
             <option value="">{INPUT_FIELD_TEXT.DEPARTMENT_SELECT}</option>
 

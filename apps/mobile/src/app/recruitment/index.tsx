@@ -161,7 +161,7 @@ function SearchBar({
               selectedValue={searchType}
               onValueChange={(v) => onSearchTypeChange(v as SearchType)}
               mode="dropdown"
-              style={{ height: 40 }}
+              style={{ height: 80 }}
               dropdownIconColor="#2C2C2C"
             >
               {searchFilter.map((o) => (
@@ -426,7 +426,7 @@ export default function RecruitmentListScreen() {
         )}
 
         {totalPages > 0 && (
-          <View className="mt-4 flex-row items-center justify-center gap-2 py-4">
+          <View className="mt-4 flex-row items-center justify-center gap-3 py-4">
             <Pressable
               onPress={() =>
                 setPage(Math.max(1, blockStart - PAGE_WINDOW_SIZE))
@@ -434,7 +434,7 @@ export default function RecruitmentListScreen() {
               disabled={blockStart === 1}
               className="items-center justify-center transition-transform duration-150 ease-out active:scale-90 disabled:opacity-40"
             >
-              <ChevronLeft size={18} strokeWidth={2.5} color="#2C2C2C99" />
+              <ChevronLeft size={20} strokeWidth={2.5} color="#2C2C2C99" />
             </Pressable>
 
             {visiblePages.map((n) => (
@@ -460,7 +460,7 @@ export default function RecruitmentListScreen() {
               disabled={blockEnd === totalPages}
               className="items-center justify-center transition-transform duration-150 ease-out active:scale-90 disabled:opacity-40"
             >
-              <ChevronRight size={18} strokeWidth={2.5} color="#2C2C2C99" />
+              <ChevronRight size={20} strokeWidth={2.5} color="#2C2C2C99" />
             </Pressable>
           </View>
         )}

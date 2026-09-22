@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Header from '@/components/common/Header';
 
 const pageName = '개인정보처리방침';
@@ -19,15 +20,17 @@ export default function PrivacyPolicy() {
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto mb-10 max-w-[1180px]">
-        <Header
-          pageName={pageName}
-          isSearch={isSearch}
-          isCreate={isCreate}
-          isCategory={isCategory}
-          isBack={false}
-        />
+        <Suspense fallback={<div className="mt-12 mb-4 h-8" />}>
+          <Header
+            pageName={pageName}
+            isSearch={isSearch}
+            isCreate={isCreate}
+            isCategory={isCategory}
+            isBack={false}
+          />
+        </Suspense>
 
-        <article className="mt-6 rounded-2xl bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12">
+        <article className="mt-6 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white px-5 py-8 sm:px-10 sm:py-12">
           {/* 문서 상단 */}
           <header className="border-b border-gray-200 pb-8">
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Header from '@/components/common/Header';
 
 // Header 연결을 위한 입력 공간
@@ -16,15 +17,17 @@ export default function YouthProtectionPolicy() {
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto mb-10 max-w-[1180px]">
-        <Header
-          pageName={pageName}
-          isSearch={isSearch}
-          isCreate={isCreate}
-          isCategory={isCategory}
-          isBack={false}
-        />
+        <Suspense fallback={<div className="mt-12 mb-4 h-8" />}>
+          <Header
+            pageName={pageName}
+            isSearch={isSearch}
+            isCreate={isCreate}
+            isCategory={isCategory}
+            isBack={false}
+          />
+        </Suspense>
 
-        <article className="mt-6 rounded-2xl bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12">
+        <article className="mt-6 rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white px-5 py-8 sm:px-10 sm:py-12">
           <header className="border-b border-gray-200 pb-6">
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
               모이미 청소년 보호정책
