@@ -140,23 +140,36 @@ export function useChatReadEventSubscription(roomId: number) {
             ["chatMessages", "anchor", roomId],
             (old) => {
               if (!old) return fresh;
+
+              // fresh는 "재조회 시점의 최근 N개 창"이라, 그 사이 소켓으로
+              // 로컬에만 먼저 반영된 메시지(예: 방금 보낸 메시지)가 서버
+              // 스냅샷 시점엔 아직 없거나 창 밖으로 밀려 있을 수 있다.
+              // fresh로만 덮어쓰면 그 메시지가 사라지므로, old/fresh를
+              // 합집합으로 병합한다.
+              const merged = new Map<number, ChatMessageResponse>();
+              old.messages.forEach((m) => merged.set(m.chatMessageId, m));
+              fresh.messages.forEach((f) => {
+                const local = merged.get(f.chatMessageId);
+                merged.set(
+                  f.chatMessageId,
+                  local
+                    ? {
+                        ...f,
+                        readCount: Math.max(local.readCount, f.readCount),
+                      }
+                    : f
+                );
+              });
+
               return {
                 ...fresh,
                 lastReadMessageId: Math.max(
                   old.lastReadMessageId ?? 0,
                   fresh.lastReadMessageId ?? 0
                 ),
-                messages: fresh.messages.map((f) => {
-                  const local = old.messages.find(
-                    (m) => m.chatMessageId === f.chatMessageId
-                  );
-                  return local
-                    ? {
-                        ...f,
-                        readCount: Math.max(local.readCount, f.readCount),
-                      }
-                    : f;
-                }),
+                messages: Array.from(merged.values()).sort(
+                  (a, b) => a.chatMessageId - b.chatMessageId
+                ),
               };
             }
           );
