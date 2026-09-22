@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLogin } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useFcm } from '@/hooks/useFcm';
+import posthog from 'posthog-js';
 
 export default function Login() {
   const router = useRouter();
@@ -52,6 +53,7 @@ export default function Login() {
 
           try {
             await refetchUser();
+            posthog.capture('login_completed');
           } catch (error) {
             console.error('사용자 정보 조회 실패:', error);
           }

@@ -14,6 +14,7 @@ import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
 import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { getTeamRoleLabel } from '@/utils/teamRole';
+import posthog from 'posthog-js';
 
 type Step = 'team' | 'members' | 'name';
 
@@ -107,6 +108,10 @@ export default function GroupChatCreateModal({ onClose }: Props) {
               roomName: roomName.trim() || null,
             });
 
+      posthog.capture('chat_room_created', {
+        chat_room_type: room.chatRoomType,
+        member_count: memberIds.length + 1,
+      });
       onClose();
       router.push(
         `/chat/${room.chatRoomId}?roomName=${encodeURIComponent(room.roomName)}&roomType=${room.chatRoomType}`

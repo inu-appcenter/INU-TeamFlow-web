@@ -24,6 +24,7 @@ import { useFcm } from '@/hooks/useFcm';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import PolicyModal from '@/components/register/PolicyModal';
 import type { PolicyType } from '@moimi/core/types/policy';
+import posthog from 'posthog-js';
 
 type RegisterStep = 'terms' | 'info';
 
@@ -159,6 +160,9 @@ export default function Register() {
     // 4. AuthContext 사용자 상태 갱신
     try {
       await refetchUser();
+      posthog.capture('account_registered', {
+        notification_enabled: notificationEnabled,
+      });
     } catch (error) {
       console.error('사용자 정보 조회 실패:', error);
     }

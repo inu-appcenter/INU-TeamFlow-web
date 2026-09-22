@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 allowBuilds:
   "@firebase/util": false
+  core-js: true
   protobufjs: false
   sharp: false
   unrs-resolver: false
