@@ -12,6 +12,7 @@ import { useChatRooms } from '@moimi/core/hooks/chat/useChatRooms';
 import { ChatRoomListSkeleton } from '@/components/skeleton/ChatListSkeleton';
 import { formatChatTime } from '@/utils/date/formatChatTime';
 import ChatRoomAvatar from '@/components/chat/ChatRoomAvatar';
+import { useChatRoomListSubscription } from '@/hooks/chat/useChatRoomListSubscription';
 
 type ChatTab = 'TEAM' | 'DIRECT';
 
@@ -21,6 +22,7 @@ const TABS: { key: ChatTab; label: string }[] = [
 ];
 
 export default function ChatListPage() {
+  useChatRoomListSubscription();
   const [activeTab, setActiveTab] = useState<ChatTab>('TEAM');
   const { data: teamRooms = [], isLoading: isTeamLoading } =
     useChatRooms('TEAM');

@@ -113,3 +113,17 @@ export interface ChatRoomInviteRequest {
 }
 
 // DELETE /chat-rooms/{roomId}/members/me — 채팅방 퇴장 (body 없음)
+
+// STOMP SUB /sub/users/{userId}/chat-rooms
+export interface ChatRoomListPushPayload {
+  roomId: number;
+  lastMessage: {
+    content: string;
+    senderId: number;
+    senderName: string;
+    sentAt: string;
+  };
+  updatedAt: string;
+  unreadCount: number;
+  roomType: ChatRoomType;
+}
