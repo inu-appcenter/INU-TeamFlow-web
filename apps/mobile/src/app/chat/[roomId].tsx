@@ -436,7 +436,7 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
         </Pressable>
       </View>
 
-      <View className="flex-1 bg-[#F0F2F5]">
+      <View className="flex-1 bg-[#F0F2F5] px-1">
         {isLoading || !anchor ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator color="#989898" />

@@ -101,3 +101,17 @@ export const subscribeChatRoomRead = (
 
   return c.subscribe(`/sub/chat-rooms/${roomId}/read`, onMessage);
 };
+
+export const subscribeUserChatRooms = (
+  userId: number,
+  onMessage: (message: IMessage) => void
+): StompSubscription | null => {
+  const c = getChatClient();
+
+  if (!c.connected) {
+    console.warn('STOMP 미연결 상태에서 subscribe 시도 - 무시됨');
+    return null;
+  }
+
+  return c.subscribe(`/sub/users/${userId}/chat-rooms`, onMessage);
+};

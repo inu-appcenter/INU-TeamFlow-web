@@ -18,6 +18,7 @@ import { useChatRooms } from "@moimi/core/hooks/chat/useChatRooms";
 import { formatChatTime } from "@/utils/date/formatChatTime";
 import ChatRoomAvatar from "@/components/chatRoomAvatar";
 import GroupChatCreateModal from "@/components/GroupChatCreateModal";
+import { useChatRoomListSubscription } from "@/hooks/chat/useChatRoomListSubscription";
 
 type ChatTab = "TEAM" | "DIRECT";
 
@@ -27,6 +28,7 @@ const TABS: { key: ChatTab; label: string }[] = [
 ];
 
 export default function ChatScreen() {
+  useChatRoomListSubscription();
   const [activeTab, setActiveTab] = useState<ChatTab>("TEAM");
   const { data: teamRooms = [], isLoading: isTeamLoading } =
     useChatRooms("TEAM");
