@@ -43,6 +43,7 @@ import { useEffect, useState, useMemo } from 'react';
 import ScheduleListItem from '@/components/calendar/ScheduleListItem';
 import MonthGridWithEvents from '@/components/calendar/MonthGridWithEvents';
 import { TeamDetailSkeleton } from '@/components/skeleton';
+import posthog from 'posthog-js';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -196,6 +197,10 @@ export default function TeamDetail() {
         participants: teamMembers.map((m) => m.teamMemberId),
         ...(request.recurrence && { recurrence: request.recurrence }),
       });
+      posthog.capture('team_event_created', {
+        is_all_day: request.isAllDay,
+        is_recurring: Boolean(request.recurrence),
+      });
     } catch (err) {
       console.error('일정 생성 실패', err);
     }
@@ -247,6 +252,7 @@ export default function TeamDetail() {
   const handleCreateVote = async (request: EventVoteCreateRequest) => {
     try {
       await createVote(request);
+      posthog.capture('team_vote_created');
     } catch (err) {
       console.error('투표 생성 실패', err);
     }

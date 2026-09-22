@@ -4,11 +4,13 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { getMyProfile } from '@moimi/core/api/user';
 import type { UserMeResponse } from '@moimi/core/types/user';
+import posthog from 'posthog-js';
 
 interface AuthContextValue {
   user: UserMeResponse | null;
@@ -23,14 +25,30 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserMeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const identifiedUserId = useRef<string | null>(null);
 
   const fetchUser = async () => {
     try {
       const me = await getMyProfile();
+
+      if (me.userId != null) {
+        const userId = String(me.userId);
+
+        if (identifiedUserId.current !== userId) {
+          if (identifiedUserId.current) posthog.reset();
+
+          posthog.identify(userId);
+          identifiedUserId.current = userId;
+        }
+      }
+
       setUser(me);
-    } catch {
+    } catch (error) {
       localStorage.removeItem('accessToken');
+      posthog.reset();
+      identifiedUserId.current = null;
       setUser(null);
+      throw error;
     }
   };
 
@@ -42,7 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    fetchUser().finally(() => setIsLoading(false));
+    fetchUser()
+      .catch(() => undefined)
+      .finally(() => setIsLoading(false));
   }, []);
 
   const refetchUser = async () => {
@@ -50,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    posthog.reset();
+    identifiedUserId.current = null;
     localStorage.removeItem('accessToken');
     setUser(null);
   };

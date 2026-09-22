@@ -9,6 +9,7 @@ import InfoPostForm, {
 import { useCreateInfoPost } from '@moimi/core/hooks/useInfoPostQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
+import posthog from 'posthog-js';
 
 export default function InfoPostCreatePage() {
   const router = useRouter();
@@ -29,6 +30,10 @@ export default function InfoPostCreatePage() {
       title: form.title,
       content: form.content,
       imageKeys: form.imageKeys,
+    });
+    posthog.capture('info_post_created', {
+      category: form.category,
+      image_count: form.imageKeys.length,
     });
     router.replace('/infoPost');
   };

@@ -25,6 +25,7 @@ import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
 import type { ChatMessageResponse } from '@moimi/core/types/chat';
 import ChatRoomDrawer from '@/components/chat/ChatRoomDrawer';
 import ChatRoomAvatar from '@/components/chat/ChatRoomAvatar';
+import posthog from 'posthog-js';
 
 export default function ChatRoomPage() {
   const params = useParams();
@@ -200,6 +201,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   const handleSend = () => {
     if (!draft.trim()) return;
     sendMessage({ messageType: 'TEXT', content: draft });
+    posthog.capture('chat_message_sent', { message_type: 'TEXT' });
     setDraft('');
   };
 
@@ -212,6 +214,7 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
 
     const imageKey = await uploadImage(file);
     sendMessage({ messageType: 'IMAGE', imageKey });
+    posthog.capture('chat_message_sent', { message_type: 'IMAGE' });
   };
 
   const roomType =

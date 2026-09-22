@@ -7,6 +7,7 @@ import InfoPostForm, {
 } from '@/components/infoPost/InfoPostForm';
 import { useInfoPostDetail, useUpdateInfoPost } from '@moimi/core/hooks/useInfoPostQuery';
 import { getImageKeyFromUrl } from '@/utils/image/getImageKeyFromUrl';
+import posthog from 'posthog-js';
 
 export default function InfoPostEditPage() {
   const router = useRouter();
@@ -62,6 +63,9 @@ export default function InfoPostEditPage() {
         content: form.content,
         imageKeys: form.imageKeys,
       },
+    });
+    posthog.capture('info_post_updated', {
+      image_count: form.imageKeys.length,
     });
 
     router.push(`/infoPost/${infoPostId}`);

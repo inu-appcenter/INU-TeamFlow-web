@@ -5,6 +5,7 @@ import { useCreateTeam } from '@moimi/core/hooks/team/useTeamQuery';
 import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import posthog from 'posthog-js';
 
 export default function TeamCreatePage() {
   const router = useRouter();
@@ -32,6 +33,10 @@ export default function TeamCreatePage() {
         link: form.link || undefined,
         sns: form.sns || undefined,
         imageKey: form.imageUrl || undefined,
+      });
+      posthog.capture('team_created', {
+        category: form.category,
+        has_image: Boolean(form.imageUrl),
       });
       router.push('/team');
     } catch (err) {

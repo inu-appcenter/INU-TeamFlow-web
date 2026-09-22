@@ -18,6 +18,7 @@ import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
 import type { ReportRequest } from '@moimi/core/types/report';
 import ScrapButton from '@/components/common/ScrapButton';
+import posthog from 'posthog-js';
 
 export default function InfoPostDetailPage() {
   const router = useRouter();
@@ -42,6 +43,9 @@ export default function InfoPostDetailPage() {
 
     try {
       await deleteInfoPost(infoPostId);
+      posthog.capture('info_post_deleted', {
+        category: infoPost?.category,
+      });
       router.push('/infoPost');
     } catch (error) {
       console.error('정보글 삭제 실패', error);

@@ -8,6 +8,7 @@ import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificat
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import posthog from 'posthog-js';
 
 export default function RecruitmentCreatePage() {
   const router = useRouter();
@@ -34,6 +35,11 @@ export default function RecruitmentCreatePage() {
         teamId: form.teamId || undefined,
         targetMemberCount: form.targetMemberCount,
         endAt: form.endAt,
+      });
+      posthog.capture('recruitment_created', {
+        category: form.category,
+        has_info_post: Boolean(form.announcementId),
+        target_member_count: form.targetMemberCount,
       });
 
       router.push('/recruitment');
