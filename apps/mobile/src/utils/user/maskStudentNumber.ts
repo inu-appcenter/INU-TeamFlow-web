@@ -1,4 +1,6 @@
-export function maskStudentNumber(studentNumber: string): string {
+export function maskStudentNumber(studentNumber?: string | null): string {
+  if (!studentNumber) return "";
+
   const len = studentNumber.length;
   if (len < 7) return studentNumber;
 
