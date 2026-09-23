@@ -4,6 +4,7 @@ import type { IMessage } from "@stomp/stompjs";
 import { useChatSocketContext } from "@/contexts/ChatSocketContext";
 import { useMyInfo } from "@moimi/core/hooks/useAuthQuery";
 import { getChatClient, subscribeChatRoomRead } from "@/lib/chatSocket";
+import { getChatMessageAnchor } from "@moimi/core/api/chat";
 import type {
   ChatMessageResponse,
   ChatMessageAnchorResponse,
@@ -131,21 +132,16 @@ export function useChatReadEventSubscription(roomId: number) {
         : RECONCILE_DEBOUNCE_MS;
       debounceTimerRef.current = setTimeout(async () => {
         try {
-          const fresh =
-            await queryClientRef.current.fetchQuery<ChatMessageAnchorResponse>({
-              queryKey: ["chatMessages", "anchor", roomId],
-            });
+          // queryClient.fetchQuery()는 성공 시 결과를 캐시에 바로 써버려서
+          // 그 다음 setQueryData의 old가 이미 fresh와 같아지고 union merge가
+          // 무의미해진다. 캐시를 건드리지 않는 순수 API 호출을 직접 쓴다.
+          const fresh = await getChatMessageAnchor(roomId);
 
           queryClientRef.current.setQueryData<ChatMessageAnchorResponse>(
             ["chatMessages", "anchor", roomId],
             (old) => {
               if (!old) return fresh;
 
-              // fresh는 "재조회 시점의 최근 N개 창"이라, 그 사이 소켓으로
-              // 로컬에만 먼저 반영된 메시지(예: 방금 보낸 메시지)가 서버
-              // 스냅샷 시점엔 아직 없거나 창 밖으로 밀려 있을 수 있다.
-              // fresh로만 덮어쓰면 그 메시지가 사라지므로, old/fresh를
-              // 합집합으로 병합한다.
               const merged = new Map<number, ChatMessageResponse>();
               old.messages.forEach((m) => merged.set(m.chatMessageId, m));
               fresh.messages.forEach((f) => {
