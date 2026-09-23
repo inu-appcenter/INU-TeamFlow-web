@@ -415,16 +415,17 @@ export default function ChatRoomDrawer({
                     })}
                   </div>
                 )}
-
-                {roomType === 'GROUP' && selectedIds.size > 0 && (
-                  <button
-                    onClick={handleAddMembers}
-                    disabled={isAdding}
-                    className="mx-3 mt-1 w-full cursor-pointer rounded-xl bg-[#5E92F0] py-2 text-sm font-semibold text-white disabled:opacity-50"
-                  >
-                    {selectedIds.size}명 초대하기
-                  </button>
-                )}
+                <div className="mx-3 mb-2">
+                  {roomType === 'GROUP' && selectedIds.size > 0 && (
+                    <button
+                      onClick={handleAddMembers}
+                      disabled={isAdding}
+                      className="w-full cursor-pointer rounded-xl bg-[#5E92F0] py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      {selectedIds.size}명 초대하기
+                    </button>
+                  )}
+                </div>
 
                 <div className="flex flex-col px-2">
                   {/* 초대하기 슬롯: 멤버 목록 첫 줄 */}

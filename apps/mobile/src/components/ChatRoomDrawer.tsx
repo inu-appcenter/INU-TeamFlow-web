@@ -326,6 +326,26 @@ export default function ChatRoomDrawer({
             <Pressable style={{ flex: 1 }} onPress={onClose} />
           </Animated.View>
 
+          {errorMessage ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                top: 100,
+                left: 0,
+                right: 0,
+                alignItems: "center",
+                zIndex: 50,
+              }}
+            >
+              <View className="rounded-full bg-[#2C2C2C] px-5 py-2">
+                <Text className="text-sm font-semibold text-white">
+                  {errorMessage}
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
           {/* 드로어 패널 */}
           <Animated.View
             style={{
@@ -341,22 +361,6 @@ export default function ChatRoomDrawer({
               transform: [{ translateX }],
             }}
           >
-            {errorMessage ? (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 100,
-                  alignSelf: "center",
-                  zIndex: 50,
-                }}
-                className="rounded-full bg-[#2C2C2C] px-5 py-2"
-              >
-                <Text className="text-sm font-semibold text-white">
-                  {errorMessage}
-                </Text>
-              </View>
-            ) : null}
-
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
               <Pressable
                 onPress={() => {
@@ -519,7 +523,7 @@ export default function ChatRoomDrawer({
                       onPress={handleAddMembers}
                       disabled={isAdding}
                       style={{ opacity: isAdding ? 0.5 : 1 }}
-                      className="mx-3 mt-2 items-center rounded-xl bg-[#5E92F0] py-2"
+                      className="mx-3 mb-2 items-center rounded-xl bg-[#5E92F0] py-2"
                     >
                       <Text className="text-sm font-semibold text-white">
                         {selectedIds.size}명 초대하기
