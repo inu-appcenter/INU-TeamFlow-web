@@ -18,7 +18,7 @@ export function useChatRoomAvailableMembers(
     queryKey: ["chatRoomAvailableMembers", roomId, keyword],
     queryFn: async () => {
       const { data } = await getApiClient().get<AvailableMember[]>(
-        `/chat-rooms/${roomId}/invite`,
+        `/chat-rooms/${roomId}/available-members`,
         { params: { keyword } }
       );
       return data;

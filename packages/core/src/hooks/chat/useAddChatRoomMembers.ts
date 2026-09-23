@@ -8,7 +8,9 @@ export function useAddChatRoomMembers(roomId: number) {
 
   return useMutation({
     mutationFn: async (userIds: number[]) => {
-      await getApiClient().post(`/chat-rooms/${roomId}/members`, { userIds });
+      await getApiClient().post(`/chat-rooms/${roomId}/invite`, {
+        memberIds: userIds,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chatRoomMembers", roomId] });
