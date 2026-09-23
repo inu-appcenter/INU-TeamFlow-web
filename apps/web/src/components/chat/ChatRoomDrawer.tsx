@@ -420,7 +420,7 @@ export default function ChatRoomDrawer({
                   <button
                     onClick={handleAddMembers}
                     disabled={isAdding}
-                    className="mt-2 w-full cursor-pointer rounded-xl bg-[#5E92F0] py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    className="mx-3 mt-1 w-full cursor-pointer rounded-xl bg-[#5E92F0] py-2 text-sm font-semibold text-white disabled:opacity-50"
                   >
                     {selectedIds.size}명 초대하기
                   </button>
