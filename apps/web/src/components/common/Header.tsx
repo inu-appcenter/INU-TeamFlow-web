@@ -84,14 +84,7 @@ export default function Header({
   const parentRoute = pathname.split('/').filter(Boolean).at(-2) ?? '';
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const { showErrorMessage } = useErrorToast(
-    1800,
-    searchParams.get('error') === 'school-verification-required'
-      ? '학교 인증 후 이용 가능합니다'
-      : ''
-  );
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   // 선택된 탭을 가로 스크롤 영역 가운데로 (모바일 슬라이드용)
@@ -108,6 +101,11 @@ export default function Header({
     <main>
       {/* 헤더 */}
       <header className="mt-12 mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {errorMessage && (
+          <div className="animate-modal-pop absolute top-32 left-1/2 z-300 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+            {errorMessage}
+          </div>
+        )}
         <div className="flex shrink-0 items-center gap-4">
           {isBack && (
             <button
