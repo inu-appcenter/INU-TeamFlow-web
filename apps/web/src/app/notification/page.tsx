@@ -397,11 +397,13 @@ export default function NotificationPage() {
                       </time>
                     </div>
 
-                    <ChevronRight
-                      size={22}
-                      strokeWidth={2.5}
-                      className="shrink-0 text-[#989898]/60 transition-transform duration-150 group-hover:translate-x-0.5"
-                    />
+                    {notification.type !== 'REPORT' && (
+                      <ChevronRight
+                        size={22}
+                        strokeWidth={2.5}
+                        className="shrink-0 text-[#989898]/60 transition-transform duration-150 group-hover:translate-x-0.5"
+                      />
+                    )}
                   </button>
                 </article>
               );

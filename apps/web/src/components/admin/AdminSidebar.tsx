@@ -4,20 +4,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
-import { LayoutDashboard, Mail, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Mail, ShieldAlert, UserX } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/admin', label: '대시보드', icon: LayoutDashboard, exact: true },
-  {
-    href: '/admin/inquiries',
-    label: '문의 관리',
-    icon: Mail,
-    exact: false,
-  },
+  { href: '/admin/inquiries', label: '문의 관리', icon: Mail, exact: false },
   {
     href: '/admin/reports',
     label: '신고 관리',
     icon: ShieldAlert,
+    exact: false,
+  },
+  {
+    href: '/admin/suspended-users',
+    label: '정지 계정',
+    icon: UserX,
     exact: false,
   },
 ] as const;

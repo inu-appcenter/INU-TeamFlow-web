@@ -440,12 +440,13 @@ export default function NotificationScreen() {
                         {formatDate(notification.createdAt)}
                       </Text>
                     </View>
-
-                    <ChevronRight
-                      size={20}
-                      strokeWidth={2.5}
-                      color="#98989899"
-                    />
+                    {notification.type !== "REPORT" && (
+                      <ChevronRight
+                        size={20}
+                        strokeWidth={2.5}
+                        color="#98989899"
+                      />
+                    )}
                   </Pressable>
                 </View>
               );
