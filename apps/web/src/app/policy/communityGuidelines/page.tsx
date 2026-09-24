@@ -258,7 +258,7 @@ export default function CommunityGuidelines() {
             </section>
           )}
 
-          {/* 제재 문의 */}
+          {/* 정지 문의 */}
           {appealSection && (
             <section className="border-t border-gray-200 py-8">
               <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">

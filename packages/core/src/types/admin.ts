@@ -25,13 +25,13 @@ export type Page<T> = {
   sort: PageSort;
 };
 
-export type DashboardItemType = 'REPORT' | 'INQUIRY';
+export type DashboardItemType = "REPORT" | "INQUIRY";
 
 export type DashboardItem = {
   itemType: DashboardItemType;
   refId: number; // reportId 또는 inquiryId
   detail: string;
-  status: 'PENDING' | 'RESOLVED';
+  status: "PENDING" | "RESOLVED";
   createdAt: string;
 };
 
@@ -39,3 +39,26 @@ export type DashboardResponse = {
   summary: { total: number; pending: number; resolved: number };
   items: Page<DashboardItem>;
 };
+
+// 정지 계정 ---------------------------------
+
+export type SanctionType = "SUSPEND" | "BAN";
+
+export const SANCTION_TYPE_LABEL: Record<SanctionType, string> = {
+  SUSPEND: "정지",
+  BAN: "영구정지",
+};
+
+export type SuspendedUserItem = {
+  userId: number;
+  username: string;
+  name: string;
+  action: SanctionType;
+  suspendedUntil: string | null; // BAN이면 null
+  reportId: number; // release API에 넘길 값
+  reason: string;
+  handledBy: string;
+  handledAt: string;
+};
+
+export type SuspendedUserListResponse = Page<SuspendedUserItem>;

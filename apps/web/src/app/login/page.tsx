@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ChevronRight, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { ComponentProps } from 'react';
+import { isAxiosError } from 'axios';
 
 import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
@@ -14,6 +15,35 @@ import { useLogin } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useFcm } from '@/hooks/useFcm';
 import posthog from 'posthog-js';
+
+type LoginErrorBody = {
+  code?: number;
+  message?: string;
+};
+
+const INVALID_CREDENTIALS_MESSAGE = '아이디 또는 비밀번호가 올바르지 않습니다';
+const SANCTIONED_FALLBACK_MESSAGE = '이용이 정지된 계정이에요';
+
+// 403 = 정지/영구정지 계정 → 서버 메시지 그대로 노출
+const getLoginError = (
+  error: unknown
+): { message: string; isSanctioned: boolean } => {
+  if (!isAxiosError<LoginErrorBody>(error)) {
+    return { message: INVALID_CREDENTIALS_MESSAGE, isSanctioned: false };
+  }
+
+  const status = error.response?.status;
+  const body = error.response?.data;
+
+  if (status === 403 || body?.code === 403) {
+    return {
+      message: body?.message ?? SANCTIONED_FALLBACK_MESSAGE,
+      isSanctioned: true,
+    };
+  }
+
+  return { message: INVALID_CREDENTIALS_MESSAGE, isSanctioned: false };
+};
 
 export default function Login() {
   const router = useRouter();
@@ -66,9 +96,12 @@ export default function Login() {
 
           router.replace(ROUTES.MAIN);
         },
-        onError: () => {
-          showErrorMessage('아이디 또는 비밀번호가 올바르지 않습니다');
-          setPassword('');
+        onError: (error) => {
+          const { message, isSanctioned } = getLoginError(error);
+          showErrorMessage(message);
+
+          // 비밀번호가 틀린 경우에만 비움 (정지 계정은 비번 자체는 맞음)
+          if (!isSanctioned) setPassword('');
         },
       }
     );

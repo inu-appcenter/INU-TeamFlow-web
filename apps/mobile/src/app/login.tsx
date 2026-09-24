@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
+import { isAxiosError } from "axios";
 import { useLogin } from "@moimi/core/hooks/useAuthQuery";
 import { LOGIN_TEXT } from "@moimi/core/constants/messages";
 import { ROUTES } from "@moimi/core/constants/routes";
@@ -17,6 +18,35 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Image } from "react-native";
 
 const LOGO = require("@/assets/images/logo.webp");
+
+type LoginErrorBody = {
+  code?: number;
+  message?: string;
+};
+
+const INVALID_CREDENTIALS_MESSAGE = "아이디 또는 비밀번호가 올바르지 않습니다";
+const SANCTIONED_FALLBACK_MESSAGE = "이용이 정지된 계정이에요";
+
+// 403 = 정지/영구정지 계정 → 서버 메시지 그대로 노출
+const getLoginError = (
+  error: unknown
+): { message: string; isSanctioned: boolean } => {
+  if (!isAxiosError<LoginErrorBody>(error)) {
+    return { message: INVALID_CREDENTIALS_MESSAGE, isSanctioned: false };
+  }
+
+  const status = error.response?.status;
+  const body = error.response?.data;
+
+  if (status === 403 || body?.code === 403) {
+    return {
+      message: body?.message ?? SANCTIONED_FALLBACK_MESSAGE,
+      isSanctioned: true,
+    };
+  }
+
+  return { message: INVALID_CREDENTIALS_MESSAGE, isSanctioned: false };
+};
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -52,9 +82,12 @@ export default function LoginScreen() {
           await login(data.accessToken);
           router.replace("/" as never); // 모바일은 (tabs) 그룹이 루트 경로라 "/main"이 아니라 "/"
         },
-        onError: () => {
-          showError("아이디 또는 비밀번호가 올바르지 않습니다");
-          setPassword("");
+        onError: (error) => {
+          const { message, isSanctioned } = getLoginError(error);
+          showError(message);
+
+          // 비밀번호가 틀린 경우에만 비움 (정지 계정은 비번 자체는 맞음)
+          if (!isSanctioned) setPassword("");
         },
       }
     );
@@ -66,9 +99,9 @@ export default function LoginScreen() {
       className="flex-1 justify-center bg-[#F0F2F5] px-5"
     >
       {errorMessage && (
-        <View className="absolute left-0 right-0 top-32 z-50 items-center">
+        <View className="absolute left-0 right-0 top-32 z-50 items-center px-6">
           <View className="rounded-full bg-[#2C2C2C] px-5 py-2">
-            <Text className="text-sm font-semibold text-white">
+            <Text className="text-center text-sm font-semibold text-white">
               {errorMessage}
             </Text>
           </View>
@@ -79,7 +112,8 @@ export default function LoginScreen() {
         style={{
           height: 30,
           width: 120,
-          marginBottom: 30,
+          marginBottom: 25,
+          marginTop: -20,
           alignSelf: "center",
         }}
         resizeMode="contain"

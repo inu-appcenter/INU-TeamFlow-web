@@ -11,6 +11,7 @@ import {
   Check,
 } from 'lucide-react';
 import Card from '@/components/main/Card';
+import ReleaseSanctionButton from '@/components/admin/ReleaseSanctionButton';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 import {
   useAdminReports,
@@ -158,6 +159,13 @@ function ReportActionForm({
 
   // 이미 처리된 신고는 수정할 수 없음 (백엔드에 처리 내용 수정 API가 없음) — 읽기 전용으로만 표시
   const isReadOnly = detail.status === 'RESOLVED';
+
+  // 처리 완료 + 정지/영구정지가 부과된 신고만 해제 가능
+  // (로컬 state가 아니라 서버에 저장된 detail.userAction 기준)
+  const canRelease =
+    isReadOnly &&
+    (detail.userAction?.action === 'SUSPEND' ||
+      detail.userAction?.action === 'BAN');
 
   const isSubmitDisabled =
     isReadOnly ||
@@ -313,11 +321,19 @@ function ReportActionForm({
         <button
           onClick={onClose}
           className={`cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#EEF1F5] py-2.5 text-sm font-medium text-[#2C2C2C] ${
-            isReadOnly ? 'w-full' : 'flex-1'
+            isReadOnly && !canRelease ? 'w-full' : 'flex-1'
           }`}
         >
           닫기
         </button>
+        {canRelease && (
+          <ReleaseSanctionButton
+            reportId={detail.reportId}
+            targetName={detail.targetUser?.name ?? modalTitle}
+            className="flex-1"
+            onReleased={onClose}
+          />
+        )}
         {!isReadOnly && (
           <button
             onClick={handleSubmit}
