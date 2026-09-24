@@ -430,6 +430,8 @@ export default function RecruitmentForm({
                 </div>
                 <input
                   type="number"
+                  min={1}
+                  step={1}
                   value={form.targetMemberCount}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -487,6 +489,13 @@ export default function RecruitmentForm({
                     }
                     if (!form.targetMemberCount) {
                       showErrorMessage('모집 인원을 입력해주세요');
+                      return;
+                    }
+                    if (
+                      form.targetMemberCount < 1 ||
+                      !Number.isInteger(form.targetMemberCount)
+                    ) {
+                      showErrorMessage('올바른 모집 인원을 입력해주세요');
                       return;
                     }
                     if (!form.teamId) {
