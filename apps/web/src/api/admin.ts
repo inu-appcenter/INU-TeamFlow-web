@@ -1,5 +1,8 @@
 import axiosInstance from '@/lib/axiosInstance';
-import type { DashboardResponse } from '@moimi/core/types/admin';
+import type {
+  DashboardResponse,
+  SuspendedUserListResponse,
+} from '@moimi/core/types/admin';
 import type {
   ReportSummaryResponse,
   ReportDetailResponse,
@@ -37,6 +40,16 @@ export const handleAdminReport = (
 ) =>
   axiosInstance
     .patch<void>(`/admin/reports/${reportId}`, body)
+    .then((res) => res.data);
+
+export const releaseReportSanction = (reportId: number) =>
+  axiosInstance
+    .patch<void>(`/admin/reports/${reportId}/release`)
+    .then((res) => res.data);
+
+export const getSuspendedUsers = (params?: { page?: number; size?: number }) =>
+  axiosInstance
+    .get<SuspendedUserListResponse>('/admin/users/suspended', { params })
     .then((res) => res.data);
 
 export const getAdminInquiries = (params?: {
