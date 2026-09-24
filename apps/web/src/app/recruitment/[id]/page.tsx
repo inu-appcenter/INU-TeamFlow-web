@@ -23,7 +23,6 @@ import ScrapButton from '@/components/common/ScrapButton';
 export default function RecruitmentDetail() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
 
   const recruitmentId = Number(params.id);
 
@@ -41,23 +40,8 @@ export default function RecruitmentDetail() {
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
 
-  const { errorMessage, showErrorMessage, setErrorMessage } = useErrorToast(
-    1800,
-    searchParams.get('error') === 'school-verification-required'
-      ? '학교 인증 후 이용 가능합니다'
-      : ''
-  );
+  const { errorMessage, showErrorMessage } = useErrorToast();
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
-
-  useEffect(() => {
-    if (!errorMessage) return;
-
-    router.replace(`/recruitment/${recruitmentId}`);
-
-    const timer = setTimeout(() => setErrorMessage(''), 1800);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   if (recruitment && scrapSyncedFor !== recruitment.recruitmentId) {
     setScrapSyncedFor(recruitment.recruitmentId);

@@ -24,30 +24,13 @@ const PAGE_SIZE = 20;
 const PAGE_WINDOW_SIZE = 5;
 
 export default function Recruitment() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState('');
   const [debouncedKeyword, setDebouncedKeyword] = useState('');
   const [searchType, setSearchType] = useState('title');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [page, setPage] = useState(1); // 화면 표시는 1-based
 
-  const { errorMessage, setErrorMessage } = useErrorToast(
-    1800,
-    searchParams.get('error') === 'school-verification-required'
-      ? '학교 인증 후 이용 가능합니다'
-      : ''
-  );
-
-  useEffect(() => {
-    if (!errorMessage) return;
-
-    router.replace('/recruitment');
-
-    const timer = setTimeout(() => setErrorMessage(''), 1800);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { errorMessage, showErrorMessage } = useErrorToast();
 
   // keyword가 바뀔 때마다 바로 서버로 쏘지 않고 300ms 디바운스
   useEffect(() => {
@@ -117,7 +100,7 @@ export default function Recruitment() {
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       {errorMessage && (
-        <div className="animate-modal-pop fixed top-32 left-1/2 z-100 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
+        <div className="animate-modal-pop absolute top-32 left-1/2 z-300 -translate-x-1/2 rounded-full bg-[#2C2C2C] px-5 py-2 text-sm font-semibold whitespace-nowrap text-white">
           {errorMessage}
         </div>
       )}

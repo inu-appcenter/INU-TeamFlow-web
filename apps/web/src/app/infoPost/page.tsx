@@ -6,7 +6,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getInfoPosts } from '@moimi/core/api/infoPost';
 import { infoPostCategoryFilterOptions } from '@moimi/core/constants/infoPost';
 import { infoPostKeys, useInfoPosts } from '@moimi/core/hooks/useInfoPostQuery';
-import type { GetInfoPostsParams, InfoPostCategory } from '@moimi/core/types/infoPost';
+import type {
+  GetInfoPostsParams,
+  InfoPostCategory,
+} from '@moimi/core/types/infoPost';
 import Header from '@/components/common/Header';
 import ContentCard from '@/components/common/ContentCard';
 import { formatDate } from '@/utils/date/formatDate';
