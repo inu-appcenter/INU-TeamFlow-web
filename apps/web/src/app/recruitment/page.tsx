@@ -1,11 +1,11 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRecruitments } from '@moimi/core/hooks/useRecruitmentQuery';
 import { getDday } from '@/utils/date/getDday';
 import { formatDate } from '@/utils/date/formatDate';
+import { usePostListState, type PostListState } from '@/hooks/usePostListState';
 import { categoryFilterOptions } from '@moimi/core/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import Header from '@/components/common/Header';
@@ -23,37 +23,69 @@ const isCategory = true;
 const PAGE_SIZE = 20;
 const PAGE_WINDOW_SIZE = 5;
 
+const INITIAL_LIST_STATE: PostListState = {
+  page: 1,
+  keyword: '',
+  queryKeyword: '',
+  searchType: 'title',
+  selectedCategory: 'ALL',
+};
+
 export default function Recruitment() {
-  const [keyword, setKeyword] = useState('');
-  const [debouncedKeyword, setDebouncedKeyword] = useState('');
-  const [searchType, setSearchType] = useState('title');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [page, setPage] = useState(1); // 화면 표시는 1-based
+  const [listState, setListState, isRestored] = usePostListState(
+    'recruitment:list',
+    INITIAL_LIST_STATE
+  );
+
+  const {
+    page,
+    keyword,
+    queryKeyword: debouncedKeyword,
+    searchType,
+    selectedCategory,
+  } = listState;
 
   const { errorMessage, showErrorMessage } = useErrorToast();
-
+  const setPage = (nextPage: number) => {
+    setListState((prev) => ({ ...prev, page: nextPage }));
+  };
   // keyword가 바뀔 때마다 바로 서버로 쏘지 않고 300ms 디바운스
   useEffect(() => {
-    const timer = setTimeout(
-      () => setDebouncedKeyword(keyword.replace(/\s/g, '')),
-      300
-    );
-    return () => clearTimeout(timer);
-  }, [keyword]);
+    const timer = window.setTimeout(() => {
+      const nextKeyword = keyword.replace(/\s/g, '');
+
+      setListState((prev) =>
+        prev.queryKeyword === nextKeyword
+          ? prev
+          : { ...prev, queryKeyword: nextKeyword }
+      );
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [keyword, setListState]);
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    setPage(1);
+    setListState((prev) => ({
+      ...prev,
+      selectedCategory: category,
+      page: 1,
+    }));
   };
 
   const handleSearchTypeChange = (type: string) => {
-    setSearchType(type);
-    setPage(1);
+    setListState((prev) => ({
+      ...prev,
+      searchType: type,
+      page: 1,
+    }));
   };
 
   const handleKeywordChange = (value: string) => {
-    setKeyword(value);
-    setPage(1);
+    setListState((prev) => ({
+      ...prev,
+      keyword: value,
+      page: 1,
+    }));
   };
 
   // 백엔드는 0-based page, 화면 표시는 1-based라 -1 해서 넘김

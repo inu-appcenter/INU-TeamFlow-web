@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getInfoPosts } from '@moimi/core/api/infoPost';
+import { usePostListState, type PostListState } from '@/hooks/usePostListState';
 import { infoPostCategoryFilterOptions } from '@moimi/core/constants/infoPost';
-import { infoPostKeys, useInfoPosts } from '@moimi/core/hooks/useInfoPostQuery';
+import { useInfoPosts } from '@moimi/core/hooks/useInfoPostQuery';
 import type {
   GetInfoPostsParams,
   InfoPostCategory,
@@ -13,25 +12,68 @@ import type {
 import Header from '@/components/common/Header';
 import ContentCard from '@/components/common/ContentCard';
 import { formatDate } from '@/utils/date/formatDate';
+
 const pageName = '정보';
-
-const isSearch = true;
 const searchFilter = [{ value: 'title', label: '제목' }];
-
-const isCreate = true;
-const isCategory = true;
 
 const ITEMS_PER_PAGE = 20;
 const PAGE_WINDOW_SIZE = 5;
 
-export default function InfoPost() {
-  const queryClient = useQueryClient();
+const INITIAL_LIST_STATE: PostListState = {
+  page: 1,
+  keyword: '',
+  queryKeyword: '',
+  searchType: 'title',
+  selectedCategory: 'ALL',
+};
 
-  const [keyword, setKeyword] = useState('');
-  const [searchType, setSearchType] = useState('title');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [page, setPage] = useState(1);
+export default function InfoPost() {
+  const [listState, setListState, isRestored] = usePostListState(
+    'infoPost:list',
+    INITIAL_LIST_STATE
+  );
+
+  const {
+    page,
+    keyword,
+    queryKeyword: searchKeyword,
+    searchType,
+    selectedCategory,
+  } = listState;
+
+  const setPage = (nextPage: number) => {
+    setListState((prev) => ({ ...prev, page: nextPage }));
+  };
+
+  const handleKeywordChange = (value: string) => {
+    setListState((prev) => ({ ...prev, keyword: value, page: 1 }));
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setListState((prev) => ({
+      ...prev,
+      selectedCategory: category,
+      page: 1,
+    }));
+  };
+
+  const handleSearchTypeChange = (type: string) => {
+    setListState((prev) => ({ ...prev, searchType: type, page: 1 }));
+  };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const nextKeyword = keyword.trim();
+
+      setListState((prev) =>
+        prev.queryKeyword === nextKeyword
+          ? prev
+          : { ...prev, queryKeyword: nextKeyword }
+      );
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [keyword, setListState]);
 
   const queryParams: GetInfoPostsParams = {
     keyword: searchKeyword || undefined,
@@ -57,65 +99,27 @@ export default function InfoPost() {
     (_, i) => blockStart + i
   );
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    setPage(1);
-  };
-  useEffect(() => {
-    if (!infoPostData) {
-      return;
-    }
-
-    const hasNextPage = page < infoPostData.totalPages;
-
-    if (!hasNextPage) {
-      return;
-    }
-
-    const nextPageParams: GetInfoPostsParams = {
-      ...queryParams,
-      keyword: searchKeyword || undefined,
-      page,
-      size: ITEMS_PER_PAGE,
-      sort: ['createdAt,DESC'],
-    };
-
-    void queryClient.prefetchQuery({
-      queryKey: infoPostKeys.list(nextPageParams),
-      queryFn: () => getInfoPosts(nextPageParams),
-      staleTime: 30 * 1000,
-    });
-  }, [infoPostData, page, queryClient, searchKeyword]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSearchKeyword(keyword.trim());
-      setPage(1);
-    }, 300);
-
-    return () => window.clearTimeout(timer);
-  }, [keyword]);
-
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto mb-10 max-w-[1180px]">
         <Header
           pageName={pageName}
-          isSearch={isSearch}
-          isCreate={isCreate}
-          isCategory={isCategory}
+          isSearch
+          isCreate
+          isCategory
           searchFilter={searchFilter}
           categories={infoPostCategoryFilterOptions}
           keyword={keyword}
           searchType={searchType}
           selectedCategory={selectedCategory}
-          onKeywordChange={setKeyword}
-          onSearchTypeChange={setSearchType}
+          onKeywordChange={handleKeywordChange}
+          onSearchTypeChange={handleSearchTypeChange}
           onCategoryChange={handleCategoryChange}
         />
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {!isLoading &&
+          {isRestored &&
+            !isLoading &&
             infoPosts.map((infoPost) => (
               <ContentCard
                 key={infoPost.infoPostId}
@@ -129,7 +133,7 @@ export default function InfoPost() {
             ))}
         </section>
 
-        {!isLoading && totalPages > 0 && (
+        {isRestored && !isLoading && totalPages > 0 && (
           <div className="mt-8 flex items-center justify-center gap-2">
             <button
               type="button"
