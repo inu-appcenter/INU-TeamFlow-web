@@ -7,6 +7,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
+import NotificationButton from '@/components/common/notification/NotificationButton';
 import { TeamListSkeleton } from '@/components/skeleton';
 import { motion } from 'motion/react';
 import {
@@ -47,7 +48,9 @@ export default function Team() {
           {errorMessage}
         </div>
       )}
-
+      <div className="hidden lg:block">
+        <NotificationButton />
+      </div>
       <section className="mx-auto mt-8 flex h-[calc(100vh-48px)] min-h-0 max-w-[800px] flex-col sm:mt-12 sm:min-h-[calc(100vh-72px)]">
         <div className="mb-3 flex items-end justify-between pl-4">
           <h1 className="text-2xl font-bold text-[#2C2C2C]">나의 팀 목록</h1>
