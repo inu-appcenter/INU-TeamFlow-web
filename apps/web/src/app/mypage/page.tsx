@@ -13,7 +13,6 @@ import {
   useUpdateMyProfile,
   useUploadProfileImage,
 } from '@moimi/core/hooks/useUserQuery';
-import { useFcm } from '@/hooks/useFcm';
 import { useAuth } from '@/contexts/AuthContext';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import Image from 'next/image';
@@ -60,9 +59,7 @@ const menuItems = [
 export default function MyPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const { unregisterFcmToken } = useFcm();
-  const { logout: clearAuthenticatedUser } = useAuth();
+  const { logout: logoutUser, finishAccountDeletion } = useAuth();
   const isLoading = false;
   const {
     data: profileData,
@@ -320,16 +317,13 @@ export default function MyPage() {
 
   const logout = async () => {
     if (isLoggingOut) return;
-
     setIsLoggingOut(true);
 
     try {
-      await unregisterFcmToken();
-    } catch (error) {
-      console.error('FCM 토큰 삭제에 실패했습니다', error);
-    } finally {
-      clearAuthenticatedUser();
+      await logoutUser();
       router.replace('/login');
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -338,14 +332,7 @@ export default function MyPage() {
 
     try {
       await deleteUser();
-
-      try {
-        await unregisterFcmToken();
-      } catch (error) {
-        console.error('FCM 토큰 삭제에 실패했습니다', error);
-      }
-
-      clearAuthenticatedUser();
+      await finishAccountDeletion();
       router.replace('/login');
     } catch (error) {
       const status = getHttpStatus(error);
