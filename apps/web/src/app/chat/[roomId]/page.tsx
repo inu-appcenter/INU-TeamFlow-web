@@ -13,7 +13,6 @@ import {
   isSameMinute,
 } from '@/utils/date/formatChatDate';
 import { useChatRoomMembers } from '@moimi/core/hooks/chat/useChatRoomMembers';
-import NotificationButton from '@/components/common/notification/NotificationButton';
 import { formatChatMessageTime } from '@/utils/date/formatChatMessageTime';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
 import { useSendChatMessage } from '@moimi/core/hooks/chat/useSendChatMessage';
@@ -235,9 +234,6 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
 
   return (
     <main className="h-screen overflow-hidden bg-[#F0F2F5] px-3 sm:px-6">
-      <div className="hidden lg:block">
-        <NotificationButton />
-      </div>
 
       <section className="relative mx-auto flex h-full min-h-0 max-w-[800px] flex-1 flex-col bg-white">
         <header className="absolute top-0 right-0 left-0 z-10 flex items-center justify-between bg-white/70 backdrop-blur-sm">
