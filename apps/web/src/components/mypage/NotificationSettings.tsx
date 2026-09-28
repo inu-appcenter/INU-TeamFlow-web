@@ -1,20 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BellRing } from 'lucide-react';
 
 import {
   useNotificationOptions,
   useUpdateNotificationOptions,
 } from '@moimi/core/hooks/useNotificationOptionQuery';
-
 import { notificationItems } from '@moimi/core/constants/notificationOption';
-
 import type {
   NotificationOptionRequest,
   NotificationSettingsProps,
   NotificationToggleProps,
 } from '@moimi/core/types/notificationOption';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { useFcm } from '@/hooks/useFcm';
+import {
+  hasEnabledNotifications,
+  pauseAutomaticFcmSync,
+  isNotificationSetupPending,
+  clearNotificationSetupPending,
+} from '@/lib/fcmLifecycle';
 
 function NotificationToggle({
   checked,
@@ -53,10 +60,20 @@ export default function NotificationSettings({
     isError,
   } = useNotificationOptions();
 
-  const { mutate: updateNotificationOptions, isPending } =
+  const { mutateAsync: updateNotificationOptions, isPending } =
     useUpdateNotificationOptions();
 
+  const { user } = useAuth();
+  const { syncFcmToken, requestFcmPermission } = useFcm();
+
   const [draft, setDraft] = useState<NotificationOptionRequest | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const savingRef = useRef(false);
+
+  const isBusy = isPending || isSaving;
+  const needsInitialSetup = user
+    ? isNotificationSetupPending(user.userId)
+    : false;
 
   const serverOptions: NotificationOptionRequest | null = notificationOptions
     ? {
@@ -68,9 +85,9 @@ export default function NotificationSettings({
       }
     : null;
 
-  // 사용자가 수정하기 전에는 서버 값을 그대로 사용
   const currentOptions = draft ?? serverOptions;
 
+  // 스위치 표시는 모든 항목이 켜져 있을 때 ON.
   const allEnabled =
     currentOptions !== null &&
     currentOptions.noticeEnabled &&
@@ -89,10 +106,12 @@ export default function NotificationSettings({
       draft.chatEnabled !== serverOptions.chatEnabled);
 
   useEffect(() => {
-    onDirtyChange?.(isDirty);
-  }, [isDirty, onDirtyChange]);
+    onDirtyChange?.(isDirty || isSaving);
+  }, [isDirty, isSaving, onDirtyChange]);
 
   const handleAllToggle = (enabled: boolean) => {
+    if (savingRef.current) return;
+
     setDraft({
       noticeEnabled: enabled,
       inviteEnabled: enabled,
@@ -106,7 +125,7 @@ export default function NotificationSettings({
     key: keyof NotificationOptionRequest,
     enabled: boolean
   ) => {
-    if (!currentOptions) return;
+    if (!currentOptions || savingRef.current) return;
 
     setDraft({
       ...currentOptions,
@@ -115,18 +134,88 @@ export default function NotificationSettings({
   };
 
   const handleCancel = () => {
-    // draft를 버리면 다시 서버 값을 사용
-    setDraft(null);
+    if (!savingRef.current) {
+      setDraft(null);
+    }
   };
 
-  const handleSave = () => {
-    if (!draft || !isDirty || isPending) return;
+  const handleSave = async () => {
+    if (
+      !currentOptions ||
+      (!isDirty && !needsInitialSetup) ||
+      isBusy ||
+      savingRef.current ||
+      !user
+    ) {
+      return;
+    }
 
-    updateNotificationOptions(draft, {
-      onError: () => {
+    const nextOptions = { ...currentOptions };
+    const accessToken = localStorage.getItem('accessToken');
+
+    const resume = pauseAutomaticFcmSync();
+
+    savingRef.current = true;
+    setIsSaving(true);
+
+    try {
+      // 권한 요청은 클릭 직후, FCM 등록은 저장 성공 후.
+      if (hasEnabledNotifications(nextOptions)) {
+        await requestFcmPermission();
+      }
+
+      if (localStorage.getItem('accessToken') !== accessToken) {
+        return;
+      }
+
+      try {
+        await updateNotificationOptions(nextOptions);
+      } catch {
         showErrorMessage('알림 설정 저장에 실패했습니다');
-      },
-    });
+        return;
+      }
+
+      if (localStorage.getItem('accessToken') !== accessToken) {
+        return;
+      }
+
+      setDraft(null);
+      clearNotificationSetupPending(user.userId);
+
+      try {
+        const result = await syncFcmToken(user.userId);
+
+        if (result.status === 'denied') {
+          showErrorMessage(
+            '설정은 저장됐어요. 브라우저 사이트 설정에서 알림을 허용해주세요.'
+          );
+        } else if (result.status === 'default') {
+          showErrorMessage(
+            '설정은 저장됐어요. 브라우저 알림 권한은 아직 허용되지 않았어요.'
+          );
+        } else if (result.status === 'unsupported') {
+          showErrorMessage(
+            '설정은 저장됐지만 이 브라우저에서는 푸시 알림을 사용할 수 없어요.'
+          );
+        } else if (result.status === 'disabled' && result.cleanupFailed) {
+          showErrorMessage(
+            '설정은 저장됐지만 기기 알림 삭제 일부가 실패했어요. 재접속하면 다시 시도해요.'
+          );
+        }
+      } catch {
+        showErrorMessage(
+          '설정은 저장됐지만 기기 알림 반영에 실패했어요. 재접속하면 다시 시도해요.'
+        );
+      }
+    } catch {
+      showErrorMessage(
+        '브라우저 알림 권한을 확인하지 못했습니다. 다시 시도해주세요.'
+      );
+    } finally {
+      resume();
+      savingRef.current = false;
+      setIsSaving(false);
+    }
   };
 
   if (isError) {
@@ -150,7 +239,6 @@ export default function NotificationSettings({
       <section>
         <div className="mb-4">
           <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
-
           <p className="text-[14px] leading-6 text-[#989898]">
             받고 싶은 알림을 선택할 수 있어요
           </p>
@@ -169,7 +257,6 @@ export default function NotificationSettings({
     <section className="mb-6">
       <div className="mb-4">
         <h3 className="text-[18px] font-bold text-[#2C2C2C]">알림 설정</h3>
-
         <p className="text-[14px] leading-6 text-[#989898]">
           받고 싶은 알림을 선택할 수 있어요
         </p>
@@ -186,7 +273,6 @@ export default function NotificationSettings({
               <p className="text-[16px] font-semibold text-[#2C2C2C]">
                 전체 알림
               </p>
-
               <p className="mt-1 text-[13px] text-[#989898]">
                 모든 알림을 한 번에 켜거나 끌 수 있어요
               </p>
@@ -196,6 +282,7 @@ export default function NotificationSettings({
           <NotificationToggle
             label="전체 알림"
             checked={allEnabled}
+            disabled={isBusy}
             onChange={handleAllToggle}
           />
         </div>
@@ -216,7 +303,6 @@ export default function NotificationSettings({
                 <p className="text-[15px] font-medium text-[#2C2C2C]">
                   {item.title}
                 </p>
-
                 <p className="mt-1 text-[13px] text-[#989898]">
                   {item.description}
                 </p>
@@ -225,6 +311,7 @@ export default function NotificationSettings({
               <NotificationToggle
                 label={item.title}
                 checked={currentOptions[item.key]}
+                disabled={isBusy}
                 onChange={(enabled) => handleOptionToggle(item.key, enabled)}
               />
             </div>
@@ -235,7 +322,7 @@ export default function NotificationSettings({
           <button
             type="button"
             onClick={handleCancel}
-            disabled={!isDirty || isPending}
+            disabled={!isDirty || isBusy}
             className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 text-[14px] font-semibold text-[#2C2C2C] transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             취소
@@ -243,11 +330,13 @@ export default function NotificationSettings({
 
           <button
             type="button"
-            onClick={handleSave}
-            disabled={!isDirty || isPending}
+            onClick={() => {
+              void handleSave();
+            }}
+            disabled={(!isDirty && !needsInitialSetup) || isBusy}
             className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] py-3 text-[14px] font-semibold text-white transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#B8C9E8]"
           >
-            완료
+            {isSaving ? '저장 중...' : '완료'}
           </button>
         </div>
       </div>

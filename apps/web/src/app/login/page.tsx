@@ -13,7 +13,6 @@ import { ROUTES } from '@moimi/core/constants/routes';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLogin } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useFcm } from '@/hooks/useFcm';
 import posthog from 'posthog-js';
 
 type LoginErrorBody = {
@@ -50,8 +49,6 @@ export default function Login() {
   const { refetchUser } = useAuth();
 
   const { mutate: loginMutate, isPending: isLoginPending } = useLogin();
-  const { registerFcmToken } = useFcm();
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -86,12 +83,6 @@ export default function Login() {
             posthog.capture('login_completed');
           } catch (error) {
             console.error('사용자 정보 조회 실패:', error);
-          }
-
-          try {
-            await registerFcmToken();
-          } catch (error) {
-            console.error('FCM 토큰 등록 실패:', error);
           }
 
           router.replace(ROUTES.MAIN);

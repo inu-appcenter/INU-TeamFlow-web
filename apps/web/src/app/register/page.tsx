@@ -20,7 +20,6 @@ import { ROUTES } from '@moimi/core/constants/routes';
 import { useLogin, useSignup } from '@moimi/core/hooks/useAuthQuery';
 import { useCreateNotificationOptions } from '@moimi/core/hooks/useNotificationOptionQuery';
 import { useAuth } from '@/contexts/AuthContext';
-import { useFcm } from '@/hooks/useFcm';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import PolicyModal from '@/components/register/PolicyModal';
 import type { PolicyType } from '@moimi/core/types/policy';
@@ -42,7 +41,6 @@ export default function Register() {
     isPending: isNotificationPending,
   } = useCreateNotificationOptions();
   const { refetchUser } = useAuth();
-  const { registerFcmToken } = useFcm();
   const isRegistering =
     isSignupPending || isLoginPending || isNotificationPending;
   const { errorMessage, showErrorMessage } = useErrorToast();
@@ -66,6 +64,8 @@ export default function Register() {
   const currentCollege = colleges.find((item) => item.id === college);
   const isRequiredAgreed = agreedTerms && confirmedAge;
   const isAllAgreed = agreedTerms && confirmedAge && notificationEnabled;
+
+  let notificationSetupSucceeded = false;
 
   const handleAllAgreement = () => {
     const next = !isAllAgreed;
@@ -153,13 +153,13 @@ export default function Register() {
         calendarEnabled: notificationEnabled,
         chatEnabled: notificationEnabled,
       });
+      notificationSetupSucceeded = true;
     } catch (error) {
       console.error('초기 알림 설정 실패:', error);
     }
-
     // 4. AuthContext 사용자 상태 갱신
     try {
-      await refetchUser();
+      await refetchUser({ syncNotifications: notificationSetupSucceeded });
       posthog.capture('account_registered', {
         notification_enabled: notificationEnabled,
       });
@@ -167,16 +167,7 @@ export default function Register() {
       console.error('사용자 정보 조회 실패:', error);
     }
 
-    // 5. FCM 토큰 등록
-    if (notificationEnabled) {
-      try {
-        await registerFcmToken();
-      } catch (error) {
-        console.error('FCM 토큰 등록 실패:', error);
-      }
-    }
-
-    // 6. 메인으로 이동
+    // 5. 메인으로 이동
     router.replace(ROUTES.MAIN);
   };
 
