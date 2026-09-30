@@ -13,8 +13,7 @@ import type {
   NotificationSettingsProps,
   NotificationToggleProps,
 } from '@moimi/core/types/notificationOption';
-
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useFcm } from '@/hooks/useFcm';
 import {
   hasEnabledNotifications,
