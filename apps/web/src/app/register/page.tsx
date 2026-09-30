@@ -19,7 +19,7 @@ import { MESSAGES, REGISTER_TEXT } from '@moimi/core/constants/messages';
 import { ROUTES } from '@moimi/core/constants/routes';
 import { useLogin, useSignup } from '@moimi/core/hooks/useAuthQuery';
 import { useCreateNotificationOptions } from '@moimi/core/hooks/useNotificationOptionQuery';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import PolicyModal from '@/components/register/PolicyModal';
 import type { PolicyType } from '@moimi/core/types/policy';

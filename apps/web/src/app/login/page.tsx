@@ -10,7 +10,7 @@ import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
 import { LOGIN_TEXT } from '@moimi/core/constants/messages';
 import { ROUTES } from '@moimi/core/constants/routes';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useLogin } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import posthog from 'posthog-js';
