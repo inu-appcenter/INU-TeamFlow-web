@@ -2,15 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { trackAnalyticsEvent } from '@/lib/analytics';
-
-type PostType = 'recruitment' | 'info_post';
-
-interface PostViewOptions {
-  postType: PostType;
-  postId: number | string | null | undefined;
-  category: string | null | undefined;
-  enabled?: boolean;
-}
+import type { PostViewOptions } from '@moimi/core/types/postView';
 
 export function usePostView({
   postType,

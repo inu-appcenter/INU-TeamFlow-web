@@ -13,12 +13,14 @@ import { formatDate } from '@/utils/date/formatDate';
 import { getDday } from '@/utils/date/getDday';
 import { categoryMap } from '@moimi/core/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { usePostView } from '@/hooks/usePostView';
 import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
 import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
 import type { ReportRequest } from '@moimi/core/types/report';
 import PostDeleteConfirmModal from '@/components/common/PostDeleteConfirmModal';
 import RecruitmentDetailActions from '@/components/recruitment/RecruitmentDetailActions';
+
 export default function RecruitmentDetail() {
   const router = useRouter();
   const params = useParams();
@@ -26,6 +28,16 @@ export default function RecruitmentDetail() {
   const recruitmentId = Number(params.id);
 
   const { data: recruitment, isLoading } = useRecruitmentDetail(recruitmentId);
+  usePostView({
+    postType: 'recruitment',
+    postId: recruitment?.recruitmentId,
+    category: recruitment?.category,
+    enabled:
+      !isLoading &&
+      Number.isSafeInteger(recruitmentId) &&
+      recruitmentId > 0 &&
+      recruitment?.recruitmentId === recruitmentId,
+  });
   const { mutate: deleteRecruitmentMutate, isPending: isDeleting } =
     useDeleteRecruitment();
 
