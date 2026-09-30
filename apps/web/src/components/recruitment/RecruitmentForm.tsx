@@ -2,7 +2,7 @@
 
 import Card from '@/components/main/Card';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X, Search, ImageIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';

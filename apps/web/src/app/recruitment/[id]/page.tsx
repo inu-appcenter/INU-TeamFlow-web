@@ -1,8 +1,6 @@
 'use client';
-
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, EllipsisVertical, Bookmark } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import Card from '@/components/main/Card';
 import RecruitmentDetailSkeleton from '@/components/skeleton/RecruitmentDetailSkeleton';
@@ -13,13 +11,14 @@ import {
 import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { formatDate } from '@/utils/date/formatDate';
 import { getDday } from '@/utils/date/getDday';
-import { categoryMap, categoryColorMap } from '@moimi/core/constants/category';
+import { categoryMap } from '@moimi/core/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
 import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
-import ScrapButton from '@/components/common/ScrapButton';
-
+import type { ReportRequest } from '@moimi/core/types/report';
+import PostDeleteConfirmModal from '@/components/common/PostDeleteConfirmModal';
+import RecruitmentDetailActions from '@/components/recruitment/RecruitmentDetailActions';
 export default function RecruitmentDetail() {
   const router = useRouter();
   const params = useParams();
@@ -29,11 +28,9 @@ export default function RecruitmentDetail() {
   const { data: recruitment, isLoading } = useRecruitmentDetail(recruitmentId);
   const { mutate: deleteRecruitmentMutate, isPending: isDeleting } =
     useDeleteRecruitment();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrapped, setIsScrapped] = useState(false);
-  const [scrapSyncedFor, setScrapSyncedFor] = useState<number | null>(null);
+
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
+
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const { mutate: createReport, isPending: isReportSubmitting } =
     useCreateReport();
@@ -42,11 +39,6 @@ export default function RecruitmentDetail() {
 
   const { errorMessage, showErrorMessage } = useErrorToast();
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
-
-  if (recruitment && scrapSyncedFor !== recruitment.recruitmentId) {
-    setScrapSyncedFor(recruitment.recruitmentId);
-    setIsScrapped(recruitment.isScrap);
-  }
 
   if (isLoading) {
     return (
@@ -90,14 +82,7 @@ export default function RecruitmentDetail() {
       },
     });
   };
-
-  const handleSubmitReport = ({
-    reason,
-    detail,
-  }: {
-    reason: import('@moimi/core/types/report').ReportReason;
-    detail: string;
-  }) => {
+  const handleSubmitReport = ({ reason, detail }: ReportRequest) => {
     createReport(
       {
         target: { type: 'RECRUITMENT_POST', id: recruitmentId },
@@ -123,103 +108,18 @@ export default function RecruitmentDetail() {
 
       <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
         <Card className="flex flex-1 flex-col overflow-hidden rounded-b-none p-0">
-          <div
-            className="flex h-18 items-center justify-between px-6"
-            style={{
-              backgroundColor:
-                categoryColorMap[recruitment.category] ?? '#E9E9E9',
-            }}
-          >
-            <button
-              onClick={() => router.push(`/recruitment`)}
-              className="cursor-pointer text-[#2C2C2C]"
-            >
-              <ChevronLeft size={24} strokeWidth={2.5} />
-            </button>
-
-            <div className="flex items-center gap-3">
-              {isRecruiter ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setIsMenuOpen((prev) => !prev)}
-                    className="cursor-pointer pt-1.5 text-[#2C2C2C]"
-                  >
-                    <EllipsisVertical size={20} />
-                  </button>
-
-                  {isMenuOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setIsMenuOpen(false)}
-                      />
-                      <div className="absolute top-6 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
-                        {!isClosed && (
-                          <button
-                            onClick={() => {
-                              setIsMenuOpen(false);
-                              router.push(`/recruitment/${recruitmentId}/edit`);
-                            }}
-                            className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F8FA]"
-                          >
-                            수정하기
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            setIsMenuOpen(false);
-                            setIsDeleteConfirmOpen(true);
-                          }}
-                          disabled={isDeleting}
-                          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#E22222] transition hover:bg-[#F6F8FA] disabled:opacity-50"
-                        >
-                          삭제하기
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <ScrapButton
-                    type="recruitment"
-                    id={recruitment.recruitmentId}
-                    initialScrapped={recruitment.isScrap}
-                  />
-
-                  <div className="relative">
-                    <button
-                      onClick={() => setIsReportMenuOpen((prev) => !prev)}
-                      className="cursor-pointer pt-1.5 text-[#2C2C2C]"
-                    >
-                      <EllipsisVertical size={20} />
-                    </button>
-
-                    {isReportMenuOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-10"
-                          onClick={() => setIsReportMenuOpen(false)}
-                        />
-                        <div className="absolute top-6 right-[-10px] z-20 w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-1">
-                          <button
-                            onClick={() => {
-                              setIsReportMenuOpen(false);
-                              setIsReportModalOpen(true);
-                            }}
-                            className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-[#E22222] transition hover:bg-[#F6F8FA]"
-                          >
-                            신고하기
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
+          <RecruitmentDetailActions
+            category={recruitment.category}
+            recruitmentId={recruitment.recruitmentId}
+            isRecruiter={isRecruiter}
+            isClosed={isClosed}
+            isDeleting={isDeleting}
+            isScrap={recruitment.isScrap}
+            onBack={() => router.push('/recruitment')}
+            onEdit={() => router.push(`/recruitment/${recruitmentId}/edit`)}
+            onDelete={() => setIsDeleteConfirmOpen(true)}
+            onReport={() => setIsReportModalOpen(true)}
+          />
           <div className="px-8 py-7 sm:px-10 sm:py-10">
             <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">
               {recruitment.title}
@@ -340,44 +240,15 @@ export default function RecruitmentDetail() {
           </div>
         </Card>
         {isDeleteConfirmOpen && (
-          <div
-            onClick={() => setIsDeleteConfirmOpen(false)}
-            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
-            >
-              <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
-                모집글을 삭제할까요?
-              </h2>
-
-              <p className="mt-2 text-center text-[15px] text-[#989898]">
-                삭제한 모집글은 복구할 수 없어요
-              </p>
-
-              <div className="mt-3 flex gap-3">
-                <button
-                  onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
-                >
-                  취소
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsDeleteConfirmOpen(false);
-                    handleDeleteRecruitment();
-                  }}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
-                >
-                  삭제
-                </button>
-              </div>
-            </div>
-          </div>
+          <PostDeleteConfirmModal
+            postLabel="모집글"
+            onClose={() => setIsDeleteConfirmOpen(false)}
+            onConfirm={() => {
+              setIsDeleteConfirmOpen(false);
+              handleDeleteRecruitment();
+            }}
+          />
         )}
-
         <AnimatePresence>
           {isReportModalOpen && (
             <ReportModal
