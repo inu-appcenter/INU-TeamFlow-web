@@ -1,7 +1,10 @@
 'use client';
 
 import { startAnalyticsAttempt, trackAnalyticsEvent } from '@/lib/analytics';
-import { updateAnalyticsVerification } from '@/lib/analytics/client';
+import {
+  identifyAnalyticsUser,
+  updateAnalyticsVerification,
+} from '@/lib/analytics/client';
 import type { UserMeResponse } from '@moimi/core/types/user';
 
 export function useAuthTracking(operation: 'login' | 'school_verify') {
@@ -13,10 +16,14 @@ export function useAuthTracking(operation: 'login' | 'school_verify') {
     });
 
   const verified = (user: UserMeResponse) => {
-    updateAnalyticsVerification(user.isSchoolVerified);
+    if (!user.isSchoolVerified) return;
+
+    identifyAnalyticsUser(user.userId);
+    updateAnalyticsVerification(true);
 
     trackAnalyticsEvent('school_verified', {
       feature: 'auth',
+      interaction_type: 'authentication',
     });
   };
 

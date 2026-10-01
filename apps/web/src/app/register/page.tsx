@@ -10,7 +10,7 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ComponentProps } from 'react';
 import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
@@ -23,7 +23,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import PolicyModal from '@/components/register/PolicyModal';
 import type { PolicyType } from '@moimi/core/types/policy';
-import posthog from 'posthog-js';
+import { ANALYTICS_EVENTS } from '@moimi/core/constants/analytics';
+import { startAnalyticsAttempt } from '@/lib/analytics/attempt';
+import { capture } from '@/lib/analytics/client';
 
 type RegisterStep = 'terms' | 'info';
 
@@ -33,6 +35,9 @@ export default function Register() {
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [confirmedAge, setConfirmedAge] = useState(false);
+  const hasTrackedEntry = useRef(false);
+  const submitLock = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [openedPolicy, setOpenedPolicy] = useState<PolicyType | null>(null);
   const { mutateAsync: signup, isPending: isSignupPending } = useSignup();
   const { mutateAsync: login, isPending: isLoginPending } = useLogin();
@@ -42,7 +47,7 @@ export default function Register() {
   } = useCreateNotificationOptions();
   const { refetchUser } = useAuth();
   const isRegistering =
-    isSignupPending || isLoginPending || isNotificationPending;
+    isSubmitting || isSignupPending || isLoginPending || isNotificationPending;
   const { errorMessage, showErrorMessage } = useErrorToast();
 
   const [userName, setUserName] = useState('');
@@ -65,7 +70,15 @@ export default function Register() {
   const isRequiredAgreed = agreedTerms && confirmedAge;
   const isAllAgreed = agreedTerms && confirmedAge && notificationEnabled;
 
-  let notificationSetupSucceeded = false;
+  useEffect(() => {
+    if (hasTrackedEntry.current) return;
+    hasTrackedEntry.current = true;
+
+    capture(ANALYTICS_EVENTS.SIGNUP_ENTERED, {
+      feature: 'auth',
+      interaction_type: 'view',
+    });
+  }, []);
 
   const handleAllAgreement = () => {
     const next = !isAllAgreed;
@@ -94,81 +107,139 @@ export default function Register() {
     );
 
   const register = async () => {
-    if (!isRequiredAgreed) {
-      showErrorMessage('필수 항목에 동의해주세요');
-      setStep('terms');
-      return;
-    }
+    if (submitLock.current) return;
 
-    if (hasEmptyField()) {
-      showErrorMessage(MESSAGES.REGISTER.EMPTY_FIELD);
-      return;
-    }
+    submitLock.current = true;
+    setIsSubmitting(true);
 
-    if (password !== checkPassword) {
-      showErrorMessage(MESSAGES.REGISTER.PASSWORD_MISMATCH);
-      return;
-    }
+    const signupAttempt = startAnalyticsAttempt('signup', {
+      feature: 'auth',
+      attempt_scope: 'submission',
+    });
 
-    const username = userName.trim();
-
-    // 1. 회원가입
     try {
-      await signup({
-        username,
-        password,
-        email: email.trim(),
-        name: name.trim(),
-        department,
-        imageKey: null,
-      });
-    } catch {
-      showErrorMessage(
-        '이미 사용 중인 아이디 또는 이메일이거나 입력 정보가 올바르지 않습니다'
-      );
-      return;
-    }
+      if (!isRequiredAgreed) {
+        signupAttempt.fail(undefined, {
+          kind: 'validation',
+          reason_code: 'required_agreement_missing',
+        });
 
-    // 2. 자동 로그인 + 토큰 저장
-    try {
-      const loginResponse = await login({
-        username,
-        password,
-      });
+        showErrorMessage('필수 항목에 동의해주세요');
+        setStep('terms');
+        return;
+      }
 
-      localStorage.setItem('accessToken', loginResponse.accessToken);
-    } catch {
-      showErrorMessage('회원가입 완료! 로그인 후 이용해주세요');
+      if (hasEmptyField()) {
+        signupAttempt.fail(undefined, {
+          kind: 'validation',
+          reason_code: 'required_field_missing',
+        });
 
-      router.replace(ROUTES.LOGIN);
-      return;
-    }
+        showErrorMessage(MESSAGES.REGISTER.EMPTY_FIELD);
+        return;
+      }
 
-    // 3. 최초 알림 설정 생성
-    try {
-      await createNotificationOptions({
-        noticeEnabled: notificationEnabled,
-        inviteEnabled: notificationEnabled,
-        applicationEnabled: notificationEnabled,
-        calendarEnabled: notificationEnabled,
-        chatEnabled: notificationEnabled,
-      });
-      notificationSetupSucceeded = true;
-    } catch (error) {
-      console.error('초기 알림 설정 실패:', error);
-    }
-    // 4. AuthContext 사용자 상태 갱신
-    try {
-      await refetchUser({ syncNotifications: notificationSetupSucceeded });
-      posthog.capture('account_registered', {
+      if (password !== checkPassword) {
+        signupAttempt.fail(undefined, {
+          kind: 'validation',
+          reason_code: 'password_mismatch',
+        });
+
+        showErrorMessage(MESSAGES.REGISTER.PASSWORD_MISMATCH);
+        return;
+      }
+
+      const username = userName.trim();
+
+      // 1. 회원가입
+      try {
+        await signup({
+          username,
+          password,
+          email: email.trim(),
+          name: name.trim(),
+          department,
+          imageKey: null,
+        });
+      } catch (error) {
+        signupAttempt.fail(error);
+
+        showErrorMessage(
+          '이미 사용 중인 아이디 또는 이메일이거나 입력 정보가 올바르지 않습니다'
+        );
+        return;
+      }
+
+      // 가입 성공은 후속 로그인·알림 설정·정보 조회와 구분한다.
+      signupAttempt.succeed();
+
+      // 기존 이벤트를 유지하면서 실제 가입 성공 시점으로 옮긴다.
+      capture('account_registered', {
+        feature: 'auth',
+        interaction_type: 'authentication',
         notification_enabled: notificationEnabled,
+        attempt_id: signupAttempt.attemptId,
       });
-    } catch (error) {
-      console.error('사용자 정보 조회 실패:', error);
-    }
 
-    // 5. 메인으로 이동
-    router.replace(ROUTES.MAIN);
+      // 2. 자동 로그인
+      const loginAttempt = startAnalyticsAttempt('login', {
+        feature: 'auth',
+        attempt_scope: 'api_request',
+        auth_flow: 'signup_auto_login',
+      });
+
+      let accessToken: string;
+
+      try {
+        const loginResponse = await login({
+          username,
+          password,
+        });
+
+        accessToken = loginResponse.accessToken;
+      } catch (error) {
+        loginAttempt.fail(error);
+
+        showErrorMessage('회원가입 완료! 로그인 후 이용해주세요');
+        router.replace(ROUTES.LOGIN);
+        return;
+      }
+
+      loginAttempt.succeed();
+      localStorage.setItem('accessToken', accessToken);
+
+      // 3. 최초 알림 설정 생성
+      let notificationSetupSucceeded = false;
+
+      try {
+        await createNotificationOptions({
+          noticeEnabled: notificationEnabled,
+          inviteEnabled: notificationEnabled,
+          applicationEnabled: notificationEnabled,
+          calendarEnabled: notificationEnabled,
+          chatEnabled: notificationEnabled,
+        });
+
+        notificationSetupSucceeded = true;
+      } catch (error) {
+        console.error('초기 알림 설정 실패:', error);
+      }
+
+      // 4. AuthContext 사용자 상태 갱신
+      try {
+        await refetchUser({
+          syncNotifications: notificationSetupSucceeded,
+        });
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+      }
+
+      // 5. 메인으로 이동
+      router.replace(ROUTES.MAIN);
+    } finally {
+      submitLock.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmit: ComponentProps<'form'>['onSubmit'] = (e) => {

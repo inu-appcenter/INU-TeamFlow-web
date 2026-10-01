@@ -56,8 +56,8 @@ export default function SchoolAuthenticationPage() {
             return;
           }
 
-          attempt.succeed();
           analytics.verified(data);
+          attempt.succeed();
 
           void refetchUser().catch(() => undefined);
 
