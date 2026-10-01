@@ -1,3 +1,4 @@
+// apps/mobile/src/app/recruitment/[recruitmentId]/apply/applications/index.tsx
 import { useState } from "react";
 import {
   View,
@@ -49,14 +50,20 @@ export default function RecruitmentApplicationsScreen() {
   const totalCount = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
+  // 스택에 있는 모집글 상세까지 pop (새 상세 화면을 쌓지 않음)
+  // 스택에 상세가 없으면 현재 화면을 상세로 교체
+  const goToDetail = () => {
+    router.dismissTo(`/recruitment/${recruitmentIdNum}`);
+  };
+
   return (
-    <View className="flex-1 bg-[##F0F2F5]">
+    <View className="flex-1 bg-[#F0F2F5]">
       <View
         style={{ paddingTop: 60 }}
         className="flex-row items-center gap-4 px-5 pb-4"
       >
         <Pressable
-          onPress={() => router.push(`/recruitment/${recruitmentIdNum}`)}
+          onPress={goToDetail}
           className="transition-transform duration-150 ease-out active:scale-90"
         >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />

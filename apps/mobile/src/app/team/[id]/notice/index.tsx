@@ -1,3 +1,4 @@
+// app/team/[id]/notice/index.tsx
 import { useState } from "react";
 import {
   View,
@@ -22,24 +23,9 @@ import { Picker } from "@react-native-picker/picker";
 
 import { useMyTeamNotices } from "@moimi/core/hooks/useNoticeQuery";
 import { useTeamDetail } from "@moimi/core/hooks/team/useTeamQuery";
+import { categoryMap, categoryColorMap } from "@moimi/core/constants/category";
 import { formatDate } from "@/utils/date/formatDate";
 import { getTeamRoleLabel } from "@/utils/user/teamRole";
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: "#FBE4F8",
-  STUDY: "#D8FAD8",
-  PROJECT: "#DCEBFF",
-  CLUB: "#FFF1CC",
-  ETC: "#E9E9E9",
-};
-
-const categoryMap: Record<string, string> = {
-  CONTEST: "공모전",
-  STUDY: "스터디",
-  PROJECT: "프로젝트",
-  CLUB: "동아리",
-  ETC: "기타",
-};
 
 const ITEMS_PER_PAGE = 8;
 type SearchType = "title" | "author";
@@ -206,6 +192,16 @@ export default function TeamNoticeScreen() {
     setPage(1);
   };
 
+  // 팀 상세로 pop (새 팀 상세를 쌓지 않음)
+  // 이전 화면이 없으면(딥링크 등) 팀 상세로 교체
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace(`/team/${teamId}`);
+    }
+  };
+
   const category = team?.category ?? "ETC";
 
   return (
@@ -214,15 +210,12 @@ export default function TeamNoticeScreen() {
       <View
         style={{
           paddingTop: 60,
-          backgroundColor: categoryColorMap[category],
+          backgroundColor: categoryColorMap[category] ?? "#E9E9E9",
         }}
         className="flex-row items-center justify-between px-6 pb-4"
       >
         <View className="flex-row items-center gap-4">
-          <Pressable
-            onPress={() => router.push(`/team/${teamId}`)}
-            hitSlop={10}
-          >
+          <Pressable onPress={goBack} hitSlop={10}>
             <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
           </Pressable>
           <Text className="text-[20px] font-bold text-[#2C2C2C]">
@@ -337,11 +330,11 @@ export default function TeamNoticeScreen() {
           )}
         </View>
 
-        {/* 페이지네이션 */}
-        {totalPages > 0 && (
+        {/* 페이지네이션 (공지가 있을 때만) */}
+        {sorted.length > 0 && (
           <View className="mb-8 mt-6 flex-row items-center justify-center gap-3">
             <Pressable
-              onPress={() => setPage((p) => Math.max(1, p - 1))}
+              onPress={() => setPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               hitSlop={8}
               style={{ opacity: currentPage === 1 ? 0.4 : 1 }}
@@ -368,7 +361,7 @@ export default function TeamNoticeScreen() {
             ))}
 
             <Pressable
-              onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onPress={() => setPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               hitSlop={8}
               style={{ opacity: currentPage === totalPages ? 0.4 : 1 }}

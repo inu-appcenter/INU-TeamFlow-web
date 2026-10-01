@@ -1,3 +1,4 @@
+// app/team/[id]/notice/write.tsx
 import { useRef, useEffect, useState } from "react";
 import {
   View,
@@ -18,22 +19,7 @@ import {
   useCreateTeamNotice,
   useGetPresignedUrls,
 } from "@moimi/core/hooks/useNoticeQuery";
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: "#FBE4F8",
-  STUDY: "#D8FAD8",
-  PROJECT: "#DCEBFF",
-  CLUB: "#FFF1CC",
-  ETC: "#E9E9E9",
-};
-
-const categoryMap: Record<string, string> = {
-  CONTEST: "공모전",
-  STUDY: "스터디",
-  PROJECT: "프로젝트",
-  CLUB: "동아리",
-  ETC: "기타",
-};
+import { categoryMap, categoryColorMap } from "@moimi/core/constants/category";
 
 type LocalImage = {
   id: string;
@@ -135,6 +121,16 @@ export default function TeamNoticeWriteScreen() {
     ? categoryColorMap[team.category] ?? "#E9E9E9"
     : "#E9E9E9";
 
+  // 들어온 화면(공지 목록 등)으로 pop
+  // 이전 화면이 없으면 해당 팀 공지 목록으로 교체
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace(`/team/${teamId}/notice`);
+    }
+  };
+
   const showErrorMessage = (message: string) => {
     setErrorMessage(message);
     setTimeout(() => setErrorMessage(""), 1800);
@@ -186,11 +182,15 @@ export default function TeamNoticeWriteScreen() {
         await Promise.all(
           presignedList.map(async (presigned, i) => {
             const blob = await (await fetch(images[i].uri)).blob();
-            await fetch(presigned.uploadUrl, {
+            const res = await fetch(presigned.uploadUrl, {
               method: "PUT",
               headers: { "Content-Type": images[i].mimeType },
               body: blob,
             });
+            // fetch는 4xx/5xx에서 throw하지 않으므로 직접 체크
+            if (!res.ok) {
+              throw new Error(`이미지 업로드 실패 (${res.status})`);
+            }
           })
         );
 
@@ -204,7 +204,7 @@ export default function TeamNoticeWriteScreen() {
         imageKeys,
       });
 
-      router.push(`/team/${teamId}/notice`);
+      goBack();
     } catch (err) {
       console.error("공지 작성 실패", err);
       showErrorMessage("공지 작성에 실패했어요");
@@ -215,7 +215,7 @@ export default function TeamNoticeWriteScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {errorMessage && (
+      {!!errorMessage && (
         <View
           style={{
             position: "absolute",
@@ -235,7 +235,7 @@ export default function TeamNoticeWriteScreen() {
         style={{ backgroundColor: currentColor, paddingTop: 60 }}
         className="flex-row items-center justify-between px-6 pb-4"
       >
-        <Pressable onPress={() => router.push(`/team/${teamId}/notice`)}>
+        <Pressable onPress={goBack} hitSlop={10}>
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
         </Pressable>
         <View className="rounded-full bg-white/80 px-5 py-2">
@@ -350,7 +350,9 @@ export default function TeamNoticeWriteScreen() {
             style={{ opacity: isSubmitting ? 0.6 : 1 }}
             className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-10 py-3.5"
           >
-            <Text className="text-[15px] font-semibold text-white">작성</Text>
+            <Text className="text-[15px] font-semibold text-white">
+              {isSubmitting ? "작성 중..." : "작성"}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -386,6 +388,7 @@ export default function TeamNoticeWriteScreen() {
                   setIsConfirmOpen(false);
                   await handleSubmit();
                 }}
+                disabled={isSubmitting}
                 className="flex-1 items-center rounded-xl bg-[#5E92F0] py-4"
               >
                 <Text className="text-[14px] font-semibold text-white">
