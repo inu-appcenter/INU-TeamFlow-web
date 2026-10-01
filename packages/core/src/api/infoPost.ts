@@ -1,4 +1,4 @@
-import { getApiClient } from './client';
+import { getApiClient } from "./client";
 
 import type {
   GetInfoPostsParams,
@@ -11,7 +11,8 @@ import type {
   InfoPostUpdateRequest,
   PageResponse,
   PageableParams,
-} from '@moimi/core/types/infoPost';
+} from "@moimi/core/types/infoPost";
+import { HttpStatusError } from "./errors";
 
 /** GET /info-posts */
 export const getInfoPosts = ({
@@ -20,10 +21,10 @@ export const getInfoPosts = ({
   keyword,
   page = 0,
   size = 10,
-  sort = ['createdAt,DESC'],
+  sort = ["createdAt,DESC"],
 }: GetInfoPostsParams = {}): Promise<PageResponse<InfoPostSummaryResponse>> =>
   getApiClient()
-    .get('/info-posts', {
+    .get("/info-posts", {
       params: {
         category,
         type,
@@ -42,10 +43,10 @@ export const getInfoPosts = ({
 export const getMyInfoPosts = ({
   page = 0,
   size = 10,
-  sort = ['createdAt,DESC'],
+  sort = ["createdAt,DESC"],
 }: PageableParams = {}): Promise<PageResponse<InfoPostSummaryResponse>> =>
   getApiClient()
-    .get('/info-posts/me', {
+    .get("/info-posts/me", {
       params: {
         page,
         size,
@@ -59,14 +60,16 @@ export const getMyInfoPosts = ({
 
 /** GET /info-posts/{infoPostId} */
 export const getInfoPostDetail = (
-  infoPostId: number
+  infoPostId: number,
 ): Promise<InfoPostDetailResponse> =>
-  getApiClient().get(`/info-posts/${infoPostId}`).then((res) => res.data);
+  getApiClient()
+    .get(`/info-posts/${infoPostId}`)
+    .then((res) => res.data);
 
 /** GET /info-posts/{infoPostId}/recruitments */
 export const getRecruitmentsByInfoPost = (
   infoPostId: number,
-  { page = 0, size = 10, sort = ['createdAt,DESC'] }: PageableParams = {}
+  { page = 0, size = 10, sort = ["createdAt,DESC"] }: PageableParams = {},
 ): Promise<PageResponse<InfoPostRecruitmentSummary>> =>
   getApiClient()
     .get(`/info-posts/${infoPostId}/recruitments`, {
@@ -83,16 +86,20 @@ export const getRecruitmentsByInfoPost = (
 
 /** POST /info-posts */
 export const createInfoPost = (
-  body: InfoPostCreateRequest
+  body: InfoPostCreateRequest,
 ): Promise<InfoPostDetailResponse> =>
-  getApiClient().post('/info-posts', body).then((res) => res.data);
+  getApiClient()
+    .post("/info-posts", body)
+    .then((res) => res.data);
 
 /** PUT /info-posts/{infoPostId} */
 export const updateInfoPost = (
   infoPostId: number,
-  body: InfoPostUpdateRequest
+  body: InfoPostUpdateRequest,
 ): Promise<InfoPostDetailResponse> =>
-  getApiClient().put(`/info-posts/${infoPostId}`, body).then((res) => res.data);
+  getApiClient()
+    .put(`/info-posts/${infoPostId}`, body)
+    .then((res) => res.data);
 
 /** DELETE /info-posts/{infoPostId} */
 export const deleteInfoPost = async (infoPostId: number): Promise<void> => {
@@ -101,25 +108,28 @@ export const deleteInfoPost = async (infoPostId: number): Promise<void> => {
 
 /** POST /info-posts/images/presigned-url */
 export const getInfoPostImagePresignedUrls = (
-  body: InfoPostImagePresignedUrlRequest[]
+  body: InfoPostImagePresignedUrlRequest[],
 ): Promise<InfoPostImagePresignedUrlResponse[]> =>
   getApiClient()
-    .post('/info-posts/images/presigned-url', body)
+    .post("/info-posts/images/presigned-url", body)
     .then((res) => res.data);
 
 export const uploadInfoPostImage = async (
   uploadUrl: string,
-  file: File
+  file: File,
 ): Promise<void> => {
   const response = await fetch(uploadUrl, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': file.type,
+      "Content-Type": file.type,
     },
     body: file,
   });
 
   if (!response.ok) {
-    throw new Error(`이미지 업로드 실패: ${response.status}`);
+    throw new HttpStatusError(
+      `이미지 업로드 실패: ${response.status}`,
+      response.status,
+    );
   }
 };

@@ -4,6 +4,7 @@ import type {
   FailureDetails,
   FailureKind,
 } from '@moimi/core/types/analytics';
+import { HttpStatusError } from '@moimi/core/api/errors';
 
 export function contextProperties(
   context: AnalyticsContext
@@ -30,7 +31,15 @@ export function contextProperties(
 
 export function failureProperties(error: unknown, details: FailureDetails) {
   const axiosError = isAxiosError(error) ? error : null;
-  const status = axiosError?.response?.status ?? details.http_status ?? null;
+
+  const uploadHttpError = error instanceof HttpStatusError ? error : null;
+
+  const status =
+    axiosError?.response?.status ??
+    uploadHttpError?.status ??
+    details.http_status ??
+    null;
+
   const kind: FailureKind =
     details.kind ??
     (status !== null
@@ -40,6 +49,7 @@ export function failureProperties(error: unknown, details: FailureDetails) {
         : axiosError?.code === 'ERR_NETWORK' || axiosError?.request
           ? 'network'
           : 'unknown');
+
   return {
     failure_kind: kind,
     http_status: status,
