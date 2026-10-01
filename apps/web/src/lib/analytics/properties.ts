@@ -8,9 +8,10 @@ import type {
 export function contextProperties(
   context: AnalyticsContext
 ): Record<string, unknown> {
-  // 허용한 속성만 복사해 호출자가 객체를 잘못 넘겨도 본문을 전송하지 않는다
   return {
     feature: context.feature,
+    attempt_scope: context.attempt_scope,
+    auth_flow: context.auth_flow,
     post_type: context.post_type,
     post_id: context.post_id == null ? undefined : String(context.post_id),
     post_key:

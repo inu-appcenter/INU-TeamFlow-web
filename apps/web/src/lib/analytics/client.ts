@@ -2,6 +2,7 @@
 
 import posthog from 'posthog-js';
 import { ANALYTICS_SCHEMA_VERSION } from '@moimi/core/constants/analytics';
+import { clearAnalyticsContextCache } from './httpContext';
 
 export function capture(
   event: string,
@@ -27,6 +28,7 @@ function getIdentifiedId(): string | null {
 
 /** 비로그인시 익명 방문자 ID를 유지 */
 export function resetAnalyticsIdentity(): void {
+  clearAnalyticsContextCache();
   try {
     if (getIdentifiedId() !== null) posthog.reset();
   } catch {}

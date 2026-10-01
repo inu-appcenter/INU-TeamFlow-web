@@ -50,8 +50,18 @@ export interface PostContext extends AnalyticsContext {
 
 export interface EventMap {
   post_viewed: PostContext;
-  post_scrapped: PostContext;
-  team_created: AnalyticsContext & { team_id: string | number };
+
+  post_scrapped: AnalyticsContext & {
+    post_type: "recruitment" | "info_post";
+    post_id: string | number;
+  };
+
+  school_verified: AnalyticsContext;
+
+  team_created: AnalyticsContext & {
+    team_id: string | number;
+  };
+
   team_activity_completed: AnalyticsContext & {
     team_id: string | number;
     activity_type: NonNullable<AnalyticsContext["activity_type"]>;
@@ -78,4 +88,23 @@ export interface AnalyticsAttempt {
   succeed: () => void;
   fail: (error: unknown, details?: FailureDetails) => void;
   cancel: () => void;
+}
+
+export interface AnalyticsContext {
+  feature: AnalyticsFeature;
+
+  attempt_scope?: "submission" | "api_request" | "message_send";
+  auth_flow?: "manual_login" | "signup_auto_login";
+
+  post_type?: "recruitment" | "info_post";
+  post_id?: string | number;
+  category?: string;
+  team_id?: string | number;
+
+  activity_type?:
+    | "notice_create"
+    | "calendar_create"
+    | "vote_create"
+    | "vote_participate"
+    | "message_send";
 }

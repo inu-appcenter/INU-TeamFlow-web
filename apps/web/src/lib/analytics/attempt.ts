@@ -38,8 +38,8 @@ export function startAnalyticsAttempt(
   const base = {
     operation,
     attempt_id: attemptId,
-    // 401 처리로 SDK가 reset되어도 시도한 사람을 잃지 않는다.
-    // 실패 영향 인원은 이 속성의 고유값을 집계한다.
+    // 401 처리로 SDK가 reset되어도 시도한 사람을 잃지 않는다
+    // 실패 영향 인원은 이 속성의 고유값을 집계한다
     actor_id: actorId,
   };
 
