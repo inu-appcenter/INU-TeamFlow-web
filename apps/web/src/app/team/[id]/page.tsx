@@ -43,7 +43,8 @@ import { useEffect, useState, useMemo } from 'react';
 import ScheduleListItem from '@/components/calendar/ScheduleListItem';
 import MonthGridWithEvents from '@/components/calendar/MonthGridWithEvents';
 import { TeamDetailSkeleton } from '@/components/skeleton';
-import posthog from 'posthog-js';
+import { startTeamActivityAttempt } from '@/lib/analytics/teamActivity';
+import { capture } from '@/lib/analytics/client';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -186,6 +187,11 @@ export default function TeamDetail() {
   };
 
   const handleAddSchedule = async (request: MyEventCreateRequest) => {
+    const attempt = startTeamActivityAttempt('calendar_create', {
+      team_id: teamId,
+      category: team.category,
+    });
+
     try {
       await createEvent({
         title: request.title,
@@ -197,13 +203,24 @@ export default function TeamDetail() {
         participants: teamMembers.map((m) => m.teamMemberId),
         ...(request.recurrence && { recurrence: request.recurrence }),
       });
-      posthog.capture('team_event_created', {
-        is_all_day: request.isAllDay,
-        is_recurring: Boolean(request.recurrence),
-      });
     } catch (err) {
+      attempt.fail(err);
       console.error('일정 생성 실패', err);
+      return;
     }
+
+    attempt.succeed();
+
+    capture('team_event_created', {
+      feature: 'team',
+      interaction_type: 'creation',
+      team_id: String(teamId),
+      category: team.category,
+      activity_type: 'calendar_create',
+      attempt_id: attempt.attemptId,
+      is_all_day: request.isAllDay,
+      is_recurring: Boolean(request.recurrence),
+    });
   };
 
   const handleEditSchedule = async (
@@ -250,12 +267,29 @@ export default function TeamDetail() {
   };
 
   const handleCreateVote = async (request: EventVoteCreateRequest) => {
+    const attempt = startTeamActivityAttempt('vote_create', {
+      team_id: teamId,
+      category: team.category,
+    });
+
     try {
       await createVote(request);
-      posthog.capture('team_vote_created');
+
+      attempt.succeed();
+
+      capture('team_vote_created', {
+        feature: 'team',
+        interaction_type: 'creation',
+        team_id: String(teamId),
+        category: team.category,
+        activity_type: 'vote_create',
+        attempt_id: attempt.attemptId,
+      });
     } catch (err) {
+      attempt.fail(err);
       console.error('투표 생성 실패', err);
     }
+
     setIsVoteAddOpen(false);
   };
 
