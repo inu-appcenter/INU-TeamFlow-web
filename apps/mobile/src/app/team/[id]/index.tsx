@@ -122,6 +122,16 @@ export default function TeamDetailScreen() {
 
   const [isMemberDrawerOpen, setIsMemberDrawerOpen] = useState(false);
 
+  // 들어온 화면(팀 목록 / 홈 / 마이페이지 등)으로 pop → 이전 화면 상태 유지
+  // 이전 화면이 없으면(딥링크 등) 팀 목록으로 교체
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/team");
+    }
+  };
+
   if (isTeamLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
@@ -276,7 +286,7 @@ export default function TeamDetailScreen() {
         }}
         className="flex-row items-center justify-between px-6 pb-4"
       >
-        <Pressable onPress={() => router.push(`/team`)}>
+        <Pressable onPress={goBack} hitSlop={10}>
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
         </Pressable>
 

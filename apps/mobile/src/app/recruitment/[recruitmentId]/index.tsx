@@ -33,6 +33,16 @@ function InfoRow({
   );
 }
 
+// 들어온 화면(모집 목록 / 마이페이지 등)으로 pop → 이전 화면 상태 유지
+// 딥링크 등으로 이전 화면이 없으면 모집 목록으로 교체
+const goBack = () => {
+  if (router.canGoBack()) {
+    router.back();
+  } else {
+    router.replace("/recruitment");
+  }
+};
+
 export default function RecruitmentDetailScreen() {
   const { recruitmentId } = useLocalSearchParams<{ recruitmentId: string }>();
   const recruitmentIdNum = Number(recruitmentId);
@@ -69,7 +79,7 @@ export default function RecruitmentDetailScreen() {
   const handleDelete = () => {
     if (isDeleting) return;
     deleteRecruitmentMutate(recruitmentIdNum, {
-      onSuccess: () => router.replace("/recruitment"),
+      onSuccess: () => goBack(),
     });
   };
 
@@ -85,7 +95,7 @@ export default function RecruitmentDetailScreen() {
         className="flex-row items-center justify-between px-5 pb-4"
       >
         <Pressable
-          onPress={() => router.push(`/recruitment`)}
+          onPress={goBack}
           className="active:scale-90 transition-transform duration-150 ease-out"
         >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
@@ -124,7 +134,7 @@ export default function RecruitmentDetailScreen() {
         {hasAnnouncement ? (
           <Pressable
             onPress={() => router.push(`/infoPost/${recruitment.infoPostId}`)}
-            className="mt-4 self-start rounded-xl bg-[#EEF1F5] px-3 py-2 transition-transform duration-150 ease-out cale-95"
+            className="mt-4 self-start rounded-xl bg-[#EEF1F5] px-3 py-2 transition-transform duration-150 ease-out active:scale-95"
           >
             <Text className="text-[13px] text-[#2C2C2C]">
               &lt; {recruitment.infoPostTitle} &gt; 바로가기

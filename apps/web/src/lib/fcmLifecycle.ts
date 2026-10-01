@@ -33,7 +33,9 @@ let automaticSyncPauses = 0;
 let messagingWithRootRegistration: Messaging | null = null;
 
 function enqueue<T>(work: () => Promise<T>): Promise<T> {
-  const run = () => {
+  // navigator.locks.request는 콜백이 Promise를 반환하면 Promise<Promise<T>>로 추론됨
+  // async로 감싸서 Promise<T>로 펼침 (런타임 동작은 동일)
+  const run = async (): Promise<T> => {
     if (typeof navigator !== 'undefined' && 'locks' in navigator) {
       return navigator.locks.request('moimi-fcm-lifecycle', work);
     }
