@@ -33,14 +33,17 @@ let automaticSyncPauses = 0;
 let messagingWithRootRegistration: Messaging | null = null;
 
 function enqueue<T>(work: () => Promise<T>): Promise<T> {
-  const run = () => {
+  const run = async (): Promise<T> => {
     if (typeof navigator !== 'undefined' && 'locks' in navigator) {
-      return navigator.locks.request('moimi-fcm-lifecycle', work);
+      return await navigator.locks.request('moimi-fcm-lifecycle', work);
     }
-    return work();
+
+    return await work();
   };
+
   const next = queue.then(run, run);
   queue = next.catch(() => undefined);
+
   return next;
 }
 
