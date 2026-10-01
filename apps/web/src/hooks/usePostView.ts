@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { trackAnalyticsEvent } from '@/lib/analytics';
+import { rememberPostContext } from '@/lib/analytics/httpContext';
 import type { PostViewOptions } from '@moimi/core/types/postView';
 
 export function usePostView({
@@ -15,10 +16,13 @@ export function usePostView({
   useEffect(() => {
     if (!enabled || postId == null || !category) return;
 
+    rememberPostContext(postType, postId, category);
+
     const postKey = `${postType}:${postId}`;
     if (trackedPostKey.current === postKey) return;
 
     trackedPostKey.current = postKey;
+
     trackAnalyticsEvent('post_viewed', {
       feature: postType,
       post_type: postType,

@@ -97,7 +97,7 @@ export function installAnalyticsInterceptors(client: AxiosInstance): void {
   client.interceptors.response.use(
     (response) => {
       try {
-        // 조회 응답에서는 ID와 카테고리만 기억한다.
+        // 조회 응답에서는 ID와 카테고리만 기억한다
         rememberResponse(response.data);
 
         const tracked = requests.get(response.config);

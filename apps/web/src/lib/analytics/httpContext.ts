@@ -39,6 +39,19 @@ export function getPostCategory(
   return postCategories.get(`${postType}:${postId}`);
 }
 
+export function rememberPostContext(
+  postType: PostType,
+  postId: unknown,
+  category: unknown
+): void {
+  const id = safeId(postId);
+  const validCategory = safeCategory(category);
+
+  if (!id || !validCategory) return;
+
+  postCategories.set(`${postType}:${id}`, validCategory);
+}
+
 export function rememberResponse(data: unknown): void {
   if (Array.isArray(data)) {
     data.forEach(rememberResponse);
@@ -57,11 +70,9 @@ export function rememberResponse(data: unknown): void {
     const infoPostId = safeId(row.infoPostId);
 
     if (recruitmentId) {
-      postCategories.set(`recruitment:${recruitmentId}`, category);
-    }
-
-    if (infoPostId) {
-      postCategories.set(`info_post:${infoPostId}`, category);
+      rememberPostContext('recruitment', recruitmentId, category);
+    } else if (infoPostId) {
+      rememberPostContext('info_post', infoPostId, category);
     }
   }
 

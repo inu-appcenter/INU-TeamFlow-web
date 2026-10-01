@@ -13,7 +13,6 @@ import { ROUTES } from '@moimi/core/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogin } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import posthog from 'posthog-js';
 import { useAuthTracking } from '@/hooks/useAuthTracking';
 import { capture } from '@/lib/analytics/client';
 
