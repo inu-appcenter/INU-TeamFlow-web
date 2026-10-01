@@ -5,9 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import InfoPostForm, {
   type InfoPostFormData,
 } from '@/components/infoPost/InfoPostForm';
-import { useInfoPostDetail, useUpdateInfoPost } from '@moimi/core/hooks/useInfoPostQuery';
+import {
+  useInfoPostDetail,
+  useUpdateInfoPost,
+} from '@moimi/core/hooks/useInfoPostQuery';
 import { getImageKeyFromUrl } from '@/utils/image/getImageKeyFromUrl';
-import posthog from 'posthog-js';
+import { startAnalyticsAttempt } from '@/lib/analytics';
+import { capture } from '@/lib/analytics/client';
 
 export default function InfoPostEditPage() {
   const router = useRouter();
@@ -56,16 +60,39 @@ export default function InfoPostEditPage() {
     : null;
 
   const handleSubmit = async (form: InfoPostFormData) => {
-    await updateInfoPost({
-      infoPostId,
-      body: {
-        title: form.title,
-        content: form.content,
-        imageKeys: form.imageKeys,
-      },
+    const attempt = startAnalyticsAttempt('info_post_update', {
+      feature: 'info_post',
+      attempt_scope: 'submission',
+      post_type: 'info_post',
+      post_id: infoPostId,
+      category: detail?.category ?? form.category,
     });
-    posthog.capture('info_post_updated', {
+
+    try {
+      await updateInfoPost({
+        infoPostId,
+        body: {
+          title: form.title,
+          content: form.content,
+          imageKeys: form.imageKeys,
+        },
+      });
+    } catch (error) {
+      attempt.fail(error);
+      throw error;
+    }
+
+    attempt.succeed();
+
+    capture('info_post_updated', {
+      feature: 'info_post',
+      interaction_type: 'management',
+      post_type: 'info_post',
+      post_id: String(infoPostId),
+      post_key: `info_post:${infoPostId}`,
+      category: detail?.category ?? form.category,
       image_count: form.imageKeys.length,
+      attempt_id: attempt.attemptId,
     });
 
     router.push(`/infoPost/${infoPostId}`);

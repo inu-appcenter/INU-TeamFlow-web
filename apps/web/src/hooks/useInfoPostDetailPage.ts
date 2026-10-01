@@ -11,6 +11,7 @@ import type { ReportRequest } from '@moimi/core/types/report';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { usePostView } from '@/hooks/usePostView';
 import { capture } from '@/lib/analytics/client';
+import { startAnalyticsAttempt } from '@/lib/analytics';
 
 export function useInfoPostDetailPage(infoPostId: number) {
   const router = useRouter();
@@ -37,16 +38,35 @@ export function useInfoPostDetailPage(infoPostId: number) {
   const handleDelete = async () => {
     if (isDeleting) return;
 
+    const attempt = startAnalyticsAttempt('info_post_delete', {
+      feature: 'info_post',
+      attempt_scope: 'submission',
+      post_type: 'info_post',
+      post_id: infoPostId,
+      category: infoPost?.category,
+    });
+
     try {
       await deleteInfoPost(infoPostId);
     } catch (error) {
+      attempt.fail(error);
       console.error('정보글 삭제 실패', error);
       showErrorMessage('정보글 삭제에 실패했습니다');
       return;
     }
 
-    // 분석 오류가 삭제 실패로 처리되지 않게함
-    capture('info_post_deleted', { category: infoPost?.category });
+    attempt.succeed();
+
+    capture('info_post_deleted', {
+      feature: 'info_post',
+      interaction_type: 'management',
+      post_type: 'info_post',
+      post_id: String(infoPostId),
+      post_key: `info_post:${infoPostId}`,
+      category: infoPost?.category,
+      attempt_id: attempt.attemptId,
+    });
+
     router.push('/infoPost');
   };
 

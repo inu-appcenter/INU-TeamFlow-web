@@ -20,6 +20,7 @@ import ReportModal from '@/components/report/ReportModal';
 import type { ReportRequest } from '@moimi/core/types/report';
 import PostDeleteConfirmModal from '@/components/common/PostDeleteConfirmModal';
 import RecruitmentDetailActions from '@/components/recruitment/RecruitmentDetailActions';
+import { startAnalyticsAttempt } from '@/lib/analytics';
 
 export default function RecruitmentDetail() {
   const router = useRouter();
@@ -88,12 +89,26 @@ export default function RecruitmentDetail() {
 
   const handleDeleteRecruitment = () => {
     if (isDeleting) return;
+
+    const attempt = startAnalyticsAttempt('recruitment_delete', {
+      feature: 'recruitment',
+      attempt_scope: 'submission',
+      post_type: 'recruitment',
+      post_id: recruitmentId,
+      category: recruitment.category,
+    });
+
     deleteRecruitmentMutate(recruitmentId, {
       onSuccess: () => {
+        attempt.succeed();
         router.push('/recruitment');
+      },
+      onError: (error) => {
+        attempt.fail(error);
       },
     });
   };
+
   const handleSubmitReport = ({ reason, detail }: ReportRequest) => {
     createReport(
       {

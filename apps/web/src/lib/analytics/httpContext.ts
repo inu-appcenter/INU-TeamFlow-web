@@ -85,3 +85,18 @@ export function rememberResponse(data: unknown): void {
 export function clearAnalyticsContextCache(): void {
   postCategories.clear();
 }
+
+export function getCreatedPostId(
+  postType: PostType,
+  data: unknown
+): string | undefined {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return undefined;
+  }
+
+  const row = data as Record<string, unknown>;
+
+  return safeId(
+    row[postType === 'recruitment' ? 'recruitmentId' : 'infoPostId']
+  );
+}
