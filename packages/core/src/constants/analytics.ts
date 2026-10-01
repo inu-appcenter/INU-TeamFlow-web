@@ -48,4 +48,5 @@ export const ANALYTICS_OPERATION_INTERACTIONS = {
   vote_create: "creation",
   vote_participate: "participation",
   message_send: "participation",
+  chat_image_upload: "creation",
 } as const satisfies Record<AnalyticsOperation, AnalyticsInteractionType>;

@@ -33,12 +33,19 @@ export type AnalyticsOperation =
   | "calendar_create"
   | "vote_create"
   | "vote_participate"
-  | "message_send";
+  | "message_send"
+  | "chat_image_upload";
 
 export interface AnalyticsContext {
   feature: AnalyticsFeature;
+  attempt_scope?:
+    | "submission"
+    | "api_request"
+    | "message_send"
+    | "client_publish";
 
-  attempt_scope?: "submission" | "api_request" | "message_send";
+  chat_room_id?: string | number;
+  message_type?: "TEXT" | "IMAGE";
   auth_flow?: "manual_login" | "signup_auto_login";
   interaction_type?: AnalyticsInteractionType;
 
@@ -108,6 +115,7 @@ export interface FailureDetails {
   kind?: FailureKind;
   reason_code?: string;
   server_error_code?: string;
+  http_status?: number;
 }
 
 export type AnalyticsOutcome = "succeeded" | "failed" | "cancelled";

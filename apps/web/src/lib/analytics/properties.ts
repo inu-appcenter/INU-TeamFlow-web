@@ -22,12 +22,15 @@ export function contextProperties(
     category: context.category,
     team_id: context.team_id == null ? undefined : String(context.team_id),
     activity_type: context.activity_type,
+    chat_room_id:
+      context.chat_room_id == null ? undefined : String(context.chat_room_id),
+    message_type: context.message_type,
   };
 }
 
 export function failureProperties(error: unknown, details: FailureDetails) {
   const axiosError = isAxiosError(error) ? error : null;
-  const status = axiosError?.response?.status ?? null;
+  const status = axiosError?.response?.status ?? details.http_status ?? null;
   const kind: FailureKind =
     details.kind ??
     (status !== null
