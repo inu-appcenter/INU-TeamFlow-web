@@ -13,6 +13,7 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import { useUploadInfoPostImages } from '@moimi/core/hooks/useInfoPostQuery';
 import type { InfoPostCategory } from '@moimi/core/types/infoPost';
 import { darkenColor } from '@/utils/color/darkenColor';
+import type { AnalyticsAttempt } from '@moimi/core/types/analytics';
 
 export interface InfoPostFormData {
   category: InfoPostCategory;
@@ -30,7 +31,12 @@ interface InfoPostFormProps {
   mode: 'create' | 'edit';
   initialData?: InfoPostFormData;
   initialImages?: InitialImage[];
-  onSubmit: (form: InfoPostFormData) => Promise<void>;
+  onSubmit: (
+    form: InfoPostFormData,
+    attempt?: AnalyticsAttempt
+  ) => Promise<void>;
+
+  createAnalyticsAttempt?: (form: InfoPostFormData) => AnalyticsAttempt;
   onDelete?: () => void;
 }
 
@@ -59,6 +65,7 @@ export default function InfoPostForm({
   initialImages = EMPTY_INITIAL_IMAGES,
   onSubmit,
   onDelete,
+  createAnalyticsAttempt,
 }: InfoPostFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,13 +177,24 @@ export default function InfoPostForm({
     });
   };
 
+  const trackValidationFailure = (reasonCode: string) => {
+    const attempt = createAnalyticsAttempt?.(form);
+
+    attempt?.fail(null, {
+      kind: 'validation',
+      reason_code: reasonCode,
+    });
+  };
+
   const validateForm = () => {
     if (!form.title.trim()) {
+      trackValidationFailure('TITLE_REQUIRED');
       showErrorMessage('정보글 제목을 입력해주세요');
       return false;
     }
 
     if (!form.content.trim()) {
+      trackValidationFailure('CONTENT_REQUIRED');
       showErrorMessage('정보글 내용을 입력해주세요');
       return false;
     }
@@ -185,6 +203,9 @@ export default function InfoPostForm({
   };
 
   const submitForm = async () => {
+    const attempt = createAnalyticsAttempt?.(form);
+    let stage: 'image_upload' | 'submission' = 'image_upload';
+
     try {
       setIsSubmitting(true);
 
@@ -237,13 +258,27 @@ export default function InfoPostForm({
         MAX_IMAGE_COUNT
       );
 
-      await onSubmit({
-        ...form,
-        title: form.title.trim(),
-        content: form.content.trim(),
-        imageKeys,
-      });
+      stage = 'submission';
+
+      await onSubmit(
+        {
+          ...form,
+          title: form.title.trim(),
+          content: form.content.trim(),
+          imageKeys,
+        },
+        attempt
+      );
     } catch (error) {
+      if (stage === 'image_upload') {
+        attempt?.fail(error, {
+          reason_code: 'IMAGE_UPLOAD_FAILED',
+        });
+      } else {
+        // 페이지에서 이미 결과를 기록했다면 중복 기록되지 않는다.
+        attempt?.fail(error);
+      }
+
       console.error(
         mode === 'create' ? '정보글 생성 실패' : '정보글 수정 실패',
         error

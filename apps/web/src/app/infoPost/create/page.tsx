@@ -12,7 +12,7 @@ import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificat
 import { getCreatedPostId } from '@/lib/analytics/httpContext';
 import { startAnalyticsAttempt } from '@/lib/analytics';
 import { capture } from '@/lib/analytics/client';
-
+import type { AnalyticsAttempt } from '@moimi/core/types/analytics';
 export default function InfoPostCreatePage() {
   const router = useRouter();
 
@@ -26,13 +26,11 @@ export default function InfoPostCreatePage() {
     }
   }, [isVerified, router]);
 
-  const handleSubmit = async (form: InfoPostFormData) => {
-    const attempt = startAnalyticsAttempt('info_post_create', {
-      feature: 'info_post',
-      attempt_scope: 'submission',
-      post_type: 'info_post',
-      category: form.category,
-    });
+  const handleSubmit = async (
+    form: InfoPostFormData,
+    providedAttempt?: AnalyticsAttempt
+  ) => {
+    const attempt = providedAttempt ?? createSubmissionAttempt(form);
 
     let createdInfoPost: unknown;
 
@@ -65,7 +63,13 @@ export default function InfoPostCreatePage() {
 
     router.replace('/infoPost');
   };
-
+  const createSubmissionAttempt = (form: InfoPostFormData) =>
+    startAnalyticsAttempt('info_post_create', {
+      feature: 'info_post',
+      attempt_scope: 'submission',
+      post_type: 'info_post',
+      category: form.category,
+    });
   return (
     <>
       {errorMessage && (
@@ -74,7 +78,11 @@ export default function InfoPostCreatePage() {
         </div>
       )}
 
-      <InfoPostForm mode="create" onSubmit={handleSubmit} />
+      <InfoPostForm
+        mode="create"
+        onSubmit={handleSubmit}
+        createAnalyticsAttempt={createSubmissionAttempt}
+      />
     </>
   );
 }

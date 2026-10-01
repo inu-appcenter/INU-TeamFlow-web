@@ -11,7 +11,7 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import { getCreatedPostId } from '@/lib/analytics/httpContext';
 import { startAnalyticsAttempt } from '@/lib/analytics';
 import { capture } from '@/lib/analytics/client';
-
+import type { AnalyticsAttempt } from '@moimi/core/types/analytics';
 export default function RecruitmentCreatePage() {
   const router = useRouter();
   const { mutateAsync: createRecruitment } = useCreateRecruitment();
@@ -24,14 +24,11 @@ export default function RecruitmentCreatePage() {
     }
   }, [isVerified, router]);
 
-  const handleSubmit = async (form: RecruitmentFormData) => {
-    const attempt = startAnalyticsAttempt('recruitment_create', {
-      feature: 'recruitment',
-      attempt_scope: 'submission',
-      post_type: 'recruitment',
-      category: form.category,
-      team_id: form.teamId || undefined,
-    });
+  const handleSubmit = async (
+    form: RecruitmentFormData,
+    providedAttempt?: AnalyticsAttempt
+  ) => {
+    const attempt = providedAttempt ?? createSubmissionAttempt(form);
 
     if (form.targetMemberCount === '') {
       const error = new Error('모집 인원을 입력해주세요');
@@ -80,7 +77,14 @@ export default function RecruitmentCreatePage() {
 
     router.push('/recruitment');
   };
-
+  const createSubmissionAttempt = (form: RecruitmentFormData) =>
+    startAnalyticsAttempt('recruitment_create', {
+      feature: 'recruitment',
+      attempt_scope: 'submission',
+      post_type: 'recruitment',
+      category: form.category,
+      team_id: form.teamId,
+    });
   return (
     <>
       {errorMessage && (
@@ -88,7 +92,11 @@ export default function RecruitmentCreatePage() {
           {errorMessage}
         </div>
       )}
-      <RecruitmentForm mode="create" onSubmit={handleSubmit} />
+      <RecruitmentForm
+        mode="create"
+        onSubmit={handleSubmit}
+        createAnalyticsAttempt={createSubmissionAttempt}
+      />
     </>
   );
 }

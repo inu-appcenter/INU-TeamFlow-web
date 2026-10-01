@@ -12,7 +12,7 @@ import {
 import { getImageKeyFromUrl } from '@/utils/image/getImageKeyFromUrl';
 import { startAnalyticsAttempt } from '@/lib/analytics';
 import { capture } from '@/lib/analytics/client';
-
+import type { AnalyticsAttempt } from '@moimi/core/types/analytics';
 export default function InfoPostEditPage() {
   const router = useRouter();
   const params = useParams();
@@ -59,14 +59,11 @@ export default function InfoPostEditPage() {
       }
     : null;
 
-  const handleSubmit = async (form: InfoPostFormData) => {
-    const attempt = startAnalyticsAttempt('info_post_update', {
-      feature: 'info_post',
-      attempt_scope: 'submission',
-      post_type: 'info_post',
-      post_id: infoPostId,
-      category: detail?.category ?? form.category,
-    });
+  const handleSubmit = async (
+    form: InfoPostFormData,
+    providedAttempt?: AnalyticsAttempt
+  ) => {
+    const attempt = providedAttempt ?? createSubmissionAttempt(form);
 
     try {
       await updateInfoPost({
@@ -147,13 +144,21 @@ export default function InfoPostEditPage() {
       </main>
     );
   }
-
+  const createSubmissionAttempt = (form: InfoPostFormData) =>
+    startAnalyticsAttempt('info_post_update', {
+      feature: 'info_post',
+      attempt_scope: 'submission',
+      post_type: 'info_post',
+      post_id: infoPostId,
+      category: detail?.category ?? form.category,
+    });
   return (
     <InfoPostForm
       mode="edit"
       initialData={initialData}
       initialImages={initialImages}
       onSubmit={handleSubmit}
+      createAnalyticsAttempt={createSubmissionAttempt}
     />
   );
 }
