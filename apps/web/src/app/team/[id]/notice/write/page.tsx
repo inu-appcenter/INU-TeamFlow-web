@@ -10,6 +10,7 @@ import {
   useCreateTeamNotice,
   useGetPresignedUrls,
 } from '@moimi/core/hooks/useNoticeQuery';
+import { startTeamActivityAttempt } from '@/lib/analytics/teamActivity';
 import { uploadImageToS3 } from '@/utils/uploadImageToS3';
 
 const categoryColorMap: Record<string, string> = {
@@ -172,18 +173,29 @@ export default function TeamNoticeWrite() {
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
+    const attempt = startTeamActivityAttempt('notice_create', {
+      team_id: teamId,
+      category: team?.category,
+    });
+
+    let failureReason = 'NOTICE_CREATE_FAILED';
+
     setIsSubmitting(true);
 
     try {
       let imageKeys: string[] = [];
 
       if (images.length > 0) {
+        failureReason = 'NOTICE_IMAGE_URL_REQUEST_FAILED';
+
         const presignedList = await getPresignedUrls(
           images.map((img) => ({
             fileName: img.file.name,
             contentType: img.file.type,
           }))
         );
+
+        failureReason = 'NOTICE_IMAGE_UPLOAD_FAILED';
 
         await Promise.all(
           presignedList.map((presigned, i) =>
@@ -194,6 +206,8 @@ export default function TeamNoticeWrite() {
         imageKeys = presignedList.map((p) => p.imageKey);
       }
 
+      failureReason = 'NOTICE_CREATE_FAILED';
+
       await createNotice({
         title: title.trim(),
         content: content.trim(),
@@ -201,9 +215,15 @@ export default function TeamNoticeWrite() {
         imageKeys,
       });
 
+      attempt.succeed();
+
       router.push(`/team/${teamId}/notice`);
-    } catch (err) {
-      console.error('공지 작성 실패', err);
+    } catch (error) {
+      attempt.fail(error, {
+        reason_code: failureReason,
+      });
+
+      console.error('공지 작성 실패', error);
       showErrorMessage('공지 작성에 실패했어요');
     } finally {
       setIsSubmitting(false);
