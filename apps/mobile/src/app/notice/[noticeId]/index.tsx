@@ -1,3 +1,4 @@
+// app/notice/[noticeId]/index.tsx
 import { useState } from "react";
 import { View, Text, ScrollView, Pressable, Image, Modal } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -7,16 +8,9 @@ import {
   useTeamNoticeDetail,
   useDeleteTeamNotice,
 } from "@moimi/core/hooks/useNoticeQuery";
+import { categoryColorMap } from "@moimi/core/constants/category";
 import { formatDate } from "@/utils/date/formatDate";
 import { getTeamRoleLabel } from "@/utils/user/teamRole";
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: "#FBE4F8",
-  STUDY: "#D8FAD8",
-  PROJECT: "#DCEBFF",
-  CLUB: "#FFF1CC",
-  ETC: "#E9E9E9",
-};
 
 export default function NoticeDetailScreen() {
   const { noticeId, teamId } = useLocalSearchParams<{
@@ -42,19 +36,50 @@ export default function NoticeDetailScreen() {
     ? categoryColorMap[team.category] ?? "#E9E9E9"
     : "#E9E9E9";
 
+  // 들어온 화면(팀 상세 / 공지 목록 / 마이페이지 등)으로 pop
+  // 푸시 알림·딥링크로 바로 열려 이전 화면이 없으면 해당 팀 공지 목록으로 교체
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace(`/team/${teamIdNum}/notice`);
+    }
+  };
+
   const handleDelete = async () => {
+    if (isDeletePending) return;
     try {
       await deleteNotice(noticeIdNum);
-      router.back();
+      goBack();
     } catch (err) {
       console.log("공지 삭제 실패", err);
     }
   };
 
-  if (isLoading || !notice) {
+  if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
         <Text className="text-[14px] text-[#989898]">불러오는 중...</Text>
+      </View>
+    );
+  }
+
+  if (!notice) {
+    return (
+      <View className="flex-1 bg-[#F0F2F5]">
+        <View style={{ paddingTop: 60 }} className="px-5 pb-4">
+          <Pressable
+            onPress={goBack}
+            className="self-start transition-transform duration-150 ease-out active:scale-90"
+          >
+            <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
+          </Pressable>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-[15px] font-semibold text-[#2C2C2C]">
+            존재하지 않는 공지입니다.
+          </Text>
+        </View>
       </View>
     );
   }
@@ -70,7 +95,7 @@ export default function NoticeDetailScreen() {
         className="flex-row items-center justify-between px-5 pb-4"
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={goBack}
           className="transition-transform duration-150 ease-out active:scale-90"
         >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />

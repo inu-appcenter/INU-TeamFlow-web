@@ -47,7 +47,8 @@ export function AnimatedSplashOverlay() {
   const image = (
     <Image
       style={styles.image}
-      source={require("@/assets/images/expo-logo.png")}
+      contentFit="contain"
+      source={require("@/assets/images/logo.png")}
     />
   );
 
@@ -154,8 +155,8 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   image: {
-    width: 76,
-    height: 71,
+    width: 120,
+    height: 120,
   },
   background: {
     borderRadius: 40,
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
   },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "#208AEF",
+    backgroundColor: "#F0F2F5",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1000,
