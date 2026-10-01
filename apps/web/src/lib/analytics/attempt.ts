@@ -6,10 +6,12 @@ import type {
   AnalyticsContext,
   AnalyticsOperation,
   AnalyticsOutcome,
+  AnalyticsSuccessContext,
   FailureDetails,
 } from '@moimi/core/types/analytics';
 import {
   ANALYTICS_EVENTS,
+  ANALYTICS_OPERATION_INTERACTIONS,
   ANALYTICS_OUTCOME_EVENTS,
 } from '@moimi/core/constants/analytics';
 import { capture, getActorId } from './client';
@@ -28,22 +30,32 @@ export function startAnalyticsAttempt(
 ): AnalyticsAttempt {
   const startedAt = Date.now();
   const actorId = getActorId();
+
   const attemptId =
     typeof globalThis.crypto?.randomUUID === 'function'
       ? globalThis.crypto.randomUUID()
       : `${startedAt}-${++attemptSequence}-${Math.random().toString(36).slice(2)}`;
-  const initialContext = contextProperties(context);
+
+  const attemptContext: AnalyticsContext = {
+    ...context,
+    interaction_type:
+      context.interaction_type ?? ANALYTICS_OPERATION_INTERACTIONS[operation],
+  };
+
+  const initialContext = contextProperties(attemptContext);
   let finished = false;
 
   const base = {
     operation,
     attempt_id: attemptId,
-    // 401 처리로 SDK가 reset되어도 시도한 사람을 잃지 않는다
-    // 실패 영향 인원은 이 속성의 고유값을 집계한다
+    // 401 처리로 SDK가 reset되어도 시도한 사람을 유지한다
     actor_id: actorId,
   };
 
-  capture(ANALYTICS_EVENTS.ACTION_ATTEMPTED, { ...initialContext, ...base });
+  capture(ANALYTICS_EVENTS.ACTION_ATTEMPTED, {
+    ...initialContext,
+    ...base,
+  });
 
   const finish = (
     outcome: AnalyticsOutcome,
@@ -51,25 +63,37 @@ export function startAnalyticsAttempt(
   ) => {
     if (finished) return;
     finished = true;
+
     capture(ANALYTICS_OUTCOME_EVENTS[outcome], {
       ...initialContext,
       ...extra,
       ...base,
       duration_ms: Math.max(0, Date.now() - startedAt),
-      interaction_type: outcome === 'succeeded' ? 'participation' : undefined,
     });
   };
 
   return {
     attemptId,
-    succeed: () => finish('succeeded'),
+
+    succeed: (successContext: AnalyticsSuccessContext = {}) => {
+      finish(
+        'succeeded',
+        contextProperties({
+          ...attemptContext,
+          ...successContext,
+        })
+      );
+    },
+
     fail: (error: unknown, details: FailureDetails = {}) => {
       if (isCancel(error)) {
         finish('cancelled');
         return;
       }
+
       finish('failed', failureProperties(error, details));
     },
+
     cancel: () => finish('cancelled'),
   };
 }

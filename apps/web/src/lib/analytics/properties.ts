@@ -12,6 +12,7 @@ export function contextProperties(
     feature: context.feature,
     attempt_scope: context.attempt_scope,
     auth_flow: context.auth_flow,
+    interaction_type: context.interaction_type,
     post_type: context.post_type,
     post_id: context.post_id == null ? undefined : String(context.post_id),
     post_key:
