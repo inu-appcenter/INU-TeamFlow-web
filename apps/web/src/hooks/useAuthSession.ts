@@ -15,6 +15,7 @@ import {
   clearNotificationSetupPending,
 } from '@/lib/fcmLifecycle';
 import { useFcmNotifications } from './useFcmNotifications';
+import { updateAnalyticsVerification } from '@/lib/analytics/client';
 
 export function useAuthSession(): AuthSessionState {
   const queryClient = useQueryClient();
@@ -94,6 +95,7 @@ export function useAuthSession(): AuthSessionState {
         }
 
         identifyAnalyticsUser(userId);
+        updateAnalyticsVerification(me.isSchoolVerified);
 
         stopping.current = false;
         setUser(me);

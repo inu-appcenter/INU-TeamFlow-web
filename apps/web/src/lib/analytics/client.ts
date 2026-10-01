@@ -13,9 +13,7 @@ export function capture(
       analytics_schema_version: ANALYTICS_SCHEMA_VERSION,
       ...properties,
     });
-  } catch {
-    // 분석 도구 오류로 로그인/작성 등 실제 기능이 실패하면 안 된다.
-  }
+  } catch {}
 }
 
 function getIdentifiedId(): string | null {
@@ -27,16 +25,14 @@ function getIdentifiedId(): string | null {
   }
 }
 
-/** 이미 비로그인이면 reset하지 않아 익명 방문자 ID를 유지한다. */
+/** 비로그인시 익명 방문자 ID를 유지 */
 export function resetAnalyticsIdentity(): void {
   try {
     if (getIdentifiedId() !== null) posthog.reset();
-  } catch {
-    // 인증/FCM 정리는 계속 진행한다.
-  }
+  } catch {}
 }
 
-/** 새로고침 후에도 SDK에 남아 있는 이전 계정과 현재 계정을 비교한다. */
+/** 새로고침 후에도 SDK에 남아 있는 이전 계정과 현재 계정을 비교한다 */
 export function identifyAnalyticsUser(userId: string | number): void {
   if (String(userId).length === 0) return;
   try {
@@ -44,9 +40,7 @@ export function identifyAnalyticsUser(userId: string | number): void {
     const previousId = getIdentifiedId();
     if (previousId !== null && previousId !== nextId) posthog.reset();
     posthog.identify(nextId);
-  } catch {
-    // 분석 실패는 사용자 프로필 로딩 실패가 아니다.
-  }
+  } catch {}
 }
 
 export function getActorId(): string | null {
@@ -55,4 +49,12 @@ export function getActorId(): string | null {
   } catch {
     return null;
   }
+}
+
+export function updateAnalyticsVerification(isVerified: boolean): void {
+  try {
+    posthog.setPersonProperties({
+      is_school_verified: isVerified,
+    });
+  } catch {}
 }

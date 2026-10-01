@@ -18,9 +18,9 @@ import { contextProperties, failureProperties } from './properties';
 let attemptSequence = 0;
 
 /**
- * 사용자 제출/전송 한 번에 하나 생성한다. 자동 재시도에는 재사용한다.
- * API 성공/서버 ACK 직후 succeed(), 최종 실패에 fail()을 호출한다.
- * 후속 refetch, FCM, 화면 이동 실패는 원래 작업의 실패로 기록하지 않는다.
+ * 사용자 제출/전송 한 번에 하나 생성한다. 자동 재시도에는 재사용한다
+ * API 성공/서버 ACK 직후 succeed(), 최종 실패에 fail()을 호출한다
+ * 후속 refetch, FCM, 화면 이동 실패는 원래 작업의 실패로 기록하지 않는다
  */
 export function startAnalyticsAttempt(
   operation: AnalyticsOperation,

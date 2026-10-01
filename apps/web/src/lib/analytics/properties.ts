@@ -8,7 +8,7 @@ import type {
 export function contextProperties(
   context: AnalyticsContext
 ): Record<string, unknown> {
-  // 허용한 속성만 복사해 호출자가 객체를 잘못 넘겨도 본문을 전송하지 않는다.
+  // 허용한 속성만 복사해 호출자가 객체를 잘못 넘겨도 본문을 전송하지 않는다
   return {
     feature: context.feature,
     post_type: context.post_type,
