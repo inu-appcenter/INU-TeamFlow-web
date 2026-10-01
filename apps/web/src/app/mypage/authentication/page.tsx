@@ -11,6 +11,8 @@ import Card from '@/components/main/Card';
 import { useVerifySchool } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import InputField from '@/components/register/InputField';
+import { useAuthTracking } from '@/hooks/useAuthTracking';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SchoolAuthenticationPage() {
   const router = useRouter();
@@ -22,8 +24,18 @@ export default function SchoolAuthenticationPage() {
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
   const { errorMessage, showErrorMessage } = useErrorToast();
 
+  const analytics = useAuthTracking('school_verify');
+  const { refetchUser } = useAuth();
+
   const handleVerifySchool = () => {
+    const attempt = analytics.start();
+
     if (studentNumber.trim() === '' || portalPassword.trim() === '') {
+      attempt.fail(null, {
+        kind: 'validation',
+        reason_code: 'REQUIRED_FIELD_MISSING',
+      });
+
       showErrorMessage('학번과 비밀번호를 입력해주세요');
       return;
     }
@@ -34,10 +46,26 @@ export default function SchoolAuthenticationPage() {
         portalPassword,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          if (!data.isSchoolVerified) {
+            attempt.fail(null, {
+              reason_code: 'VERIFICATION_NOT_CONFIRMED',
+            });
+
+            showErrorMessage('학교 인증에 실패했습니다');
+            return;
+          }
+
+          analytics.verified(data);
+          attempt.succeed();
+
+          void refetchUser().catch(() => undefined);
+
           router.push('/mypage');
         },
-        onError: () => {
+
+        onError: (error) => {
+          attempt.fail(error);
           showErrorMessage('학교 인증에 실패했습니다');
         },
       }

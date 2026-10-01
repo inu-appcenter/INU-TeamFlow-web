@@ -74,18 +74,20 @@ export const subscribeChatRoom = (
   return c.subscribe(`/sub/chat-rooms/${roomId}`, onMessage);
 };
 
-export const publishChatMessage = (roomId: number, body: unknown): void => {
+export const publishChatMessage = (roomId: number, body: unknown): boolean => {
   const c = getChatClient();
 
   if (!c.connected) {
     console.warn('STOMP 미연결 상태에서 publish 시도 - 무시됨');
-    return;
+    return false;
   }
 
   c.publish({
     destination: `/pub/chat-rooms/${roomId}/messages`,
     body: JSON.stringify(body),
   });
+
+  return true;
 };
 
 export const subscribeChatRoomRead = (

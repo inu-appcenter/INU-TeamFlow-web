@@ -15,7 +15,7 @@ import {
 import { useChatRoomMembers } from '@moimi/core/hooks/chat/useChatRoomMembers';
 import { formatChatMessageTime } from '@/utils/date/formatChatMessageTime';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
-import { useSendChatMessage } from '@moimi/core/hooks/chat/useSendChatMessage';
+import { useSendChatMessage } from '@/hooks/chat/useSendChatMessage';
 import { useChatMessageSubscription } from '@/hooks/chat/useChatMessageSubscription';
 import { useChatReadEventSubscription } from '@/hooks/chat/useChatReadEventSubscription';
 import { useMarkRoomRead } from '@/hooks/chat/useMarkRoomRead';
@@ -24,7 +24,7 @@ import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
 import type { ChatMessageResponse } from '@moimi/core/types/chat';
 import ChatRoomDrawer from '@/components/chat/ChatRoomDrawer';
 import ChatRoomAvatar from '@/components/chat/ChatRoomAvatar';
-import posthog from 'posthog-js';
+import { startAnalyticsAttempt } from '@/lib/analytics';
 
 export default function ChatRoomPage() {
   const params = useParams();
@@ -92,7 +92,14 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   const { isConnected } = useChatSocketContext();
   const { sendMessage } = useSendChatMessage(roomId);
   const { mutateAsync: uploadImage, isPending: isUploading } =
-    useChatImageUpload();
+    useChatImageUpload(() =>
+      startAnalyticsAttempt('chat_image_upload', {
+        feature: 'chat',
+        attempt_scope: 'api_request',
+        chat_room_id: roomId,
+        message_type: 'IMAGE',
+      })
+    );
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   // --- 읽음 표시 로직 (요구사항 4단계) ---
@@ -202,7 +209,6 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   const handleSend = () => {
     if (!draft.trim()) return;
     sendMessage({ messageType: 'TEXT', content: draft });
-    posthog.capture('chat_message_sent', { message_type: 'TEXT' });
     setDraft('');
   };
 
@@ -215,7 +221,6 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
 
     const imageKey = await uploadImage(file);
     sendMessage({ messageType: 'IMAGE', imageKey });
-    posthog.capture('chat_message_sent', { message_type: 'IMAGE' });
   };
 
   const roomType =
@@ -234,7 +239,6 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
 
   return (
     <main className="h-screen overflow-hidden bg-[#F0F2F5] px-3 sm:px-6">
-
       <section className="relative mx-auto flex h-full min-h-0 max-w-[800px] flex-1 flex-col bg-white">
         <header className="absolute top-0 right-0 left-0 z-10 flex items-center justify-between bg-white/70 backdrop-blur-sm">
           <div className="flex items-center gap-3 px-6 py-4">

@@ -5,7 +5,7 @@ import './globals.css';
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { ChatSocketProvider } from '@/contexts/ChatSocketContext';
 import { pretendard } from '@/lib/fonts';

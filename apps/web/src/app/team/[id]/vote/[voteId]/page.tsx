@@ -16,6 +16,7 @@ import { ChevronLeft, ChevronRight, EllipsisVertical } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
+import { startTeamActivityAttempt } from '@/lib/analytics/teamActivity';
 
 export default function VoteDetailPage() {
   const router = useRouter();
@@ -200,10 +201,20 @@ export default function VoteDetailPage() {
                   isAllDay={vote.isAllDay}
                   isOpened={vote.isOpened}
                   onSubmit={async (selectedSlotIds) => {
+                    const attempt = startTeamActivityAttempt(
+                      'vote_participate',
+                      {
+                        team_id: teamId,
+                        category: team.category,
+                      }
+                    );
+
                     try {
                       await selectSlots({ slotIdList: selectedSlotIds });
+                      attempt.succeed();
                       setIsVoting(false);
                     } catch (err) {
+                      attempt.fail(err);
                       console.error('투표 실패', err);
                     }
                   }}

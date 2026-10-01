@@ -13,7 +13,7 @@ import {
   useUpdateMyProfile,
   useUploadProfileImage,
 } from '@moimi/core/hooks/useUserQuery';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import Image from 'next/image';
 import {

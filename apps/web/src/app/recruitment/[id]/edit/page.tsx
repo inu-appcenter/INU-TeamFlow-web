@@ -8,7 +8,8 @@ import {
   useRecruitmentDetail,
   useUpdateRecruitment,
 } from '@moimi/core/hooks/useRecruitmentQuery';
-
+import { startAnalyticsAttempt } from '@/lib/analytics';
+import type { AnalyticsAttempt } from '@moimi/core/types/analytics';
 export default function RecruitmentEditPage() {
   const router = useRouter();
   const params = useParams();
@@ -33,9 +34,21 @@ export default function RecruitmentEditPage() {
       }
     : null;
 
-  const handleSubmit = async (form: RecruitmentFormData) => {
+  const handleSubmit = async (
+    form: RecruitmentFormData,
+    providedAttempt?: AnalyticsAttempt
+  ) => {
+    const attempt = providedAttempt ?? createSubmissionAttempt(form);
+
     if (form.targetMemberCount === '') {
-      throw new Error('모집 인원을 입력해주세요');
+      const error = new Error('모집 인원을 입력해주세요');
+
+      attempt.fail(error, {
+        kind: 'validation',
+        reason_code: 'REQUIRED_FIELD_MISSING',
+      });
+
+      throw error;
     }
 
     try {
@@ -48,20 +61,32 @@ export default function RecruitmentEditPage() {
           endAt: form.endAt,
         },
       });
-
-      router.push(`/recruitment/${recruitmentId}`);
     } catch (err) {
+      attempt.fail(err);
       console.error('모집글 수정 실패', err);
+      return;
     }
+
+    attempt.succeed();
+
+    router.push(`/recruitment/${recruitmentId}`);
   };
 
   if (isLoading || !initialData) return null;
-
+  const createSubmissionAttempt = (form: RecruitmentFormData) =>
+    startAnalyticsAttempt('recruitment_update', {
+      feature: 'recruitment',
+      attempt_scope: 'submission',
+      post_type: 'recruitment',
+      post_id: recruitmentId,
+      category: detail?.category ?? form.category,
+    });
   return (
     <RecruitmentForm
       mode="edit"
       initialData={initialData}
       onSubmit={handleSubmit}
+      createAnalyticsAttempt={createSubmissionAttempt}
     />
   );
 }

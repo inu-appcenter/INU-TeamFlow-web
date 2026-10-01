@@ -1,4 +1,6 @@
-import type { UserMeResponse } from './user';
+import type { UserMeResponse } from "./user";
+import type { ReactNode } from "react";
+import type { FcmNotificationController } from "./fcmNotifications";
 
 export interface SignupRequest {
   username: string;
@@ -42,7 +44,7 @@ export interface MyInfoResponse {
   email: string;
   studentNumber: string;
   name: string;
-  role: 'USER' | 'ADMIN';
+  role: "USER" | "ADMIN";
   department: string;
   isSchoolVerified: boolean;
   imageUrl?: string | null;
@@ -53,3 +55,21 @@ export interface VerifySchoolRequest {
 }
 
 export type VerifySchoolResponse = UserMeResponse;
+
+export interface AuthContextValue {
+  user: UserMeResponse | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  refetchUser: (options?: { syncNotifications?: boolean }) => Promise<void>;
+  logout: () => Promise<void>;
+  finishAccountDeletion: () => Promise<void>;
+}
+
+export interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export interface AuthSessionState {
+  contextValue: AuthContextValue;
+  notifications: FcmNotificationController;
+}

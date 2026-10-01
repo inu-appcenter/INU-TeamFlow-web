@@ -28,7 +28,11 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "../../packages/core/src/types/infoPostDetail.ts",
+    "../../packages/core/src/types/postDeleteConfirm.ts",
+    "../../packages/core/src/types/postPagination.ts",
+    "../../packages/core/src/types/recruitmentDetail.ts"
   ],
   "exclude": ["node_modules"]
 }

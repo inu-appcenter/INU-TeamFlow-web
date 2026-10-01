@@ -10,10 +10,11 @@ import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
 import { LOGIN_TEXT } from '@moimi/core/constants/messages';
 import { ROUTES } from '@moimi/core/constants/routes';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useLogin } from '@moimi/core/hooks/useAuthQuery';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import posthog from 'posthog-js';
+import { useAuthTracking } from '@/hooks/useAuthTracking';
+import { capture } from '@/lib/analytics/client';
 
 type LoginErrorBody = {
   code?: number;
@@ -56,15 +57,28 @@ export default function Login() {
   const { errorMessage, showErrorMessage } = useErrorToast();
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
 
+  const analytics = useAuthTracking('login');
+
   const login = () => {
+    const attempt = analytics.start();
     const trimmedUsername = username.trim();
 
     if (trimmedUsername === '') {
+      attempt.fail(null, {
+        kind: 'validation',
+        reason_code: 'USERNAME_REQUIRED',
+      });
+
       showErrorMessage('아이디를 입력해주세요');
       return;
     }
 
     if (password === '') {
+      attempt.fail(null, {
+        kind: 'validation',
+        reason_code: 'PASSWORD_REQUIRED',
+      });
+
       showErrorMessage('비밀번호를 입력해주세요');
       return;
     }
@@ -76,23 +90,33 @@ export default function Login() {
       },
       {
         onSuccess: async (data) => {
+          attempt.succeed();
+
+          capture('login_completed', {
+            feature: 'auth',
+          });
+
           localStorage.setItem('accessToken', data.accessToken);
 
           try {
             await refetchUser();
-            posthog.capture('login_completed');
           } catch (error) {
             console.error('사용자 정보 조회 실패:', error);
           }
 
           router.replace(ROUTES.MAIN);
         },
+
         onError: (error) => {
+          attempt.fail(error);
+
           const { message, isSanctioned } = getLoginError(error);
+
           showErrorMessage(message);
 
-          // 비밀번호가 틀린 경우에만 비움 (정지 계정은 비번 자체는 맞음)
-          if (!isSanctioned) setPassword('');
+          if (!isSanctioned) {
+            setPassword('');
+          }
         },
       }
     );

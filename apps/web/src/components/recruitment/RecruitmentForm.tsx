@@ -2,7 +2,7 @@
 
 import Card from '@/components/main/Card';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X, Search, ImageIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -29,7 +29,7 @@ import {
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useRouter } from 'next/navigation';
 import { darkenColor } from '@/utils/color/darkenColor';
-
+import type { AnalyticsAttempt } from '@moimi/core/types/analytics';
 export type RecruitmentFormData = {
   title: string;
   category: 'CONTEST' | 'STUDY' | 'CLUB' | 'PROJECT' | 'ETC';
@@ -44,7 +44,11 @@ export type RecruitmentFormData = {
 type RecruitmentFormProps = {
   mode: 'create' | 'edit';
   initialData?: RecruitmentFormData;
-  onSubmit: (data: RecruitmentFormData) => Promise<void>;
+  onSubmit: (
+    data: RecruitmentFormData,
+    attempt?: AnalyticsAttempt
+  ) => Promise<void>;
+  createAnalyticsAttempt?: (data: RecruitmentFormData) => AnalyticsAttempt;
   onDelete?: () => void;
 };
 
@@ -61,6 +65,7 @@ export default function RecruitmentForm({
   initialData,
   onSubmit,
   onDelete,
+  createAnalyticsAttempt,
 }: RecruitmentFormProps) {
   const router = useRouter();
   const { errorMessage, showErrorMessage } = useErrorToast();
@@ -190,7 +195,87 @@ export default function RecruitmentForm({
     setSelectedInfoPostTitle(post.title);
     setIsInfoPostModalOpen(false);
   };
+  const trackValidationFailure = (reasonCode: string) => {
+    const attempt = createAnalyticsAttempt?.(form);
 
+    attempt?.fail(null, {
+      kind: 'validation',
+      reason_code: reasonCode,
+    });
+  };
+
+  const submitForm = async () => {
+    const attempt = createAnalyticsAttempt?.(form);
+
+    let request: RecruitmentFormData;
+
+    try {
+      request = {
+        ...form,
+        endAt: new Date(`${form.endAt}T00:00:00`).toISOString(),
+      };
+    } catch (error) {
+      attempt?.fail(error, {
+        kind: 'validation',
+        reason_code: 'INVALID_END_DATE',
+      });
+
+      throw error;
+    }
+    await onSubmit(request, attempt);
+  };
+
+  const handleSubmitClick = async () => {
+    if (!form.title.trim()) {
+      trackValidationFailure('TITLE_REQUIRED');
+      showErrorMessage('모집글 제목을 입력해주세요');
+      return;
+    }
+
+    if (!form.description.trim()) {
+      trackValidationFailure('DESCRIPTION_REQUIRED');
+      showErrorMessage('상세요강을 입력해주세요');
+      return;
+    }
+
+    if (!form.endAt) {
+      trackValidationFailure('END_DATE_REQUIRED');
+      showErrorMessage('모집 마감일을 입력해주세요');
+      return;
+    }
+
+    if (!form.targetMemberCount) {
+      trackValidationFailure('TARGET_MEMBER_COUNT_REQUIRED');
+      showErrorMessage('모집 인원을 입력해주세요');
+      return;
+    }
+
+    if (
+      form.targetMemberCount < 1 ||
+      !Number.isInteger(form.targetMemberCount)
+    ) {
+      trackValidationFailure('INVALID_TARGET_MEMBER_COUNT');
+      showErrorMessage('올바른 모집 인원을 입력해주세요');
+      return;
+    }
+
+    if (!form.teamId) {
+      trackValidationFailure('TEAM_REQUIRED');
+      showErrorMessage('연결할 팀을 선택해주세요');
+      return;
+    }
+
+    if (mode === 'create') {
+      setIsConfirmOpen(true);
+    } else {
+      await submitForm();
+    }
+  };
+
+  const handleCreateConfirm = async () => {
+    setIsConfirmOpen(false);
+    await submitForm();
+  };
   return (
     <main className="min-h-screen bg-[#F0F2F5] px-3 sm:px-6 sm:pt-6">
       <section className="mx-auto mt-8 flex min-h-[calc(100vh)] max-w-[800px] flex-col sm:mt-12">
@@ -474,44 +559,7 @@ export default function RecruitmentForm({
                 )}
 
                 <button
-                  onClick={async () => {
-                    if (!form.title.trim()) {
-                      showErrorMessage('모집글 제목을 입력해주세요');
-                      return;
-                    }
-                    if (!form.description.trim()) {
-                      showErrorMessage('상세요강을 입력해주세요');
-                      return;
-                    }
-                    if (!form.endAt) {
-                      showErrorMessage('모집 마감일을 입력해주세요');
-                      return;
-                    }
-                    if (!form.targetMemberCount) {
-                      showErrorMessage('모집 인원을 입력해주세요');
-                      return;
-                    }
-                    if (
-                      form.targetMemberCount < 1 ||
-                      !Number.isInteger(form.targetMemberCount)
-                    ) {
-                      showErrorMessage('올바른 모집 인원을 입력해주세요');
-                      return;
-                    }
-                    if (!form.teamId) {
-                      showErrorMessage('연결할 팀을 선택해주세요');
-                      return;
-                    }
-
-                    if (mode === 'create') {
-                      setIsConfirmOpen(true);
-                    } else {
-                      await onSubmit({
-                        ...form,
-                        endAt: new Date(`${form.endAt}T00:00:00`).toISOString(),
-                      });
-                    }
-                  }}
+                  onClick={handleSubmitClick}
                   className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#5E92F0] px-10 py-2 text-base font-medium text-white transition hover:bg-[#5C86EB]"
                 >
                   {mode === 'create' ? '등록' : '수정'}
@@ -783,13 +831,7 @@ export default function RecruitmentForm({
               </button>
 
               <button
-                onClick={async () => {
-                  setIsConfirmOpen(false);
-                  await onSubmit({
-                    ...form,
-                    endAt: new Date(`${form.endAt}T00:00:00`).toISOString(),
-                  });
-                }}
+                onClick={handleCreateConfirm}
                 className="flex-1 rounded-xl bg-[#5E92F0] py-3 font-semibold text-white"
               >
                 생성

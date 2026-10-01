@@ -37,12 +37,15 @@ function enqueue<T>(work: () => Promise<T>): Promise<T> {
   // async로 감싸서 Promise<T>로 펼침 (런타임 동작은 동일)
   const run = async (): Promise<T> => {
     if (typeof navigator !== 'undefined' && 'locks' in navigator) {
-      return navigator.locks.request('moimi-fcm-lifecycle', work);
+      return await navigator.locks.request('moimi-fcm-lifecycle', work);
     }
-    return work();
+
+    return await work();
   };
+
   const next = queue.then(run, run);
   queue = next.catch(() => undefined);
+
   return next;
 }
 

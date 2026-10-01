@@ -9,6 +9,8 @@ import type {
   ChatMessageResponse,
   ChatMessageAnchorResponse,
 } from '@moimi/core/types/chat';
+import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
+import { trackConfirmedChatMessage } from '@/lib/analytics/chat';
 
 /**
  * 새 채팅 메시지 소켓 이벤트(요구사항 2단계의 "수신")를 구독해서
@@ -20,6 +22,8 @@ import type {
 export function useChatMessageSubscription(roomId: number) {
   const { isConnected } = useChatSocketContext();
   const queryClient = useQueryClient();
+  const { data: me } = useMyInfo();
+  const userId = me?.userId;
 
   useEffect(() => {
     if (!isConnected || !roomId) return;
@@ -31,14 +35,20 @@ export function useChatMessageSubscription(roomId: number) {
         ['chatMessages', 'anchor', roomId],
         (old) => {
           if (!old) return old;
+
           if (
             old.messages.some((m) => m.chatMessageId === message.chatMessageId)
           ) {
             return old;
           }
+
           return { ...old, messages: [...old.messages, message] };
         }
       );
+
+      try {
+        trackConfirmedChatMessage(message, userId, queryClient);
+      } catch {}
     });
 
     return () => {
@@ -51,5 +61,5 @@ export function useChatMessageSubscription(roomId: number) {
         }
       }
     };
-  }, [isConnected, roomId, queryClient]);
+  }, [isConnected, roomId, queryClient, userId]);
 }

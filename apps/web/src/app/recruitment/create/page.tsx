@@ -8,8 +8,10 @@ import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificat
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import posthog from 'posthog-js';
-
+import { getCreatedPostId } from '@/lib/analytics/httpContext';
+import { startAnalyticsAttempt } from '@/lib/analytics';
+import { capture } from '@/lib/analytics/client';
+import type { AnalyticsAttempt } from '@moimi/core/types/analytics';
 export default function RecruitmentCreatePage() {
   const router = useRouter();
   const { mutateAsync: createRecruitment } = useCreateRecruitment();
@@ -22,12 +24,27 @@ export default function RecruitmentCreatePage() {
     }
   }, [isVerified, router]);
 
-  const handleSubmit = async (form: RecruitmentFormData) => {
+  const handleSubmit = async (
+    form: RecruitmentFormData,
+    providedAttempt?: AnalyticsAttempt
+  ) => {
+    const attempt = providedAttempt ?? createSubmissionAttempt(form);
+
     if (form.targetMemberCount === '') {
-      throw new Error('모집 인원을 입력해주세요');
+      const error = new Error('모집 인원을 입력해주세요');
+
+      attempt.fail(error, {
+        kind: 'validation',
+        reason_code: 'REQUIRED_FIELD_MISSING',
+      });
+
+      throw error;
     }
+
+    let createdRecruitment: unknown;
+
     try {
-      await createRecruitment({
+      createdRecruitment = await createRecruitment({
         title: form.title,
         category: form.category,
         description: form.description,
@@ -36,18 +53,38 @@ export default function RecruitmentCreatePage() {
         targetMemberCount: form.targetMemberCount,
         endAt: form.endAt,
       });
-      posthog.capture('recruitment_created', {
-        category: form.category,
-        has_info_post: Boolean(form.announcementId),
-        target_member_count: form.targetMemberCount,
-      });
-
-      router.push('/recruitment');
     } catch (err) {
+      attempt.fail(err);
       console.error('모집글 생성 실패', err);
+      return;
     }
-  };
 
+    const postId = getCreatedPostId('recruitment', createdRecruitment);
+
+    attempt.succeed(postId ? { post_id: postId } : undefined);
+
+    capture('recruitment_created', {
+      feature: 'recruitment',
+      interaction_type: 'creation',
+      post_type: 'recruitment',
+      post_id: postId,
+      post_key: postId ? `recruitment:${postId}` : undefined,
+      category: form.category,
+      has_info_post: Boolean(form.announcementId),
+      target_member_count: form.targetMemberCount,
+      attempt_id: attempt.attemptId,
+    });
+
+    router.push('/recruitment');
+  };
+  const createSubmissionAttempt = (form: RecruitmentFormData) =>
+    startAnalyticsAttempt('recruitment_create', {
+      feature: 'recruitment',
+      attempt_scope: 'submission',
+      post_type: 'recruitment',
+      category: form.category,
+      team_id: form.teamId,
+    });
   return (
     <>
       {errorMessage && (
@@ -55,7 +92,11 @@ export default function RecruitmentCreatePage() {
           {errorMessage}
         </div>
       )}
-      <RecruitmentForm mode="create" onSubmit={handleSubmit} />
+      <RecruitmentForm
+        mode="create"
+        onSubmit={handleSubmit}
+        createAnalyticsAttempt={createSubmissionAttempt}
+      />
     </>
   );
 }
