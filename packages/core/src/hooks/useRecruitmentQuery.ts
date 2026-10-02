@@ -19,6 +19,7 @@ import type {
   ApplicationCreateRequest,
   ApplicationStatusUpdateRequest,
 } from "@moimi/core/types/recruitment";
+import { mypagePostKeys } from "./useMypagePostQuery";
 
 export const recruitmentKeys = {
   all: () => ["recruitments"] as const,
@@ -75,6 +76,7 @@ export const useCreateRecruitment = () => {
     mutationFn: (body: RecruitmentCreateRequest) => createRecruitment(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.all() });
     },
   });
 };
@@ -91,6 +93,7 @@ export const useUpdateRecruitment = () => {
     }) => updateRecruitment(recruitmentId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.all() });
     },
   });
 };
@@ -101,6 +104,7 @@ export const useDeleteRecruitment = () => {
     mutationFn: (recruitmentId: number) => deleteRecruitment(recruitmentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.all() });
     },
   });
 };
@@ -117,6 +121,8 @@ export const useApplyRecruitment = () => {
     }) => applyRecruitment(recruitmentId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.all() });
     },
   });
 };
@@ -134,6 +140,7 @@ export const useUpdateApplicationStatus = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.all() });
     },
   });
 };
@@ -145,6 +152,7 @@ export const useCancelApplication = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.all() });
     },
   });
 };

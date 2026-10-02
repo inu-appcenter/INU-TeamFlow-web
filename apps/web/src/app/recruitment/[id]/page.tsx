@@ -14,6 +14,7 @@ import { getDday } from '@/utils/date/getDday';
 import { categoryMap } from '@moimi/core/constants/category';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { usePostView } from '@/hooks/usePostView';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
 import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
 import ReportModal from '@/components/report/ReportModal';
@@ -25,8 +26,13 @@ import { startAnalyticsAttempt } from '@/lib/analytics';
 export default function RecruitmentDetail() {
   const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
 
   const recruitmentId = Number(params.id);
+
+  // 들어온 곳(홈 / 모집 목록 / 마이페이지)으로 복귀
+  // 새 탭·URL 직접 진입이면 모집 목록으로
+  const goBack = () => safeBack('/recruitment');
 
   const { data: recruitment, isLoading } = useRecruitmentDetail(recruitmentId);
   usePostView({
@@ -54,9 +60,7 @@ export default function RecruitmentDetail() {
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   if (isLoading) {
-    return (
-      <RecruitmentDetailSkeleton onBack={() => router.push('/recruitment')} />
-    );
+    return <RecruitmentDetailSkeleton onBack={goBack} />;
   }
   if (!recruitment) {
     return (
@@ -69,10 +73,18 @@ export default function RecruitmentDetail() {
   }
 
   const handleStartDirectChat = async () => {
-    const room = await createDirectRoom(recruitment.recruiterId);
-    router.push(
-      `/chat/${room.chatRoomId}?roomName=${encodeURIComponent(room.roomName)}&roomType=${room.chatRoomType}`
-    );
+    if (isCreatingRoom) return;
+    if (!checkVerified()) return;
+
+    try {
+      const room = await createDirectRoom(recruitment.recruiterId);
+      router.push(
+        `/chat/${room.chatRoomId}?roomName=${encodeURIComponent(room.roomName)}&roomType=${room.chatRoomType}`
+      );
+    } catch (err) {
+      console.error('1:1 채팅방 생성 실패', err);
+      showErrorMessage('채팅방을 열지 못했어요');
+    }
   };
 
   const hasAnnouncement =
@@ -101,7 +113,7 @@ export default function RecruitmentDetail() {
     deleteRecruitmentMutate(recruitmentId, {
       onSuccess: () => {
         attempt.succeed();
-        router.push('/recruitment');
+        goBack();
       },
       onError: (error) => {
         attempt.fail(error);
@@ -142,10 +154,11 @@ export default function RecruitmentDetail() {
             isClosed={isClosed}
             isDeleting={isDeleting}
             isScrap={recruitment.isScrap}
-            onBack={() => router.push('/recruitment')}
+            onBack={goBack}
             onEdit={() => router.push(`/recruitment/${recruitmentId}/edit`)}
             onDelete={() => setIsDeleteConfirmOpen(true)}
             onReport={() => setIsReportModalOpen(true)}
+            onBeforeScrap={checkVerified}
           />
           <div className="px-8 py-7 sm:px-10 sm:py-10">
             <h1 className="text-[24px] font-bold text-[#2C2C2C] sm:text-3xl">

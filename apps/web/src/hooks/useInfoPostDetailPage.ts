@@ -7,22 +7,30 @@ import {
   useInfoPostDetail,
 } from '@moimi/core/hooks/useInfoPostQuery';
 import { useCreateReport } from '@moimi/core/hooks/useCreateReport';
+import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import type { ReportRequest } from '@moimi/core/types/report';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { usePostView } from '@/hooks/usePostView';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { capture } from '@/lib/analytics/client';
 import { startAnalyticsAttempt } from '@/lib/analytics';
 
 export function useInfoPostDetailPage(infoPostId: number) {
   const router = useRouter();
+  const safeBack = useSafeBack();
   const { data: infoPost, isLoading } = useInfoPostDetail(infoPostId);
   const { mutateAsync: deleteInfoPost, isPending: isDeleting } =
     useDeleteInfoPost();
   const { mutate: createReport, isPending: isReportSubmitting } =
     useCreateReport();
   const { errorMessage, showErrorMessage } = useErrorToast();
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  // 들어온 곳(홈 / 정보글 목록 / 모집글 / 마이페이지)으로 복귀
+  // 새 탭·URL 직접 진입이면 정보글 목록으로
+  const goBack = () => safeBack('/infoPost');
 
   usePostView({
     postType: 'info_post',
@@ -67,7 +75,7 @@ export function useInfoPostDetailPage(infoPostId: number) {
       attempt_id: attempt.attemptId,
     });
 
-    router.push('/infoPost');
+    goBack();
   };
 
   const handleSubmitReport = ({ reason, detail }: ReportRequest) => {
@@ -94,7 +102,8 @@ export function useInfoPostDetailPage(infoPostId: number) {
     isDeleteConfirmOpen,
     isReportModalOpen,
     isReportSubmitting,
-    goBack: () => router.back(),
+    checkVerified,
+    goBack,
     editPost: () => router.push(`/infoPost/${infoPostId}/edit`),
     openDeleteConfirm: () => setIsDeleteConfirmOpen(true),
     closeDeleteConfirm: () => setIsDeleteConfirmOpen(false),

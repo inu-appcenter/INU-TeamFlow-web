@@ -286,7 +286,7 @@ export default function MyPageScreen() {
         <View
           style={{
             position: "absolute",
-            top: 60,
+            top: 120,
             alignSelf: "center",
             zIndex: 50,
           }}
@@ -401,19 +401,19 @@ export default function MyPageScreen() {
                 value={editName}
                 onChangeText={setEditName}
                 placeholder="이름"
-                className="mb-2 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 py-4 pl-4 text-[#2C2C2C]"
+                className="mb-2 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 h-12 pl-4 text-[#2C2C2C]"
               />
               <TextInput
                 value={profileData.username}
                 editable={false}
-                className="mb-2 rounded-xl border border-[#D6DDE5]/60 bg-[#F5F5F5] px-2 py-4 pl-4 text-[#989898]"
+                className="mb-2 rounded-xl border border-[#D6DDE5]/60 bg-[#F5F5F5] px-2 h-12 pl-4 text-[#989898]"
               />
               <TextInput
                 value={editEmail}
                 onChangeText={setEditEmail}
                 placeholder="이메일"
                 autoCapitalize="none"
-                className="mb-2 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 py-4 pl-4 text-[#2C2C2C]"
+                className="mb-2 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 h-12 pl-4 text-[#2C2C2C]"
               />
               <SelectField
                 value={editDepartment}
@@ -426,14 +426,14 @@ export default function MyPageScreen() {
                 onChangeText={setPassword}
                 placeholder="새 비밀번호"
                 secureTextEntry
-                className="mb-2 mt-2 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 py-4 pl-4 text-[#2C2C2C]"
+                className="mb-2 mt-2 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 h-12 pl-4 text-[#2C2C2C]"
               />
               <TextInput
                 value={checkPassword}
                 onChangeText={setCheckPassword}
                 placeholder="새 비밀번호 확인"
                 secureTextEntry
-                className="mb-3 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 py-4 pl-4 text-[#2C2C2C]"
+                className="mb-3 rounded-xl border border-[#D6DDE5]/60 bg-white px-2 h-12 pl-4 text-[#2C2C2C]"
               />
               <View className="flex-row gap-2">
                 <Pressable

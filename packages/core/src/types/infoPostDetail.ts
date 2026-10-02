@@ -15,6 +15,7 @@ export interface InfoPostDetailActionsProps {
   onEdit: () => void;
   onDelete: () => void;
   onReport: () => void;
+  onBeforeScrap?: () => boolean;
 }
 
 export interface InfoPostDetailContentProps {

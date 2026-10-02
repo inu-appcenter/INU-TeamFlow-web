@@ -2,7 +2,7 @@
 
 import Card from '@/components/main/Card';
 import { ChevronLeft, Plus, X } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
@@ -10,24 +10,10 @@ import {
   useCreateTeamNotice,
   useGetPresignedUrls,
 } from '@moimi/core/hooks/useNoticeQuery';
+import { categoryMap, categoryColorMap } from '@moimi/core/constants/category';
 import { startTeamActivityAttempt } from '@/lib/analytics/teamActivity';
 import { uploadImageToS3 } from '@/utils/uploadImageToS3';
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
+import { useSafeBack } from '@/hooks/useSafeBack';
 
 type LocalImage = {
   id: string;
@@ -118,8 +104,8 @@ const TextAreaField = ({
 );
 
 export default function TeamNoticeWrite() {
-  const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
   const teamId = Number(params.id);
 
   const { data: team } = useTeamDetail(teamId);
@@ -139,6 +125,9 @@ export default function TeamNoticeWrite() {
   const currentColor = team
     ? (categoryColorMap[team.category] ?? '#E9E9E9')
     : '#E9E9E9';
+
+  // 들어온 곳(팀 공지 목록)으로 복귀 (push하면 목록이 중복으로 쌓임)
+  const goBack = () => safeBack(`/team/${teamId}/notice`);
 
   const showErrorMessage = (message: string) => {
     setErrorMessage(message);
@@ -217,7 +206,7 @@ export default function TeamNoticeWrite() {
 
       attempt.succeed();
 
-      router.push(`/team/${teamId}/notice`);
+      goBack();
     } catch (error) {
       attempt.fail(error, {
         reason_code: failureReason,
@@ -244,10 +233,7 @@ export default function TeamNoticeWrite() {
             className="flex h-[72px] items-center justify-between px-6"
             style={{ backgroundColor: currentColor }}
           >
-            <button
-              onClick={() => router.push(`/team/${teamId}/notice`)}
-              className="cursor-pointer text-[#2C2C2C]"
-            >
+            <button onClick={goBack} className="cursor-pointer text-[#2C2C2C]">
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
@@ -401,6 +387,7 @@ export default function TeamNoticeWrite() {
                   setIsConfirmOpen(false);
                   await handleSubmit();
                 }}
+                disabled={isSubmitting}
                 className="flex-1 rounded-xl bg-[#5E92F0] py-3 font-semibold text-white"
               >
                 작성

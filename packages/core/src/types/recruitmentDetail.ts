@@ -11,4 +11,5 @@ export interface RecruitmentDetailActionsProps {
   onEdit: () => void;
   onDelete: () => void;
   onReport: () => void;
+  onBeforeScrap?: () => boolean;
 }

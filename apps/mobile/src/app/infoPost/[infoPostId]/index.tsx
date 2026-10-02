@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -15,12 +15,15 @@ import {
   useInfoPostDetail,
   useDeleteInfoPost,
 } from "@moimi/core/hooks/useInfoPostQuery";
+import { useSchoolVerificationGuard } from "@moimi/core/hooks/useSchoolVerificationGuard";
 import {
   infoPostCategoryColorMap,
   infoPostCategoryMap,
 } from "@moimi/core/constants/infoPost";
 import { formatDate } from "@/utils/date/formatDate";
 import ScrapButton from "@/components/ScrapButton";
+
+const VERIFICATION_MESSAGE = "학교 인증 후 이용할 수 있어요";
 
 const getSafeUrl = (url?: string | null) => {
   if (!url) return null;
@@ -30,6 +33,16 @@ const getSafeUrl = (url?: string | null) => {
     return protocol === "http:" || protocol === "https:" ? withProtocol : null;
   } catch {
     return null;
+  }
+};
+
+// 들어온 화면(정보글 목록 / 모집글 / 마이페이지 등)으로 pop
+// 딥링크 등으로 이전 화면이 없으면 정보글 목록으로 교체
+const goBack = () => {
+  if (router.canGoBack()) {
+    router.back();
+  } else {
+    router.replace("/infoPost");
   }
 };
 
@@ -64,6 +77,23 @@ export default function InfoPostDetailScreen() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState("");
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showErrorMessage = (message?: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setErrorMessage(message ?? VERIFICATION_MESSAGE);
+    toastTimer.current = setTimeout(() => setErrorMessage(""), 1800);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
   if (isLoading || !infoPost) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
@@ -79,7 +109,7 @@ export default function InfoPostDetailScreen() {
   const handleDelete = () => {
     if (isDeleting) return;
     deleteInfoPostMutate(infoPostIdNum, {
-      onSuccess: () => router.replace("/infoPost"),
+      onSuccess: () => goBack(),
       onError: () => Alert.alert("오류", "정보글 삭제에 실패했습니다"),
     });
   };
@@ -91,12 +121,28 @@ export default function InfoPostDetailScreen() {
   const safeUrl = getSafeUrl(infoPost.sourceUrl);
   return (
     <View className="flex-1 bg-white">
+      {!!errorMessage && (
+        <View
+          style={{
+            position: "absolute",
+            top: 120,
+            alignSelf: "center",
+            zIndex: 50,
+          }}
+          className="rounded-full bg-[#2C2C2C] px-5 py-2"
+        >
+          <Text className="text-sm font-semibold text-white">
+            {errorMessage}
+          </Text>
+        </View>
+      )}
+
       <View
         style={{ backgroundColor: headerColor, paddingTop: 60 }}
         className="flex-row items-center justify-between px-5 pb-4"
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={goBack}
           className="transition-transform duration-150 ease-out active:scale-90"
         >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
@@ -108,6 +154,7 @@ export default function InfoPostDetailScreen() {
               type="infoPost"
               id={infoPostIdNum}
               initialScrapped={infoPost.isScrap}
+              onBeforeToggle={checkVerified}
             />
           )}
 

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import Card from '@/components/main/Card';
 import {
   useRecruitmentDetail,
@@ -11,6 +11,8 @@ import {
 import { formatDate } from '@/utils/date/formatDate';
 import { categoryColorMap } from '@moimi/core/constants/category';
 import type { ApplicationStatus } from '@moimi/core/types/recruitment';
+import { useSafeBack } from '@/hooks/useSafeBack';
+import { usePostListState, type PostListState } from '@/hooks/usePostListState';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',
@@ -26,18 +28,56 @@ const statusColorMap: Record<ApplicationStatus, string> = {
   CANCELLED: 'bg-[#EEF1F5] text-[#989898]',
 };
 
+const PAGE_SIZE = 10;
 const PAGE_WINDOW_SIZE = 5;
+
+// 지원자 목록은 page만 사용 (나머지는 PostListState 필수 필드라 기본값)
+const INITIAL_LIST_STATE: PostListState = {
+  page: 1,
+  keyword: '',
+  queryKeyword: '',
+  searchType: 'title',
+  selectedCategory: 'ALL',
+};
 
 export default function RecruitmentApplications() {
   const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
   const recruitmentId = Number(params.id);
-  const [page, setPage] = useState(1);
+
+  const storageKey = `recruitment:applications:${recruitmentId}`;
+  const applicationsPath = `/recruitment/${recruitmentId}/apply/applications`;
+
+  const [listState, setListState] = usePostListState(
+    storageKey,
+    INITIAL_LIST_STATE
+  );
+  const { page } = listState;
+  const setPage = (nextPage: number) => {
+    setListState((prev) => ({ ...prev, page: nextPage }));
+  };
+
+  // 지원서 상세로 들어갈 때만 페이지 유지, 그 외로 나가면 초기화
+  useEffect(() => {
+    return () => {
+      window.setTimeout(() => {
+        const path = window.location.pathname;
+        const isApplicationsPage =
+          path === applicationsPath || path.startsWith(`${applicationsPath}/`);
+
+        if (!isApplicationsPage) {
+          sessionStorage.removeItem(storageKey);
+        }
+      }, 0);
+    };
+  }, [storageKey, applicationsPath]);
+
   const { data: recruitment } = useRecruitmentDetail(recruitmentId);
   const { data, isLoading } = useRecruitmentApplications(
     recruitmentId,
     page - 1,
-    10
+    PAGE_SIZE
   );
   const applications = data?.content ?? [];
   const totalPages = data?.totalPages ?? 0;
@@ -62,7 +102,7 @@ export default function RecruitmentApplications() {
             }}
           >
             <button
-              onClick={() => router.push(`/recruitment/${recruitmentId}`)}
+              onClick={() => safeBack(`/recruitment/${recruitmentId}`)}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={24} strokeWidth={2.5} />
@@ -93,7 +133,7 @@ export default function RecruitmentApplications() {
                     <button
                       onClick={() =>
                         router.push(
-                          `/recruitment/${recruitmentId}/apply/applications/${application.applicationId}`
+                          `${applicationsPath}/${application.applicationId}`
                         )
                       }
                       className="w-full cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA]/60 px-5 py-4 text-left"

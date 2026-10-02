@@ -8,6 +8,7 @@ import type {
   TeamNoticeDetail,
   TeamNoticeSummary,
 } from "@moimi/core/types/notice";
+import { mypagePostKeys } from "./useMypagePostQuery";
 
 export function useTeamNoticeDetail(teamId: number, noticeId: number) {
   return useQuery({
@@ -49,6 +50,10 @@ export function useCreateTeamNotice(teamId: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teamNotices", teamId] });
+      // 팀 공지 목록·전체 공지 목록은 useMyTeamNotices 사용
+      // 모바일은 back()으로 돌아가면 목록이 재마운트되지 않아 invalidate 필요
+      queryClient.invalidateQueries({ queryKey: ["myTeamNotices"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.notices() });
     },
   });
 }
@@ -73,6 +78,8 @@ export function useUpdateTeamNotice(teamId: number) {
     },
     onSuccess: (_, { noticeId }) => {
       queryClient.invalidateQueries({ queryKey: ["teamNotices", teamId] });
+      queryClient.invalidateQueries({ queryKey: ["myTeamNotices"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.notices() });
       queryClient.invalidateQueries({
         queryKey: ["teamNoticeDetail", teamId, noticeId],
       });
@@ -90,6 +97,8 @@ export function useDeleteTeamNotice(teamId: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teamNotices", teamId] });
+      queryClient.invalidateQueries({ queryKey: ["myTeamNotices"] });
+      queryClient.invalidateQueries({ queryKey: mypagePostKeys.notices() });
     },
   });
 }

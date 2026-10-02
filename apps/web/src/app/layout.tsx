@@ -11,6 +11,7 @@ import { ChatSocketProvider } from '@/contexts/ChatSocketContext';
 import { pretendard } from '@/lib/fonts';
 import { useMetadata } from '@/hooks/useMetadata';
 import DesktopRecommendModal from '@/components/common/DesktopRecommendModal';
+import NavigationTracker from '@/components/common/NavigationTracker';
 
 export default function RootLayout({
   children,
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={cn('font-pretendard', pretendard.variable)}>
       <body className="bg-[#F0F2F5]">
+        <NavigationTracker />
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <AuthGuard>

@@ -11,14 +11,20 @@ import { useRecruitmentDetail } from '@moimi/core/hooks/useRecruitmentQuery';
 import { useMyInfo } from '@moimi/core/hooks/useAuthQuery';
 import { useSchoolVerificationGuard } from '@moimi/core/hooks/useSchoolVerificationGuard';
 import { categoryColorMap } from '@moimi/core/constants/category';
+import { useSafeBack } from '@/hooks/useSafeBack';
 
 export default function RecruitmentApplyPage() {
   const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
 
   const recruitmentId = Number(params.id);
 
-  const { data: recruitment, isLoading } = useRecruitmentDetail(recruitmentId);
+  const {
+    data: recruitment,
+    isLoading,
+    refetch: refetchRecruitment,
+  } = useRecruitmentDetail(recruitmentId);
 
   const [introduction, setIntroduction] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +44,8 @@ export default function RecruitmentApplyPage() {
   if (isLoading) return null;
   if (!recruitment) return null;
 
+  const goBack = () => safeBack(`/recruitment/${recruitmentId}`);
+
   const handleSubmit = async () => {
     if (!introduction.trim()) {
       alert('지원서를 작성해주세요.');
@@ -51,8 +59,11 @@ export default function RecruitmentApplyPage() {
         introduction,
       });
 
+      // 상세 캐시의 hasApplied 갱신 후 상세로 복귀 (push하면 상세가 중복으로 쌓임)
+      await refetchRecruitment();
+
       alert('지원이 완료되었습니다.');
-      router.push(`/recruitment/${recruitmentId}`);
+      goBack();
     } catch {
       alert('지원에 실패했습니다.');
     } finally {
@@ -71,10 +82,7 @@ export default function RecruitmentApplyPage() {
                 categoryColorMap[recruitment.category] ?? '#E9E9E9',
             }}
           >
-            <button
-              onClick={() => router.push(`/recruitment/${recruitmentId}`)}
-              className="cursor-pointer text-[#2C2C2C]"
-            >
+            <button onClick={goBack} className="cursor-pointer text-[#2C2C2C]">
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
           </div>

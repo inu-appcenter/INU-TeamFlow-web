@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useMyTeamNotices } from '@moimi/core/hooks/useNoticeQuery';
 import { getTeamRoleLabel } from '@/utils/teamRole';
 import { categoryColorMap } from '@moimi/core/constants/category';
 import { darkenColor } from '@/utils/color/darkenColor';
+import { usePostListState, type PostListState } from '@/hooks/usePostListState';
 
 import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 import { formatDate } from '@/utils/date/formatDate';
@@ -33,10 +34,51 @@ const isCategory = false;
 const ITEMS_PER_PAGE = 8;
 const PAGE_WINDOW_SIZE = 5;
 
+const STORAGE_KEY = 'notice:list';
+const NOTICE_DETAIL_PATH = /^\/team\/\d+\/notice\/\d+/;
+
+const INITIAL_LIST_STATE: PostListState = {
+  page: 1,
+  keyword: '',
+  queryKeyword: '',
+  searchType: 'title',
+  selectedCategory: 'ALL',
+};
+
 export default function Notice() {
-  const [keyword, setKeyword] = useState('');
-  const [searchType, setSearchType] = useState('title');
-  const [page, setPage] = useState(1);
+  const [listState, setListState] = usePostListState(
+    STORAGE_KEY,
+    INITIAL_LIST_STATE
+  );
+  const { page, keyword, searchType } = listState;
+
+  const setPage = (nextPage: number) => {
+    setListState((prev) => ({ ...prev, page: nextPage }));
+  };
+
+  const handleKeywordChange = (value: string) => {
+    setListState((prev) => ({ ...prev, keyword: value, page: 1 }));
+  };
+
+  const handleSearchTypeChange = (value: string) => {
+    setListState((prev) => ({ ...prev, searchType: value, page: 1 }));
+  };
+
+  // 공지 상세로 갈 때만 상태 유지, 그 외로 나가면 초기화
+  useEffect(() => {
+    return () => {
+      window.setTimeout(() => {
+        const path = window.location.pathname;
+        const isNoticePage =
+          path === '/notice' || NOTICE_DETAIL_PATH.test(path);
+
+        if (!isNoticePage) {
+          sessionStorage.removeItem(STORAGE_KEY);
+        }
+      }, 0);
+    };
+  }, []);
+
   const { data: notices = [] } = useMyTeamNotices();
 
   const normalizedKeyword = keyword.replace(/\s/g, '');
@@ -86,8 +128,8 @@ export default function Notice() {
           searchFilter={searchFilter}
           keyword={keyword}
           searchType={searchType}
-          onKeywordChange={setKeyword}
-          onSearchTypeChange={setSearchType}
+          onKeywordChange={handleKeywordChange}
+          onSearchTypeChange={handleSearchTypeChange}
         />
 
         {/* 안읽은 공지 배너 */}
@@ -106,7 +148,7 @@ export default function Notice() {
           {paged.map((notice) => (
             <Link
               key={notice.noticeId}
-              href={`/team/${notice.teamId}/notice/${notice.noticeId}?from=home`}
+              href={`/team/${notice.teamId}/notice/${notice.noticeId}`}
             >
               <div
                 className={`rounded-xl border-[0.5px] bg-white px-4 py-4 transition hover:bg-[#FAFAFA] ${
@@ -153,7 +195,7 @@ export default function Notice() {
           )}
         </section>
         {/* 페이지네이션 */}
-        {totalPages > 0 && (
+        {sorted.length > 0 && (
           <div className="mt-8 flex items-center justify-center gap-2">
             <button
               type="button"

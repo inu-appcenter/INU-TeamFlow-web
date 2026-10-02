@@ -83,7 +83,7 @@ export default function SchoolAuthenticationScreen() {
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
-          paddingHorizontal: 20,
+          paddingHorizontal: 19,
           paddingTop: 110,
           paddingBottom: 25,
         }}
@@ -98,10 +98,10 @@ export default function SchoolAuthenticationScreen() {
         </View>
         <View className="rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white px-6 py-8">
           <View className="mb-6 items-center">
-            <Text className="text-[20px] font-semibold text-[#2C2C2C]">
+            <Text className="text-[22px] font-bold text-[#2C2C2C]">
               학교 인증
             </Text>
-            <Text className="mt-1.5 text-[13px] text-[#989898]">
+            <Text className="mt-1 text-[13px] text-[#989898]">
               인천대학교 포털 계정으로 본인 인증을 진행해요
             </Text>
           </View>

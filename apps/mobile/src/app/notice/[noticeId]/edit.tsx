@@ -305,7 +305,7 @@ export default function NoticeEditScreen() {
         <View
           style={{
             position: "absolute",
-            top: 160,
+            top: 120,
             alignSelf: "center",
             zIndex: 50,
           }}
