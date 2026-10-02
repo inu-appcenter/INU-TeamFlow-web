@@ -1,0 +1,379 @@
+import { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Modal,
+  Image,
+  Alert,
+  Linking,
+} from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
+import {
+  useInfoPostDetail,
+  useDeleteInfoPost,
+} from "@moimi/core/hooks/useInfoPostQuery";
+import { useSchoolVerificationGuard } from "@moimi/core/hooks/useSchoolVerificationGuard";
+import { useCreateReport } from "@moimi/core/hooks/useCreateReport";
+import {
+  infoPostCategoryColorMap,
+  infoPostCategoryMap,
+} from "@moimi/core/constants/infoPost";
+import type { ReportRequest } from "@moimi/core/types/report";
+import { formatDate } from "@/utils/date/formatDate";
+import ScrapButton from "@/components/ScrapButton";
+import ReportModal from "@/components/ReportModal";
+
+const VERIFICATION_MESSAGE = "학교 인증 후 이용할 수 있어요";
+
+const getSafeUrl = (url?: string | null) => {
+  if (!url) return null;
+  const withProtocol = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  try {
+    const { protocol } = new URL(withProtocol);
+    return protocol === "http:" || protocol === "https:" ? withProtocol : null;
+  } catch {
+    return null;
+  }
+};
+
+// 들어온 화면(정보글 목록 / 모집글 / 마이페이지 등)으로 pop
+// 딥링크 등으로 이전 화면이 없으면 정보글 목록으로 교체
+const goBack = () => {
+  if (router.canGoBack()) {
+    router.back();
+  } else {
+    router.replace("/infoPost");
+  }
+};
+
+function InfoRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View className="flex-row items-center py-3">
+      <Text
+        style={{ width: 80 }}
+        className="text-[13px] font-medium text-[#989898]"
+      >
+        {label}
+      </Text>
+      <View className="flex-1">{children}</View>
+    </View>
+  );
+}
+
+export default function InfoPostDetailScreen() {
+  const { infoPostId } = useLocalSearchParams<{ infoPostId: string }>();
+  const infoPostIdNum = Number(infoPostId);
+
+  const { data: infoPost, isLoading } = useInfoPostDetail(infoPostIdNum);
+  const { mutate: deleteInfoPostMutate, isPending: isDeleting } =
+    useDeleteInfoPost();
+  const { mutate: createReport, isPending: isReportSubmitting } =
+    useCreateReport();
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showErrorMessage = (message?: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setErrorMessage(message ?? VERIFICATION_MESSAGE);
+    toastTimer.current = setTimeout(() => setErrorMessage(""), 1800);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
+  if (isLoading || !infoPost) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
+        <Text className="text-[14px] text-[#989898]">
+          {isLoading ? "불러오는 중..." : "존재하지 않는 정보글입니다"}
+        </Text>
+      </View>
+    );
+  }
+
+  const headerColor = infoPostCategoryColorMap[infoPost.category] ?? "#E9E9E9";
+
+  const handleDelete = () => {
+    if (isDeleting) return;
+    deleteInfoPostMutate(infoPostIdNum, {
+      onSuccess: () => goBack(),
+      onError: () => Alert.alert("오류", "정보글 삭제에 실패했습니다"),
+    });
+  };
+
+  const handleOpenReport = () => {
+    setIsMenuOpen(false);
+    if (!checkVerified()) return;
+    setIsReportModalOpen(true);
+  };
+
+  const handleSubmitReport = ({ reason, detail }: ReportRequest) => {
+    createReport(
+      {
+        target: { type: "INFO_POST", id: infoPostIdNum },
+        body: { reason, detail },
+      },
+      {
+        onSuccess: () => {
+          setIsReportModalOpen(false);
+          showErrorMessage("신고가 접수되었습니다");
+        },
+        onError: () => showErrorMessage("신고 접수에 실패했습니다"),
+      }
+    );
+  };
+
+  const sortedImages = [...(infoPost.images ?? [])].sort(
+    (a, b) => a.sortOrder - b.sortOrder
+  );
+
+  const safeUrl = getSafeUrl(infoPost.sourceUrl);
+  return (
+    <View className="flex-1 bg-white">
+      {!!errorMessage && (
+        <View
+          style={{
+            position: "absolute",
+            top: 120,
+            alignSelf: "center",
+            zIndex: 50,
+          }}
+          className="rounded-full bg-[#2C2C2C] px-5 py-2"
+        >
+          <Text className="text-sm font-semibold text-white">
+            {errorMessage}
+          </Text>
+        </View>
+      )}
+
+      <View
+        style={{ backgroundColor: headerColor, paddingTop: 60 }}
+        className="flex-row items-center justify-between px-5 pb-4"
+      >
+        <Pressable
+          onPress={goBack}
+          className="transition-transform duration-150 ease-out active:scale-90"
+        >
+          <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
+        </Pressable>
+
+        <View className="flex-row items-center gap-4">
+          {!infoPost.isAuthor && (
+            <ScrapButton
+              type="infoPost"
+              id={infoPostIdNum}
+              initialScrapped={infoPost.isScrap}
+              onBeforeToggle={checkVerified}
+            />
+          )}
+
+          <Pressable
+            onPress={() => setIsMenuOpen(true)}
+            className="transition-transform duration-150 ease-out active:scale-90"
+          >
+            <EllipsisVertical size={20} color="#2C2C2C" />
+          </Pressable>
+        </View>
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 24,
+          paddingBottom: 80,
+        }}
+      >
+        <Text className="text-[22px] font-bold text-[#2C2C2C]">
+          {infoPost.title}
+        </Text>
+
+        <View className="mt-6">
+          <InfoRow label="종류">
+            <Text className="text-[14px] text-[#2C2C2C]">
+              {infoPostCategoryMap[infoPost.category]}
+            </Text>
+          </InfoRow>
+          <InfoRow label="작성자">
+            <Text className="text-[14px] text-[#2C2C2C]">
+              {infoPost.author.name}
+            </Text>
+          </InfoRow>
+          <InfoRow label="작성일">
+            <Text className="text-[14px] text-[#2C2C2C]">
+              {formatDate(infoPost.createdAt)}
+            </Text>
+          </InfoRow>
+          <InfoRow label="모집글">
+            <Text className="text-[14px] text-[#2C2C2C]">
+              연결된 모집글 {infoPost.recruitmentCount ?? 0}개
+            </Text>
+          </InfoRow>
+
+          {safeUrl && (
+            <InfoRow label="원문 링크">
+              <Pressable
+                onPress={() => Linking.openURL(safeUrl).catch(() => {})}
+                hitSlop={8}
+                className="active:opacity-60 "
+              >
+                <Text className="text-[14px]  text-[#5E92F0] underline">
+                  {infoPost.sourceUrl}
+                </Text>
+              </Pressable>
+            </InfoRow>
+          )}
+        </View>
+
+        <View className="mt-6 border-b-[0.5px] border-[#D6DDE5]" />
+
+        <Text className="mt-6 text-[15px] leading-7 text-[#2C2C2C]">
+          {infoPost.content}
+        </Text>
+
+        {sortedImages.length > 0 && (
+          <View className="mt-4 gap-4">
+            {sortedImages.map((image) => (
+              <Image
+                key={`${image.imageUrl}-${image.sortOrder}`}
+                source={{ uri: image.imageUrl }}
+                style={{ width: "100%", height: 320, borderRadius: 12 }}
+                resizeMode="contain"
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      {isMenuOpen && (
+        <Pressable
+          onPress={() => setIsMenuOpen(false)}
+          style={{ position: "absolute", inset: 0 }}
+          className="bg-black/10"
+        >
+          <View
+            style={{ position: "absolute", top: 90, right: 20 }}
+            className="w-[120px] overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-white py-2"
+          >
+            {infoPost.isAuthor ? (
+              <>
+                <Pressable
+                  onPress={() => {
+                    setIsMenuOpen(false);
+                    router.push({
+                      pathname: "/infoPost/[infoPostId]/edit",
+                      params: { infoPostId: String(infoPostIdNum) },
+                    });
+                  }}
+                  className="px-4 py-2.5 active:bg-[#F6F8FA]"
+                >
+                  <Text className="text-[14px] font-semibold text-[#2C2C2C]">
+                    수정하기
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setIsMenuOpen(false);
+                    setIsDeleteConfirmOpen(true);
+                  }}
+                  className="px-4 py-2.5 active:bg-[#F6F8FA]"
+                >
+                  <Text className="text-[14px] font-semibold text-[#E22222]">
+                    삭제하기
+                  </Text>
+                </Pressable>
+              </>
+            ) : (
+              <Pressable
+                onPress={handleOpenReport}
+                className="px-4 py-2.5 active:bg-[#F6F8FA]"
+              >
+                <Text className="text-[14px] font-semibold text-[#E22222]">
+                  신고하기
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        </Pressable>
+      )}
+
+      <Modal
+        transparent
+        visible={isDeleteConfirmOpen}
+        animationType="fade"
+        onRequestClose={() => setIsDeleteConfirmOpen(false)}
+      >
+        <Pressable
+          onPress={() => setIsDeleteConfirmOpen(false)}
+          className="flex-1 items-center justify-center bg-black/40 px-6"
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="w-full max-w-[340px] rounded-3xl bg-white p-6"
+          >
+            <Text className="text-center text-[19px] font-bold text-[#2C2C2C]">
+              정보글을 삭제할까요?
+            </Text>
+            <Text className="mt-2 text-center text-[14px] text-[#989898]">
+              삭제한 정보글은 복구할 수 없어요
+            </Text>
+
+            <View className="mt-4 flex-row gap-3">
+              <Pressable
+                onPress={() => setIsDeleteConfirmOpen(false)}
+                className="flex-1 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
+              >
+                <Text className="text-center text-[14px] font-semibold text-[#2C2C2C]">
+                  취소
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setIsDeleteConfirmOpen(false);
+                  handleDelete();
+                }}
+                disabled={isDeleting}
+                className="flex-1 rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
+              >
+                <Text className="text-center text-[14px] font-semibold text-white">
+                  삭제
+                </Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {isReportModalOpen && (
+        <ReportModal
+          targetLabel="이 정보글"
+          isSubmitting={isReportSubmitting}
+          onClose={() => {
+            if (isReportSubmitting) return;
+            setIsReportModalOpen(false);
+          }}
+          onSubmit={handleSubmitReport}
+        />
+      )}
+    </View>
+  );
+}
