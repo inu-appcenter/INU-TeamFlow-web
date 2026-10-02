@@ -19,6 +19,11 @@ import { MESSAGES, REGISTER_TEXT } from '@moimi/core/constants/messages';
 import { ROUTES } from '@moimi/core/constants/routes';
 import { useLogin, useSignup } from '@moimi/core/hooks/useAuthQuery';
 import { useCreateNotificationOptions } from '@moimi/core/hooks/useNotificationOptionQuery';
+import {
+  PASSWORD_RULES,
+  PASSWORD_RULE_MESSAGE,
+  isValidPassword,
+} from '@moimi/core/utils/password';
 import { useAuth } from '@/hooks/useAuth';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import PolicyModal from '@/components/register/PolicyModal';
@@ -136,6 +141,16 @@ export default function Register() {
         });
 
         showErrorMessage(MESSAGES.REGISTER.EMPTY_FIELD);
+        return;
+      }
+
+      if (!isValidPassword(password)) {
+        signupAttempt.fail(undefined, {
+          kind: 'validation',
+          reason_code: 'password_rule_invalid',
+        });
+
+        showErrorMessage(PASSWORD_RULE_MESSAGE);
         return;
       }
 
@@ -498,6 +513,28 @@ export default function Register() {
                     </button>
                   }
                 />
+                <div className="mx-7.5 -mt-2 mb-4 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+                  {PASSWORD_RULES.map((rule) => {
+                    const passed = rule.test(password);
+                    return (
+                      <span
+                        key={rule.key}
+                        className={`flex items-center gap-1 font-medium ${
+                          passed ? 'text-[#22A06B]' : 'text-[#989898]'
+                        }`}
+                      >
+                        <Check
+                          size={13}
+                          strokeWidth={3}
+                          className={
+                            passed ? 'text-[#22A06B]' : 'text-[#C8CED6]'
+                          }
+                        />
+                        {rule.label}
+                      </span>
+                    );
+                  })}
+                </div>
                 <InputField
                   value={checkPassword}
                   onChange={(e) => setCheckPassword(e.target.value)}

@@ -6,7 +6,8 @@
     "./types/*": "./src/types/*.ts",
     "./constants/*": "./src/constants/*.ts",
     "./api/*": "./src/api/*.ts",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./hooks/*": "./src/hooks/*.ts",
+    "./utils/*": "./src/utils/*.ts"
   },
   "dependencies": {
     "axios": "^1.18.1",

@@ -9,13 +9,15 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Modal,
+  Keyboard,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Keyboard } from "react-native";
+import ImagePreviewModal from "@/components/ImagePreviewModal";
 import {
   ChevronLeft,
   ImagePlus,
@@ -28,7 +30,6 @@ import { getChatImagePresignedUrl } from "@moimi/core/api/chat";
 import { useChatMessageAnchor } from "@/hooks/chat/useChatMessageAnchor";
 import { useChatMessageHistory } from "@moimi/core/hooks/chat/useChatMessageHistory";
 import { useSendChatMessage } from "@moimi/core/hooks/chat/useSendChatMessage";
-import { useChatImageUpload } from "@moimi/core/hooks/chat/useChatImageUpload";
 import { useMyInfo } from "@moimi/core/hooks/useAuthQuery";
 import { useChatSocketContext } from "@/contexts/ChatSocketContext";
 import { useChatMessageSubscription } from "@/hooks/chat/useChatMessageSubscription";
@@ -70,12 +71,6 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
   }>();
 
   const { data: anchor, isLoading } = useChatMessageAnchor(roomId);
-  useEffect(() => {
-    console.log(
-      "[ChatRoomScreen] anchor 갱신, messages.length =",
-      anchor?.messages.length
-    );
-  }, [anchor]);
   const [draft, setDraft] = useState("");
   const insets = useSafeAreaInsets();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -106,6 +101,13 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
   }, [anchor?.messages.length, showScrollToBottom]);
 
   const [isUploading, setIsUploading] = useState(false);
+  // 선택만 하고 아직 전송하지 않은 이미지 (확인 모달용)
+  const [pendingAsset, setPendingAsset] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [imageSendError, setImageSendError] = useState("");
+  // 메시지 이미지 확대 보기
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
   const [roomInfo, setRoomInfo] = useState<{
     roomType: RoomType;
     roomName: string;
@@ -220,18 +222,36 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
     setDraft("");
   };
 
+  // 이미지 선택 → 바로 전송하지 않고 확인 모달 열기
   const handlePickImage = async () => {
+    Keyboard.dismiss();
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
     if (result.canceled || !result.assets[0]) return;
 
-    const asset = result.assets[0];
+    setImageSendError("");
+    setPendingAsset(result.assets[0]);
+  };
+
+  const closeImageConfirm = () => {
+    if (isUploading) return;
+    setPendingAsset(null);
+    setImageSendError("");
+  };
+
+  // 모달에서 "전송" → 업로드 후 메시지 전송
+  const handleConfirmImageSend = async () => {
+    if (!pendingAsset || isUploading) return;
+
+    const asset = pendingAsset;
     const fileName = asset.fileName ?? `image-${Date.now()}.jpg`;
     const contentType = asset.mimeType ?? "image/jpeg";
 
     setIsUploading(true);
+    setImageSendError("");
     try {
       // useChatImageUpload는 브라우저 File 객체(file.name/file.type)를 기대하는데
       // RN ImagePicker 결과는 File이 아니라서 캐스팅해도 name이 비어 presigned URL
@@ -243,15 +263,21 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
       });
 
       const blob = await (await fetch(asset.uri)).blob();
-      await fetch(uploadUrl, {
+      const res = await fetch(uploadUrl, {
         method: "PUT",
         headers: { "Content-Type": contentType },
         body: blob,
       });
+      // fetch는 4xx/5xx에서 throw하지 않으므로 직접 체크
+      if (!res.ok) {
+        throw new Error(`이미지 업로드 실패 (${res.status})`);
+      }
 
       sendMessage({ messageType: "IMAGE", imageKey });
+      setPendingAsset(null);
     } catch (err) {
       console.error("이미지 업로드 실패", err);
+      setImageSendError("이미지 전송에 실패했어요");
     } finally {
       setIsUploading(false);
     }
@@ -346,15 +372,19 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
                   )}
 
                   {item.messageType === "IMAGE" && item.imageUrl ? (
-                    <Image
-                      source={{ uri: item.imageUrl }}
-                      style={{
-                        width: 200,
-                        aspectRatio: 1,
-                        borderRadius: 16,
-                      }}
-                      resizeMode="cover"
-                    />
+                    <Pressable
+                      onPress={() => setPreviewImageUrl(item.imageUrl ?? null)}
+                    >
+                      <Image
+                        source={{ uri: item.imageUrl }}
+                        style={{
+                          width: 200,
+                          aspectRatio: 1,
+                          borderRadius: 16,
+                        }}
+                        resizeMode="cover"
+                      />
+                    </Pressable>
                   ) : item.content && isEmojiOnlyMessage(item.content) ? (
                     <Text className="px-1 py-1 text-[40px] leading-none">
                       {item.content}
@@ -493,7 +523,12 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
         }}
         className="flex-row items-center gap-2 bg-[#F6F8FA] px-6 py-4"
       >
-        <Pressable onPress={handlePickImage} className="shrink-0 px-2">
+        <Pressable
+          onPress={handlePickImage}
+          disabled={isUploading}
+          style={{ opacity: isUploading ? 0.3 : 1 }}
+          className="shrink-0 px-2"
+        >
           <ImagePlus size={24} color="#5E92F0" />
         </Pressable>
 
@@ -518,6 +553,7 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
           <Send size={22} color="#5E92F0" />
         </Pressable>
       </View>
+
       <ChatRoomDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -526,6 +562,75 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
         roomName={roomName}
         roomImageUrl={roomImageUrl}
         onInfoUpdated={(next) => setRoomInfo((prev) => ({ ...prev, ...next }))}
+      />
+
+      {/* 이미지 전송 확인 모달 */}
+      <Modal
+        transparent
+        visible={!!pendingAsset}
+        animationType="fade"
+        onRequestClose={closeImageConfirm}
+      >
+        <Pressable
+          onPress={closeImageConfirm}
+          className="flex-1 items-center justify-center bg-black/40 px-6"
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="w-full max-w-[340px] rounded-3xl bg-white p-6"
+          >
+            <Text className="text-center text-[18px] font-bold text-[#2C2C2C]">
+              이 이미지를 전송할까요?
+            </Text>
+
+            {pendingAsset && (
+              <View className="mt-4 overflow-hidden rounded-2xl bg-[#F6F8FA]">
+                <Image
+                  source={{ uri: pendingAsset.uri }}
+                  style={{ width: "100%", height: 280 }}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+
+            {!!imageSendError && (
+              <Text className="mt-3 text-center text-[13px] font-medium text-[#E22222]">
+                {imageSendError}
+              </Text>
+            )}
+
+            <View className="mt-4 flex-row gap-3">
+              <Pressable
+                onPress={closeImageConfirm}
+                disabled={isUploading}
+                style={{ opacity: isUploading ? 0.5 : 1 }}
+                className="flex-1 items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
+              >
+                <Text className="text-[14px] font-semibold text-[#2C2C2C]">
+                  취소
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={handleConfirmImageSend}
+                disabled={isUploading || !isConnected}
+                style={{
+                  backgroundColor:
+                    isUploading || !isConnected ? "#B8C8F2" : "#5E92F0",
+                }}
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl py-4 transition-transform duration-150 ease-out active:scale-95"
+              >
+                {isUploading && <ActivityIndicator size="small" color="#fff" />}
+                <Text className="text-[14px] font-semibold text-white">
+                  {isUploading ? "전송 중..." : "전송"}
+                </Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+      <ImagePreviewModal
+        imageUrl={previewImageUrl}
+        onClose={() => setPreviewImageUrl(null)}
       />
     </KeyboardAvoidingView>
   );

@@ -26,6 +26,11 @@ import type { PolicyType } from "@moimi/core/types/policy";
 import { useAuth } from "@/contexts/AuthContext";
 import SelectField from "@/components/SelectField";
 import PolicyModal from "@/components/PolicyModal";
+import {
+  PASSWORD_RULES,
+  PASSWORD_RULE_MESSAGE,
+  isValidPassword,
+} from "@moimi/core/utils/password";
 
 type RegisterStep = "terms" | "account" | "profile";
 const STEP_ORDER: RegisterStep[] = ["terms", "account", "profile"];
@@ -91,6 +96,32 @@ function StepLine({ active }: { active: boolean }) {
         active ? "bg-[#5E92F0]" : "bg-[#E5E8EB]"
       }`}
     />
+  );
+}
+
+function PasswordRuleList({ password }: { password: string }) {
+  return (
+    <View className="mx-1 mt-2 flex-row flex-wrap gap-x-3 gap-y-1">
+      {PASSWORD_RULES.map((rule) => {
+        const passed = rule.test(password);
+        return (
+          <View key={rule.key} className="flex-row items-center gap-1">
+            <Check
+              size={12}
+              strokeWidth={3}
+              color={passed ? "#22A06B" : "#C8CED6"}
+            />
+            <Text
+              className={`text-[12px] font-medium ${
+                passed ? "text-[#22A06B]" : "text-[#989898]"
+              }`}
+            >
+              {rule.label}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -175,6 +206,10 @@ export default function RegisterScreen() {
       showError(MESSAGES.REGISTER.EMPTY_FIELD);
       return;
     }
+    if (!isValidPassword(password)) {
+      showError(PASSWORD_RULE_MESSAGE);
+      return;
+    }
     if (password !== checkPassword) {
       showError(MESSAGES.REGISTER.PASSWORD_MISMATCH);
       return;
@@ -187,6 +222,11 @@ export default function RegisterScreen() {
 
     if (hasEmptyField()) {
       showError(MESSAGES.REGISTER.EMPTY_FIELD);
+      return;
+    }
+    if (!isValidPassword(password)) {
+      showError(PASSWORD_RULE_MESSAGE);
+      setStep("account");
       return;
     }
     if (password !== checkPassword) {
@@ -449,6 +489,8 @@ export default function RegisterScreen() {
                     )}
                   </Pressable>
                 </View>
+
+                <PasswordRuleList password={password} />
               </View>
 
               <View className="mb-5">

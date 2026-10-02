@@ -111,7 +111,10 @@ export function useInfoPostDetailPage(infoPostId: number) {
       setIsDeleteConfirmOpen(false);
       void handleDelete();
     },
-    openReport: () => setIsReportModalOpen(true),
+    openReport: () => {
+      if (!checkVerified()) return;
+      setIsReportModalOpen(true);
+    },
     closeReport: () => {
       if (isReportSubmitting) return;
       setIsReportModalOpen(false);

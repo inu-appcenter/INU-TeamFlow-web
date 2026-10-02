@@ -9,10 +9,13 @@ import {
 } from "@moimi/core/hooks/useRecruitmentQuery";
 import { useSchoolVerificationGuard } from "@moimi/core/hooks/useSchoolVerificationGuard";
 import { useCreateDirectChatRoom } from "@moimi/core/hooks/chat/useCreateDirectChatRoom";
+import { useCreateReport } from "@moimi/core/hooks/useCreateReport";
 import { categoryMap, categoryColorMap } from "@moimi/core/constants/category";
+import type { ReportRequest } from "@moimi/core/types/report";
 import { formatDate } from "@/utils/date/formatDate";
 import { getDday } from "@/utils/date/getDday";
 import ScrapButton from "@/components/ScrapButton";
+import ReportModal from "@/components/ReportModal";
 
 const VERIFICATION_MESSAGE = "학교 인증 후 이용할 수 있어요";
 
@@ -56,9 +59,12 @@ export default function RecruitmentDetailScreen() {
     useDeleteRecruitment();
   const { mutateAsync: createDirectRoom, isPending: isCreatingRoom } =
     useCreateDirectChatRoom();
+  const { mutate: createReport, isPending: isReportSubmitting } =
+    useCreateReport();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -123,6 +129,28 @@ export default function RecruitmentDetailScreen() {
     }
     if (!checkVerified()) return;
     router.push(`/recruitment/${recruitmentIdNum}/apply`);
+  };
+
+  const handleOpenReport = () => {
+    setIsMenuOpen(false);
+    if (!checkVerified()) return;
+    setIsReportModalOpen(true);
+  };
+
+  const handleSubmitReport = ({ reason, detail }: ReportRequest) => {
+    createReport(
+      {
+        target: { type: "RECRUITMENT_POST", id: recruitmentIdNum },
+        body: { reason, detail },
+      },
+      {
+        onSuccess: () => {
+          setIsReportModalOpen(false);
+          showErrorMessage("신고가 접수되었습니다");
+        },
+        onError: () => showErrorMessage("신고 접수에 실패했습니다"),
+      }
+    );
   };
 
   return (
@@ -336,10 +364,7 @@ export default function RecruitmentDetailScreen() {
               </>
             ) : (
               <Pressable
-                onPress={() => {
-                  setIsMenuOpen(false);
-                  console.log("TODO: 신고 모달 열기");
-                }}
+                onPress={handleOpenReport}
                 className="px-4 py-2.5 active:bg-[#F6F8FA]"
               >
                 <Text className="text-[14px] font-semibold text-[#E22222]">
@@ -397,6 +422,18 @@ export default function RecruitmentDetailScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {isReportModalOpen && (
+        <ReportModal
+          targetLabel="이 모집글"
+          isSubmitting={isReportSubmitting}
+          onClose={() => {
+            if (isReportSubmitting) return;
+            setIsReportModalOpen(false);
+          }}
+          onSubmit={handleSubmitReport}
+        />
+      )}
     </View>
   );
 }

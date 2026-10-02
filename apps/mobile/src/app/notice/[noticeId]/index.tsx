@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { View, Text, ScrollView, Pressable, Image, Modal } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, EllipsisVertical, Pin, X } from "lucide-react-native";
+import { ChevronLeft, EllipsisVertical, Pin } from "lucide-react-native";
 import { useTeamDetail } from "@moimi/core/hooks/team/useTeamQuery";
 import {
   useTeamNoticeDetail,
@@ -11,6 +11,7 @@ import {
 import { categoryColorMap } from "@moimi/core/constants/category";
 import { formatDate } from "@/utils/date/formatDate";
 import { getTeamRoleLabel } from "@/utils/user/teamRole";
+import ImagePreviewModal from "@/components/ImagePreviewModal";
 
 export default function NoticeDetailScreen() {
   const { noticeId, teamId } = useLocalSearchParams<{
@@ -210,32 +211,10 @@ export default function NoticeDetailScreen() {
         </Pressable>
       )}
 
-      <Modal
-        transparent
-        visible={!!previewImageUrl}
-        animationType="fade"
-        onRequestClose={() => setPreviewImageUrl(null)}
-      >
-        <Pressable
-          onPress={() => setPreviewImageUrl(null)}
-          className="flex-1 items-center justify-center bg-black/80"
-        >
-          <Pressable
-            onPress={() => setPreviewImageUrl(null)}
-            style={{ position: "absolute", top: 50, right: 20 }}
-            className="h-10 w-10 items-center justify-center rounded-full bg-white/10"
-          >
-            <X size={22} color="#fff" />
-          </Pressable>
-          {previewImageUrl && (
-            <Image
-              source={{ uri: previewImageUrl }}
-              style={{ width: "90%", height: "70%" }}
-              resizeMode="contain"
-            />
-          )}
-        </Pressable>
-      </Modal>
+      <ImagePreviewModal
+        imageUrl={previewImageUrl}
+        onClose={() => setPreviewImageUrl(null)}
+      />
 
       <Modal
         transparent

@@ -25,7 +25,7 @@ import { getDepartmentName } from "@/utils/user/getDepartmentName";
 import VoteForm from "@/components/VoteForm";
 import VoteResult from "@/components/VoteResult";
 
-const LABEL_COL_WIDTH = 22;
+const LABEL_COL_WIDTH = 28;
 const DATE_COL_WIDTH = 72;
 const COLUMN_GAP = 4;
 type ParticipantTab = "completed" | "uncompleted";
@@ -576,7 +576,7 @@ export default function VoteDetailScreen() {
             <View className="mt-5 flex-row gap-3">
               <Pressable
                 onPress={() => setIsDeleteConfirmOpen(false)}
-                className="flex-1 items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4"
+                className="flex-1 items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-[#2C2C2C]">
                   취소
@@ -587,7 +587,7 @@ export default function VoteDetailScreen() {
                   setIsDeleteConfirmOpen(false);
                   handleDeleteVote();
                 }}
-                className="flex-1 items-center rounded-xl bg-[#E22222] py-4"
+                className="flex-1 items-center rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-white">
                   삭제

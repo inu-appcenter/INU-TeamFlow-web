@@ -582,7 +582,7 @@ export default function TeamDetailScreen() {
             <View className="mt-6 flex-row gap-3">
               <Pressable
                 onPress={() => setIsLeaveConfirmOpen(false)}
-                className="flex-1 items-center rounded-xl bg-[#F1F3F6] py-3"
+                className="flex-1 items-center rounded-xl bg-[#F1F3F6] py-4"
               >
                 <Text className="text-[14px] font-medium text-[#2C2C2C]">
                   취소
@@ -590,7 +590,7 @@ export default function TeamDetailScreen() {
               </Pressable>
               <Pressable
                 onPress={handleLeaveOrDeleteTeam}
-                className="flex-1 items-center rounded-xl bg-[#E45B5B] py-3"
+                className="flex-1 items-center rounded-xl bg-[#E45B5B] py-4"
               >
                 <Text className="text-[14px] font-medium text-white">
                   {isLeader ? "삭제" : "탈퇴"}
