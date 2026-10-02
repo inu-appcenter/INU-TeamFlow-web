@@ -29,7 +29,10 @@ import PolicyModal from "@/components/PolicyModal";
 import {
   PASSWORD_RULES,
   PASSWORD_RULE_MESSAGE,
+  PASSWORD_INVALID_CHAR_MESSAGE,
+  hasInvalidPasswordChar,
   isValidPassword,
+  removeWhitespace,
 } from "@moimi/core/utils/password";
 
 type RegisterStep = "terms" | "account" | "profile";
@@ -100,27 +103,42 @@ function StepLine({ active }: { active: boolean }) {
 }
 
 function PasswordRuleList({ password }: { password: string }) {
+  const hasInvalidChar = hasInvalidPasswordChar(password);
+
   return (
-    <View className="mx-1 mt-2 flex-row flex-wrap gap-x-3 gap-y-1">
-      {PASSWORD_RULES.map((rule) => {
-        const passed = rule.test(password);
-        return (
-          <View key={rule.key} className="flex-row items-center gap-1">
-            <Check
-              size={12}
-              strokeWidth={3}
-              color={passed ? "#22A06B" : "#C8CED6"}
-            />
-            <Text
-              className={`text-[12px] font-medium ${
-                passed ? "text-[#22A06B]" : "text-[#989898]"
-              }`}
-            >
-              {rule.label}
-            </Text>
+    <View className="mx-1 mt-2">
+      <View className="flex-row flex-wrap gap-x-3 gap-y-1">
+        {PASSWORD_RULES.map((rule) => {
+          const passed = rule.test(password);
+          return (
+            <View key={rule.key} className="flex-row items-center gap-1">
+              <Check
+                size={12}
+                strokeWidth={3}
+                color={passed ? "#22A06B" : "#C8CED6"}
+              />
+              <Text
+                className={`text-[12px] font-medium ${
+                  passed ? "text-[#22A06B]" : "text-[#989898]"
+                }`}
+              >
+                {rule.label}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+
+      {hasInvalidChar && (
+        <View className="mx-1 mt-2 flex-row items-center">
+          <View className="mr-2 h-5 w-5 items-center justify-center rounded-full bg-[#FDECEC]">
+            <Text className="text-[12px] font-bold text-[#E22222]">!</Text>
           </View>
-        );
-      })}
+          <Text className="text-[12px] font-medium text-[#E22222]">
+            {PASSWORD_INVALID_CHAR_MESSAGE}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -205,6 +223,10 @@ export default function RegisterScreen() {
     if ([username, password, checkPassword].some(isEmpty)) {
       showError(MESSAGES.REGISTER.EMPTY_FIELD);
       return;
+    }
+    if (hasInvalidPasswordChar(password)) {
+      showError(PASSWORD_INVALID_CHAR_MESSAGE);
+      return; // handleSubmit에서는 setStep("account")도 같이
     }
     if (!isValidPassword(password)) {
       showError(PASSWORD_RULE_MESSAGE);
@@ -471,7 +493,7 @@ export default function RegisterScreen() {
                 <View className="relative justify-center">
                   <TextInput
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(text) => setPassword(removeWhitespace(text))}
                     placeholder={REGISTER_TEXT.PASSWORD_PLACEHOLDER}
                     placeholderTextColor="#989898"
                     secureTextEntry={!isPasswordVisible}
@@ -500,7 +522,9 @@ export default function RegisterScreen() {
                 <View className="relative justify-center">
                   <TextInput
                     value={checkPassword}
-                    onChangeText={setCheckPassword}
+                    onChangeText={(text) =>
+                      setCheckPassword(removeWhitespace(text))
+                    }
                     placeholder={REGISTER_TEXT.CHECK_PASSWORD_PLACEHOLDER}
                     placeholderTextColor="#989898"
                     secureTextEntry={!isCheckPasswordVisible}
