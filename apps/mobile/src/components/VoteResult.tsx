@@ -19,12 +19,16 @@ type VoteResultProps = {
   onSubmit: (startAt: string, endAt: string) => void;
 };
 
-const LABEL_COL_WIDTH = 30;
+const LABEL_COL_WIDTH = 28;
 const DATE_COL_WIDTH = 72;
-const COLUMN_GAP = 6;
+const COLUMN_GAP = 4;
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 type SlotPoint = { date: string; hour: number; minute: string };
+
+// "HH:mm" → "HH:mm:00", "HH:mm:ss(.SSS)" → "HH:mm:ss"
+const toFullTime = (time: string) =>
+  time.length === 5 ? `${time}:00` : time.slice(0, 8);
 
 export default function VoteResult({
   title,
@@ -51,7 +55,58 @@ export default function VoteResult({
     return "#F1F4F8";
   };
 
+  const findSlot = (date: string, hour: number, minute: string) =>
+    voteSlots.find(
+      (s) =>
+        s.date === date &&
+        Number(s.startAt.slice(0, 2)) === hour &&
+        s.startAt.slice(3, 5) === minute
+    );
+
+  // 선택한 칸으로 확정 범위 생성
+  // - 종일: 그날 00:00:00 ~ 23:59:59 (백엔드와 합의)
+  // - 시간 지정: 서버 슬롯의 startAt / endAt 그대로 사용
+  const getSelectedRange = () => {
+    if (!selectedStart || !selectedEnd) return null;
+
+    const startSlot = findSlot(
+      selectedStart.date,
+      selectedStart.hour,
+      selectedStart.minute
+    );
+    const endSlot = findSlot(
+      selectedEnd.date,
+      selectedEnd.hour,
+      selectedEnd.minute
+    );
+    if (!startSlot || !endSlot) return null;
+
+    if (isAllDay) {
+      return {
+        startAt: `${startSlot.date}T00:00:00`,
+        endAt: `${endSlot.date}T23:59:59`,
+        startLabel: "00:00",
+        endLabel: "23:59",
+      };
+    }
+
+    const startTime = toFullTime(startSlot.startAt);
+    const endTime = toFullTime(endSlot.endAt);
+
+    return {
+      startAt: `${startSlot.date}T${startTime}`,
+      endAt: `${endSlot.date}T${endTime}`,
+      startLabel: startTime.slice(0, 5),
+      endLabel: endTime.slice(0, 5),
+    };
+  };
+
+  const selectedRange = getSelectedRange();
+
   const handleSlotPress = (date: string, hour: number, minute: string) => {
+    // 서버에 슬롯이 없는 칸은 선택 불가
+    if (!findSlot(date, hour, minute)) return;
+
     if (!selectedStart) {
       setSelectedStart({ date, hour, minute });
       setSelectedEnd(null);
@@ -94,16 +149,6 @@ export default function VoteResult({
 
     const end = toMinutes(selectedEnd.hour, selectedEnd.minute);
     return selectedStart.date === date && current >= start && current <= end;
-  };
-
-  const getEndTimeLabel = (end: SlotPoint) => {
-    const endMinute = Number(end.minute) + 30;
-    const endHour = end.hour + Math.floor(endMinute / 60);
-    const endMin = endMinute % 60;
-    return `${String(endHour).padStart(2, "0")}:${String(endMin).padStart(
-      2,
-      "0"
-    )}`;
   };
 
   return (
@@ -167,18 +212,14 @@ export default function VoteResult({
                   {voteHours.map((hour) => {
                     const minutes = isAllDay ? ["00"] : ["00", "30"];
                     return minutes.map((minute) => {
-                      const slot = voteSlots.find(
-                        (s) =>
-                          s.date === date &&
-                          Number(s.startAt.slice(0, 2)) === hour &&
-                          s.startAt.slice(3, 5) === minute
-                      );
+                      const slot = findSlot(date, hour, minute);
                       const isSelected = isInSelectedRange(date, hour, minute);
 
                       return (
                         <Pressable
                           key={`${date}-${hour}-${minute}`}
                           onPress={() => handleSlotPress(date, hour, minute)}
+                          disabled={!slot}
                           className="transition-transform duration-150 ease-out active:scale-90"
                           style={{
                             height: isAllDay ? 64 : 20,
@@ -212,34 +253,37 @@ export default function VoteResult({
               <Text className="text-[16px] font-bold text-[#2C2C2C]">
                 {Number(selectedStart.date.slice(5, 7))}월{" "}
                 {Number(selectedStart.date.slice(8, 10))}일 (
-                {DAY_LABELS[new Date(selectedStart.date).getDay()]})
+                {
+                  DAY_LABELS[
+                    new Date(`${selectedStart.date}T00:00:00`).getDay()
+                  ]
+                }
+                )
               </Text>
 
               <Text className="text-[14px] font-semibold text-[#2c2c2c]">
                 {isAllDay
                   ? "종일"
-                  : selectedEnd
-                  ? `${String(selectedStart.hour).padStart(2, "0")}:${
-                      selectedStart.minute
-                    } ~ ${getEndTimeLabel(selectedEnd)}`
+                  : selectedRange
+                  ? `${selectedRange.startLabel} ~ ${selectedRange.endLabel}`
                   : `${String(selectedStart.hour).padStart(2, "0")}:${
                       selectedStart.minute
                     } (종료 시간 선택 필요)`}
               </Text>
             </View>
 
-            <View className="mt-8 mb-10 items-center">
+            <View className="mt-8 mb-20 items-center">
               <Pressable
-                disabled={!selectedEnd}
+                disabled={!selectedRange}
                 style={{ width: 140 }}
                 onPress={() => setIsConfirmModalOpen(true)}
                 className={`rounded-xl justify-center items-center h-12 transition-transform duration-150 ease-out active:scale-95 ${
-                  selectedEnd ? "bg-[#5E92F0]" : "bg-[#EEF1F5]"
+                  selectedRange ? "bg-[#5E92F0]" : "bg-[#EEF1F5]"
                 }`}
               >
                 <Text
                   className={`text-[15px] font-semibold ${
-                    selectedEnd ? "text-white" : "text-[#989898]"
+                    selectedRange ? "text-white" : "text-[#989898]"
                   }`}
                 >
                   일정 등록하기
@@ -258,7 +302,7 @@ export default function VoteResult({
 
       <Modal
         transparent
-        visible={isConfirmModalOpen && !!selectedStart && !!selectedEnd}
+        visible={isConfirmModalOpen && !!selectedRange}
         animationType="fade"
         onRequestClose={() => setIsConfirmModalOpen(false)}
       >
@@ -277,10 +321,10 @@ export default function VoteResult({
               생성 후에도 일정 수정이 가능해요
             </Text>
 
-            <View className="mt-5 flex-row gap-3">
+            <View className="mt-4 flex-row gap-3">
               <Pressable
                 onPress={() => setIsConfirmModalOpen(false)}
-                className="flex-1 items-center rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3"
+                className="flex-1 items-center rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-[#2c2c2c]">
                   취소
@@ -289,23 +333,14 @@ export default function VoteResult({
 
               <Pressable
                 onPress={() => {
-                  if (!selectedStart || !selectedEnd) return;
-                  onSubmit(
-                    isAllDay
-                      ? `${selectedStart.date}T00:00:00`
-                      : `${selectedStart.date}T${String(
-                          selectedStart.hour
-                        ).padStart(2, "0")}:${selectedStart.minute}`,
-                    isAllDay
-                      ? `${selectedEnd.date}T23:59:00`
-                      : `${selectedEnd.date}T${getEndTimeLabel(selectedEnd)}`
-                  );
+                  if (!selectedRange) return;
+                  onSubmit(selectedRange.startAt, selectedRange.endAt);
                   setIsConfirmModalOpen(false);
                 }}
-                className="flex-1 items-center rounded-xl bg-[#5E92F0] py-3"
+                className="flex-1 items-center rounded-xl bg-[#5E92F0] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-white">
-                  확정하기
+                  확정
                 </Text>
               </Pressable>
             </View>

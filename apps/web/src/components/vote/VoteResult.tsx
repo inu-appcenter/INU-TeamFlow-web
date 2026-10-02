@@ -20,6 +20,12 @@ interface VoteResultProps {
   onSubmit: (startAt: string, endAt: string) => void;
 }
 
+type SlotPoint = { date: string; hour: number; minute: string };
+
+// "HH:mm" → "HH:mm:00", "HH:mm:ss(.SSS)" → "HH:mm:ss"
+const toFullTime = (time: string) =>
+  time.length === 5 ? `${time}:00` : time.slice(0, 8);
+
 export default function VoteResult({
   title,
   voteDates,
@@ -28,17 +34,9 @@ export default function VoteResult({
   isAllDay,
   onSubmit,
 }: VoteResultProps) {
-  const [selectedStart, setSelectedStart] = useState<{
-    date: string;
-    hour: number;
-    minute: string;
-  } | null>(null);
-
-  const [selectedEnd, setSelectedEnd] = useState<{
-    date: string;
-    hour: number;
-    minute: string;
-  } | null>(null);
+  const [selectedStart, setSelectedStart] = useState<SlotPoint | null>(null);
+  const [selectedEnd, setSelectedEnd] = useState<SlotPoint | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const maxParticipantCount = Math.max(
     1,
@@ -55,7 +53,58 @@ export default function VoteResult({
     return 'bg-[#F1F4F8]';
   };
 
+  const findSlot = (date: string, hour: number, minute: string) =>
+    voteSlots.find(
+      (s) =>
+        s.date === date &&
+        Number(s.startAt.slice(0, 2)) === hour &&
+        s.startAt.slice(3, 5) === minute
+    );
+
+  // 선택한 칸으로 확정 범위 생성
+  // - 종일: 그날 00:00:00 ~ 23:59:59 (백엔드와 합의)
+  // - 시간 지정: 서버 슬롯의 startAt / endAt 그대로 사용
+  const getSelectedRange = () => {
+    if (!selectedStart || !selectedEnd) return null;
+
+    const startSlot = findSlot(
+      selectedStart.date,
+      selectedStart.hour,
+      selectedStart.minute
+    );
+    const endSlot = findSlot(
+      selectedEnd.date,
+      selectedEnd.hour,
+      selectedEnd.minute
+    );
+    if (!startSlot || !endSlot) return null;
+
+    if (isAllDay) {
+      return {
+        startAt: `${startSlot.date}T00:00:00`,
+        endAt: `${endSlot.date}T23:59:59`,
+        startLabel: '00:00',
+        endLabel: '23:59',
+      };
+    }
+
+    const startTime = toFullTime(startSlot.startAt);
+    const endTime = toFullTime(endSlot.endAt);
+
+    return {
+      startAt: `${startSlot.date}T${startTime}`,
+      endAt: `${endSlot.date}T${endTime}`,
+      startLabel: startTime.slice(0, 5),
+      endLabel: endTime.slice(0, 5),
+    };
+  };
+
+  const selectedRange = getSelectedRange();
+
   const handleSlotClick = (date: string, hour: number, minute: string) => {
+    // 서버에 슬롯이 없는 칸은 선택 불가
+    if (!findSlot(date, hour, minute)) return;
+
     if (!selectedStart) {
       setSelectedStart({ date, hour, minute });
       setSelectedEnd(null);
@@ -98,17 +147,6 @@ export default function VoteResult({
 
     const end = toMinutes(selectedEnd.hour, selectedEnd.minute);
     return selectedStart.date === date && current >= start && current <= end;
-  };
-
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-
-  const addOneDay = (dateStr: string) => {
-    const d = new Date(dateStr);
-    d.setDate(d.getDate() + 1);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
   };
 
   return (
@@ -171,21 +209,19 @@ export default function VoteResult({
                   const minutes = isAllDay ? ['00'] : ['00', '30'];
 
                   return minutes.map((minute) => {
-                    const slot = voteSlots.find(
-                      (s) =>
-                        s.date === date &&
-                        Number(s.startAt.slice(0, 2)) === hour &&
-                        s.startAt.slice(3, 5) === minute
-                    );
+                    const slot = findSlot(date, hour, minute);
                     const isSelected = isInSelectedRange(date, hour, minute);
 
                     return (
                       <button
                         key={`${date}-${hour}-${minute}`}
                         onClick={() => handleSlotClick(date, hour, minute)}
-                        className={`cursor-pointer rounded-md transition-all duration-200 active:scale-95 active:opacity-80 ${
-                          isAllDay ? 'h-16' : 'h-5'
-                        } ${
+                        disabled={!slot}
+                        className={`rounded-md transition-all duration-200 ${
+                          slot
+                            ? 'cursor-pointer active:scale-95 active:opacity-80'
+                            : 'cursor-not-allowed'
+                        } ${isAllDay ? 'h-16' : 'h-5'} ${
                           isSelected
                             ? 'bg-[#5E92F0]'
                             : slot
@@ -215,7 +251,7 @@ export default function VoteResult({
                 {Number(selectedStart.date.slice(8, 10))}일 (
                 {
                   ['일', '월', '화', '수', '목', '금', '토'][
-                    new Date(selectedStart.date).getDay()
+                    new Date(`${selectedStart.date}T00:00:00`).getDay()
                   ]
                 }
                 )
@@ -224,24 +260,18 @@ export default function VoteResult({
               <p className="font-semibold text-[#2c2c2c]">
                 {isAllDay
                   ? '종일'
-                  : selectedEnd
-                    ? `${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute} ~ ${(() => {
-                        const endMinute = Number(selectedEnd.minute) + 30;
-                        const endHour =
-                          selectedEnd.hour + Math.floor(endMinute / 60);
-                        const endMin = endMinute % 60;
-                        return `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
-                      })()}`
+                  : selectedRange
+                    ? `${selectedRange.startLabel} ~ ${selectedRange.endLabel}`
                     : `${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute} (종료 시간 선택 필요)`}
               </p>
             </div>
 
             <div className="mt-8 mb-12 flex">
               <button
-                disabled={!selectedEnd}
+                disabled={!selectedRange}
                 onClick={() => setIsConfirmModalOpen(true)}
                 className={`mx-auto rounded-xl px-8 py-2 font-medium transition ${
-                  selectedEnd
+                  selectedRange
                     ? 'cursor-pointer bg-[#5E92F0] text-white duration-200 active:scale-95'
                     : 'bg-[#EEF1F5] text-[#989898]'
                 }`}
@@ -258,7 +288,7 @@ export default function VoteResult({
           </div>
         )}
       </div>
-      {isConfirmModalOpen && selectedStart && selectedEnd && (
+      {isConfirmModalOpen && selectedRange && (
         <div
           onClick={() => setIsConfirmModalOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -271,11 +301,11 @@ export default function VoteResult({
               일정을 확정하시겠습니까?
             </h3>
 
-            <p className="mt-2 text-center text-sm leading-6 text-[#989898]">
+            <p className="mt-2 text-center text-[15px] text-[#989898]">
               생성 후에도 일정 수정이 가능해요
             </p>
 
-            <div className="mt-4 flex gap-3">
+            <div className="mt-3 flex gap-3">
               <button
                 onClick={() => setIsConfirmModalOpen(false)}
                 className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2c2c2c] transition-all duration-200 active:scale-95"
@@ -285,26 +315,12 @@ export default function VoteResult({
 
               <button
                 onClick={() => {
-                  onSubmit(
-                    isAllDay
-                      ? `${selectedStart.date}T00:00:00`
-                      : `${selectedStart.date}T${String(selectedStart.hour).padStart(2, '0')}:${selectedStart.minute}`,
-                    isAllDay
-                      ? `${selectedEnd.date}T23:59:00`
-                      : `${selectedEnd.date}T${(() => {
-                          const endMinute = Number(selectedEnd.minute) + 30;
-                          const endHour =
-                            selectedEnd.hour + Math.floor(endMinute / 60);
-                          const endMin = endMinute % 60;
-                          return `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
-                        })()}`
-                  );
-
+                  onSubmit(selectedRange.startAt, selectedRange.endAt);
                   setIsConfirmModalOpen(false);
                 }}
                 className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
               >
-                확정하기
+                확정
               </button>
             </div>
           </div>

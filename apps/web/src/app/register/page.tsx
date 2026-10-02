@@ -19,6 +19,14 @@ import { MESSAGES, REGISTER_TEXT } from '@moimi/core/constants/messages';
 import { ROUTES } from '@moimi/core/constants/routes';
 import { useLogin, useSignup } from '@moimi/core/hooks/useAuthQuery';
 import { useCreateNotificationOptions } from '@moimi/core/hooks/useNotificationOptionQuery';
+import {
+  PASSWORD_RULES,
+  PASSWORD_RULE_MESSAGE,
+  PASSWORD_INVALID_CHAR_MESSAGE,
+  hasInvalidPasswordChar,
+  isValidPassword,
+  removeWhitespace,
+} from '@moimi/core/utils/password';
 import { useAuth } from '@/hooks/useAuth';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import PolicyModal from '@/components/register/PolicyModal';
@@ -136,6 +144,26 @@ export default function Register() {
         });
 
         showErrorMessage(MESSAGES.REGISTER.EMPTY_FIELD);
+        return;
+      }
+
+      if (hasInvalidPasswordChar(password)) {
+        signupAttempt.fail(undefined, {
+          kind: 'validation',
+          reason_code: 'password_invalid_char',
+        });
+
+        showErrorMessage(PASSWORD_INVALID_CHAR_MESSAGE);
+        return;
+      }
+
+      if (!isValidPassword(password)) {
+        signupAttempt.fail(undefined, {
+          kind: 'validation',
+          reason_code: 'password_rule_invalid',
+        });
+
+        showErrorMessage(PASSWORD_RULE_MESSAGE);
         return;
       }
 
@@ -473,7 +501,9 @@ export default function Register() {
                 />
                 <InputField
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) =>
+                    setPassword(removeWhitespace(e.target.value))
+                  }
                   onKeyDown={handleCapsLock}
                   onKeyUp={handleCapsLock}
                   onBlur={() => setIsCapsLockOn(false)}
@@ -498,9 +528,44 @@ export default function Register() {
                     </button>
                   }
                 />
+                <div className="mx-7.5 -mt-2 mb-4 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+                  {PASSWORD_RULES.map((rule) => {
+                    const passed = rule.test(password);
+                    return (
+                      <span
+                        key={rule.key}
+                        className={`flex items-center gap-1 font-medium ${
+                          passed ? 'text-[#22A06B]' : 'text-[#989898]'
+                        }`}
+                      >
+                        <Check
+                          size={13}
+                          strokeWidth={3}
+                          className={
+                            passed ? 'text-[#22A06B]' : 'text-[#C8CED6]'
+                          }
+                        />
+                        {rule.label}
+                      </span>
+                    );
+                  })}
+                </div>
+                {hasInvalidPasswordChar(password) && (
+                  <div className="mx-7.5 -mt-2 mb-4 flex items-center gap-2 text-[14px] text-[#E22222]">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#FDECEC] text-[12px] font-bold">
+                      !
+                    </span>
+
+                    <span className="font-medium">
+                      {PASSWORD_INVALID_CHAR_MESSAGE}
+                    </span>
+                  </div>
+                )}
                 <InputField
                   value={checkPassword}
-                  onChange={(e) => setCheckPassword(e.target.value)}
+                  onChange={(e) =>
+                    setCheckPassword(removeWhitespace(e.target.value))
+                  }
                   onKeyDown={handleCapsLock}
                   onKeyUp={handleCapsLock}
                   onBlur={() => setIsCapsLockOn(false)}

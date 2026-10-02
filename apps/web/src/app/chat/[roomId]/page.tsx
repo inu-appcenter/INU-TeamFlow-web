@@ -26,6 +26,11 @@ import ChatRoomDrawer from '@/components/chat/ChatRoomDrawer';
 import ChatRoomAvatar from '@/components/chat/ChatRoomAvatar';
 import { startAnalyticsAttempt } from '@/lib/analytics';
 
+type PendingImage = {
+  file: File;
+  previewUrl: string;
+};
+
 export default function ChatRoomPage() {
   const params = useParams();
   const roomId = Number(params.roomId);
@@ -47,6 +52,8 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
+  const [imageSendError, setImageSendError] = useState('');
   const [roomInfo, setRoomInfo] = useState<{
     roomName: string;
     roomImageUrl: string | null;
@@ -136,6 +143,19 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
     }
   }, [anchor]);
 
+  // 페이지를 벗어날 때 남아 있는 미리보기 URL 해제
+  const pendingPreviewUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    pendingPreviewUrlRef.current = pendingImage?.previewUrl ?? null;
+  }, [pendingImage]);
+  useEffect(() => {
+    return () => {
+      if (pendingPreviewUrlRef.current) {
+        URL.revokeObjectURL(pendingPreviewUrlRef.current);
+      }
+    };
+  }, []);
+
   // 위로 스크롤 시 이전 메시지 로드
   const prevScrollHeightRef = useRef(0);
 
@@ -214,13 +234,38 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
 
   const handleImageClick = () => fileInputRef.current?.click();
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 이미지 선택 → 바로 전송하지 않고 확인 모달 열기
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
 
-    const imageKey = await uploadImage(file);
-    sendMessage({ messageType: 'IMAGE', imageKey });
+    if (pendingImage) URL.revokeObjectURL(pendingImage.previewUrl);
+    setImageSendError('');
+    setPendingImage({ file, previewUrl: URL.createObjectURL(file) });
+  };
+
+  const closeImageConfirm = () => {
+    if (isUploading) return;
+    if (pendingImage) URL.revokeObjectURL(pendingImage.previewUrl);
+    setPendingImage(null);
+    setImageSendError('');
+  };
+
+  // 모달에서 "전송" → 업로드 후 메시지 전송
+  const handleConfirmImageSend = async () => {
+    if (!pendingImage || isUploading) return;
+
+    try {
+      const imageKey = await uploadImage(pendingImage.file);
+      sendMessage({ messageType: 'IMAGE', imageKey });
+      URL.revokeObjectURL(pendingImage.previewUrl);
+      setPendingImage(null);
+      setImageSendError('');
+    } catch (err) {
+      console.error('이미지 전송 실패', err);
+      setImageSendError('이미지 전송에 실패했어요');
+    }
   };
 
   const roomType =
@@ -463,7 +508,8 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
         <div className="flex items-center gap-2 bg-[#F6F8FA] px-6 py-3 pb-10">
           <button
             onClick={handleImageClick}
-            className="shrink-0 cursor-pointer px-2"
+            disabled={isUploading}
+            className="shrink-0 cursor-pointer px-2 disabled:opacity-30"
           >
             <ImagePlus size={24} className="text-[#5e92f0]" />
           </button>
@@ -508,6 +554,56 @@ function ChatRoomPageInner({ roomId }: { roomId: number }) {
           }
         />
       </section>
+
+      {/* 이미지 전송 확인 모달 */}
+      {pendingImage && (
+        <div
+          onClick={closeImageConfirm}
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 px-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+          >
+            <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
+              이미지를 전송할까요?
+            </h2>
+
+            <div className="mt-4 flex max-h-[320px] items-center justify-center overflow-hidden rounded-2xl bg-[#F6F8FA]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={pendingImage.previewUrl}
+                alt="전송할 이미지 미리보기"
+                className="max-h-[320px] w-full object-contain"
+              />
+            </div>
+
+            {imageSendError && (
+              <p className="mt-3 text-center text-sm font-medium text-[#E22222]">
+                {imageSendError}
+              </p>
+            )}
+
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={closeImageConfirm}
+                disabled={isUploading}
+                className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                취소
+              </button>
+
+              <button
+                onClick={handleConfirmImageSend}
+                disabled={isUploading || !isConnected}
+                className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] py-3 font-semibold text-white transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B8C8F2]"
+              >
+                {isUploading ? '전송 중...' : '전송'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

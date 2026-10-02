@@ -157,7 +157,10 @@ export default function RecruitmentDetail() {
             onBack={goBack}
             onEdit={() => router.push(`/recruitment/${recruitmentId}/edit`)}
             onDelete={() => setIsDeleteConfirmOpen(true)}
-            onReport={() => setIsReportModalOpen(true)}
+            onReport={() => {
+              if (!checkVerified()) return;
+              setIsReportModalOpen(true);
+            }}
             onBeforeScrap={checkVerified}
           />
           <div className="px-8 py-7 sm:px-10 sm:py-10">

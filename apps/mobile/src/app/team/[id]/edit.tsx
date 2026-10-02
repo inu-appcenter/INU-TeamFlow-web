@@ -107,7 +107,7 @@ export default function TeamEditScreen() {
             <View className="mt-5 flex-row gap-3">
               <Pressable
                 onPress={() => setIsDeleteConfirmOpen(false)}
-                className="flex-1 items-center rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3"
+                className="flex-1 items-center rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-[#2C2C2C]">
                   취소
@@ -118,7 +118,7 @@ export default function TeamEditScreen() {
                   setIsDeleteConfirmOpen(false);
                   await handleDelete();
                 }}
-                className="flex-1 items-center rounded-xl bg-[#E22222] py-3"
+                className="flex-1 items-center rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-white">
                   삭제
