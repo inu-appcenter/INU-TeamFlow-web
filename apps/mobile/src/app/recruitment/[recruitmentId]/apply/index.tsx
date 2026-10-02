@@ -52,21 +52,27 @@ export default function RecruitmentApplyScreen() {
 
   const [introduction, setIntroduction] = useState("");
 
-  const { isVerified } = useSchoolVerificationGuard(() => {});
+  const { isVerified, isLoading: isVerifyLoading } = useSchoolVerificationGuard(
+    () => {}
+  );
 
-  useEffect(() => {
-    if (!isVerified) {
-      router.replace({
-        pathname: "/recruitment/[recruitmentId]",
-        params: {
-          recruitmentId: String(recruitmentIdNum),
-          error: "school-verification-required",
-        },
-      });
+  // 모집글 상세로 pop (replace하면 상세가 중복으로 쌓임)
+  // 이전 화면이 없으면 상세로 교체
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace(`/recruitment/${recruitmentIdNum}`);
     }
-  }, [isVerified, recruitmentIdNum]);
+  };
 
-  if (isLoading || !recruitment) {
+  // 학교 인증 안 된 계정은 진입 차단 (프로필 로딩이 끝난 뒤에만 판단)
+  useEffect(() => {
+    if (isVerifyLoading || isVerified) return;
+    goBack();
+  }, [isVerifyLoading, isVerified]);
+
+  if (isLoading || !recruitment || isVerifyLoading || !isVerified) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
         <ActivityIndicator color="#989898" />
@@ -88,10 +94,7 @@ export default function RecruitmentApplyScreen() {
         body: { introduction },
       });
       Alert.alert("완료", "지원이 완료되었습니다.", [
-        {
-          text: "확인",
-          onPress: () => router.replace(`/recruitment/${recruitmentIdNum}`),
-        },
+        { text: "확인", onPress: goBack },
       ]);
     } catch {
       Alert.alert("오류", "지원에 실패했습니다.");
@@ -108,7 +111,7 @@ export default function RecruitmentApplyScreen() {
         className="flex-row items-center justify-between px-5 pb-4"
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={goBack}
           className="active:scale-90 transition-transform duration-150 ease-out"
         >
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />

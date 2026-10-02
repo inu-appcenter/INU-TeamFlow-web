@@ -331,7 +331,7 @@ export default function ChatRoomDrawer({
               pointerEvents="none"
               style={{
                 position: "absolute",
-                top: 100,
+                top: 120,
                 left: 0,
                 right: 0,
                 alignItems: "center",

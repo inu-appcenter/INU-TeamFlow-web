@@ -2,13 +2,16 @@
 
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import Card from '@/components/main/Card';
 
 import { useMyTeamNotices } from '@moimi/core/hooks/useNoticeQuery';
 import { useTeamDetail } from '@moimi/core/hooks/team/useTeamQuery';
+import { categoryMap, categoryColorMap } from '@moimi/core/constants/category';
 import { formatDate } from '@/utils/date/formatDate';
 import { getTeamRoleLabel } from '@/utils/teamRole';
+import { useSafeBack } from '@/hooks/useSafeBack';
+import { usePostListState, type PostListState } from '@/hooks/usePostListState';
 
 import {
   ChevronDown,
@@ -20,35 +23,52 @@ import {
   Search,
 } from 'lucide-react';
 
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
-
-const categoryMap: Record<string, string> = {
-  CONTEST: '공모전',
-  STUDY: '스터디',
-  PROJECT: '프로젝트',
-  CLUB: '동아리',
-  ETC: '기타',
-};
-
 const ITEMS_PER_PAGE = 8;
+
+const INITIAL_LIST_STATE: PostListState = {
+  page: 1,
+  keyword: '',
+  queryKeyword: '',
+  searchType: 'title',
+  selectedCategory: 'ALL',
+};
 
 export default function TeamNotice() {
   const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
 
   const teamId = Number(params.id);
   const { data: team } = useTeamDetail(teamId);
   const isAdmin = team?.role === 'LEADER' || team?.role === 'MANAGER';
 
-  const [keyword, setKeyword] = useState('');
-  const [searchType, setSearchType] = useState('title');
-  const [page, setPage] = useState(1);
+  const storageKey = `team:${teamId}:notice`;
+  const noticePath = `/team/${teamId}/notice`;
+
+  const [listState, setListState] = usePostListState(
+    storageKey,
+    INITIAL_LIST_STATE
+  );
+  const { page, keyword, searchType } = listState;
+
+  const setPage = (nextPage: number) => {
+    setListState((prev) => ({ ...prev, page: nextPage }));
+  };
+
+  // 공지 상세·작성·수정으로 갈 때만 상태 유지, 그 외로 나가면 초기화
+  useEffect(() => {
+    return () => {
+      window.setTimeout(() => {
+        const path = window.location.pathname;
+        const isNoticePage =
+          path === noticePath || path.startsWith(`${noticePath}/`);
+
+        if (!isNoticePage) {
+          sessionStorage.removeItem(storageKey);
+        }
+      }, 0);
+    };
+  }, [storageKey, noticePath]);
 
   const normalizedKeyword = keyword.replace(/\s/g, '');
 
@@ -81,13 +101,11 @@ export default function TeamNotice() {
   );
 
   const handleKeywordChange = (value: string) => {
-    setKeyword(value);
-    setPage(1);
+    setListState((prev) => ({ ...prev, keyword: value, page: 1 }));
   };
 
   const handleSearchTypeChange = (value: string) => {
-    setSearchType(value);
-    setPage(1);
+    setListState((prev) => ({ ...prev, searchType: value, page: 1 }));
   };
 
   return (
@@ -97,12 +115,13 @@ export default function TeamNotice() {
           <div
             className="flex h-[72px] items-center justify-between px-6"
             style={{
-              backgroundColor: categoryColorMap[team?.category ?? 'ETC'],
+              backgroundColor:
+                categoryColorMap[team?.category ?? 'ETC'] ?? '#E9E9E9',
             }}
           >
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push(`/team/${teamId}`)}
+                onClick={() => safeBack(`/team/${teamId}`)}
                 className="cursor-pointer text-[#2C2C2C]"
               >
                 <ChevronLeft size={24} strokeWidth={2.5} />
@@ -179,7 +198,7 @@ export default function TeamNotice() {
               {paged.map((notice) => (
                 <Link
                   key={notice.noticeId}
-                  href={`/team/${teamId}/notice/${notice.noticeId}?from=team`}
+                  href={`/team/${teamId}/notice/${notice.noticeId}`}
                 >
                   <div
                     className={`h-[85px] items-center rounded-xl border-[0.5px] bg-[#F6F8FA] py-4 ${
@@ -221,11 +240,11 @@ export default function TeamNotice() {
               )}
             </section>
 
-            {totalPages > 0 && (
+            {sorted.length > 0 && (
               <div className="mt-8 mb-6 flex items-center justify-center gap-2 pb-6">
                 <button
                   type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  onClick={() => setPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
                 >
@@ -251,7 +270,7 @@ export default function TeamNotice() {
 
                 <button
                   type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
                 >

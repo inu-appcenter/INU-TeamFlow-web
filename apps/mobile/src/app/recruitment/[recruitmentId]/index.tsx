@@ -1,5 +1,5 @@
 // apps/mobile/src/app/recruitment/[recruitmentId]/index.tsx
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, ScrollView, Pressable, Modal } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
@@ -7,11 +7,14 @@ import {
   useRecruitmentDetail,
   useDeleteRecruitment,
 } from "@moimi/core/hooks/useRecruitmentQuery";
+import { useSchoolVerificationGuard } from "@moimi/core/hooks/useSchoolVerificationGuard";
 import { useCreateDirectChatRoom } from "@moimi/core/hooks/chat/useCreateDirectChatRoom";
 import { categoryMap, categoryColorMap } from "@moimi/core/constants/category";
 import { formatDate } from "@/utils/date/formatDate";
 import { getDday } from "@/utils/date/getDday";
 import ScrapButton from "@/components/ScrapButton";
+
+const VERIFICATION_MESSAGE = "학교 인증 후 이용할 수 있어요";
 
 function InfoRow({
   label,
@@ -57,6 +60,23 @@ export default function RecruitmentDetailScreen() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState("");
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showErrorMessage = (message?: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setErrorMessage(message ?? VERIFICATION_MESSAGE);
+    toastTimer.current = setTimeout(() => setErrorMessage(""), 1800);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
   if (isLoading || !recruitment) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
@@ -84,12 +104,45 @@ export default function RecruitmentDetailScreen() {
   };
 
   const handleStartDirectChat = async () => {
-    const room = await createDirectRoom(recruitment.recruiterId);
-    // router.push(`/chat/${room.chatRoomId}`);
+    if (isCreatingRoom) return;
+    if (!checkVerified()) return;
+
+    try {
+      const room = await createDirectRoom(recruitment.recruiterId);
+      // router.push(`/chat/${room.chatRoomId}`);
+    } catch (err) {
+      console.error("1:1 채팅방 생성 실패", err);
+      showErrorMessage("채팅방을 열지 못했어요");
+    }
+  };
+
+  const handleMainAction = () => {
+    if (isRecruiter) {
+      router.push(`/recruitment/${recruitmentIdNum}/apply/applications`);
+      return;
+    }
+    if (!checkVerified()) return;
+    router.push(`/recruitment/${recruitmentIdNum}/apply`);
   };
 
   return (
     <View className="flex-1 bg-[#ffffff]">
+      {!!errorMessage && (
+        <View
+          style={{
+            position: "absolute",
+            top: 120,
+            alignSelf: "center",
+            zIndex: 50,
+          }}
+          className="rounded-full bg-[#2C2C2C] px-5 py-2"
+        >
+          <Text className="text-sm font-semibold text-white">
+            {errorMessage}
+          </Text>
+        </View>
+      )}
+
       <View
         style={{ backgroundColor: headerColor, paddingTop: 60 }}
         className="flex-row items-center justify-between px-5 pb-4"
@@ -107,6 +160,7 @@ export default function RecruitmentDetailScreen() {
               type="recruitment"
               id={recruitmentIdNum}
               initialScrapped={recruitment.isScrap}
+              onBeforeToggle={checkVerified}
             />
           )}
 
@@ -218,15 +272,7 @@ export default function RecruitmentDetailScreen() {
         <View className="mt-8 items-center">
           <Pressable
             disabled={!isRecruiter && isDisabled}
-            onPress={() => {
-              if (isRecruiter) {
-                router.push(
-                  `/recruitment/${recruitmentIdNum}/apply/applications`
-                );
-                return;
-              }
-              router.push(`/recruitment/${recruitmentIdNum}/apply`);
-            }}
+            onPress={handleMainAction}
             className={`rounded-xl px-10 py-3.5 active:scale-95 transition-transform duration-150 ease-out ${
               !isRecruiter && isDisabled ? "bg-[#EEF1F5]" : "bg-[#5E92F0]"
             }`}

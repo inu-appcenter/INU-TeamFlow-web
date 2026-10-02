@@ -23,6 +23,7 @@ import {
   ImageIcon,
 } from "lucide-react-native";
 import { useInfoPosts } from "@moimi/core/hooks/useInfoPostQuery";
+import { useSchoolVerificationGuard } from "@moimi/core/hooks/useSchoolVerificationGuard";
 import { infoPostCategoryFilterOptions } from "@moimi/core/constants/infoPost";
 import type {
   GetInfoPostsParams,
@@ -32,6 +33,7 @@ import { formatDate } from "@/utils/date/formatDate"; // TODO: 아직 없으면 
 
 const PAGE_SIZE = 20;
 const PAGE_WINDOW_SIZE = 5;
+const VERIFICATION_MESSAGE = "학교 인증 후 이용할 수 있어요";
 
 /* ---------- 카드 ---------- */
 
@@ -198,6 +200,28 @@ export default function InfoPostListScreen() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [page, setPage] = useState(1);
 
+  const [errorMessage, setErrorMessage] = useState("");
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showErrorMessage = (message?: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setErrorMessage(message ?? VERIFICATION_MESSAGE);
+    toastTimer.current = setTimeout(() => setErrorMessage(""), 1800);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
+
+  const handleCreate = () => {
+    if (!checkVerified()) return;
+    router.push("/infoPost/create");
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedKeyword(keyword.trim()), 300);
     return () => clearTimeout(timer);
@@ -237,6 +261,22 @@ export default function InfoPostListScreen() {
 
   return (
     <View className="flex-1 bg-[#F0F2F5]">
+      {!!errorMessage && (
+        <View
+          style={{
+            position: "absolute",
+            top: 120,
+            alignSelf: "center",
+            zIndex: 50,
+          }}
+          className="rounded-full bg-[#2C2C2C] px-5 py-2"
+        >
+          <Text className="text-[13px] font-semibold text-white">
+            {errorMessage}
+          </Text>
+        </View>
+      )}
+
       <View className="flex-row items-center justify-between px-4 pb-3 pt-16">
         <View className="flex-row items-center gap-3">
           <Pressable
@@ -249,7 +289,7 @@ export default function InfoPostListScreen() {
         </View>
 
         <Pressable
-          onPress={() => router.push("/infoPost/create")}
+          onPress={handleCreate}
           className="h-9 w-9 items-center justify-center rounded-full bg-[#5E92F0] transition-transform duration-150 ease-out active:scale-95"
         >
           <Plus size={16} strokeWidth={2.5} color="#fff" />

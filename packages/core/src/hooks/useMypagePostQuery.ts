@@ -37,6 +37,10 @@ export const useCancelApplication = () => {
     mutationFn: (applicationId: number) => cancelApplication(applicationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
+      queryClient.invalidateQueries({ queryKey: ["recruitments"] });
+      queryClient.invalidateQueries({
+        queryKey: mypagePostKeys.applications(),
+      });
     },
   });
 };

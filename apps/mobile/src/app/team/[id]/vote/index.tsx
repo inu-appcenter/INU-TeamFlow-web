@@ -220,11 +220,11 @@ export default function TeamVoteScreen() {
 
       {errorMessage && (
         <View
-          style={{ position: "absolute", top: 100, left: 0, right: 0 }}
+          style={{ position: "absolute", top: 120, left: 0, right: 0 }}
           className="items-center"
         >
           <View className="rounded-full bg-[#2C2C2C] px-5 py-2">
-            <Text className="text-[13px] font-semibold text-white">
+            <Text className="text-sm font-semibold text-white">
               {errorMessage}
             </Text>
           </View>

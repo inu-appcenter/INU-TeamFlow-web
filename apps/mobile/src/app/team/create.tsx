@@ -44,7 +44,7 @@ export default function TeamCreateScreen() {
         <View
           style={{
             position: "absolute",
-            top: 100,
+            top: 120,
             left: 0,
             right: 0,
             zIndex: 50,
@@ -52,7 +52,7 @@ export default function TeamCreateScreen() {
           className="items-center"
         >
           <View className="rounded-full bg-[#2C2C2C] px-5 py-2">
-            <Text className="text-[13px] font-semibold text-white">
+            <Text className="text-sm font-semibold text-white">
               {errorMessage}
             </Text>
           </View>

@@ -45,12 +45,14 @@ import MonthGridWithEvents from '@/components/calendar/MonthGridWithEvents';
 import { TeamDetailSkeleton } from '@/components/skeleton';
 import { startTeamActivityAttempt } from '@/lib/analytics/teamActivity';
 import { capture } from '@/lib/analytics/client';
+import { useSafeBack } from '@/hooks/useSafeBack';
 
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function TeamDetail() {
   const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
   const today = new Date();
 
   const [currentDate, setCurrentDate] = useState(
@@ -304,7 +306,7 @@ export default function TeamDetail() {
             style={{ backgroundColor: categoryColorMap[team.category] }}
           >
             <button
-              onClick={() => router.push('/team')}
+              onClick={() => safeBack('/team')}
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={24} strokeWidth={2.5} />
@@ -535,9 +537,7 @@ export default function TeamDetail() {
 
                   <button
                     className="cursor-pointer"
-                    onClick={() =>
-                      router.push(`/team/${teamId}/notice?from=team`)
-                    }
+                    onClick={() => router.push(`/team/${teamId}/notice`)}
                   >
                     <ChevronRight />
                   </button>

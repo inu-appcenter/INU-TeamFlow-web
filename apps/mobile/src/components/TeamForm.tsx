@@ -155,7 +155,7 @@ export default function TeamForm({
         <View
           style={{
             position: "absolute",
-            top: 160,
+            top: 120,
             alignSelf: "center",
             zIndex: 50,
           }}

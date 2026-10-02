@@ -294,13 +294,13 @@ export default function InvitationsScreen() {
       {errorMessage && (
         <View
           pointerEvents="none"
-          className="absolute inset-x-0 top-16 z-50 items-center"
+          className="absolute inset-x-0 top-32 z-50 items-center"
         >
           <Animated.View
             style={{ opacity: toastOpacity }}
-            className="rounded-xl bg-[#2C2C2C] px-5 py-3"
+            className="rounded-xl bg-[#2C2C2C] px-5 py-2"
           >
-            <Text className="text-[14px] font-medium text-white">
+            <Text className="text-sm font-medium text-white">
               {errorMessage}
             </Text>
           </Animated.View>

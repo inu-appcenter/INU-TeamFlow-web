@@ -201,7 +201,7 @@ export default function CalendarAddModal({
             <View
               style={{
                 position: "absolute",
-                top: -150,
+                top: -160,
                 alignSelf: "center",
                 zIndex: 50,
               }}

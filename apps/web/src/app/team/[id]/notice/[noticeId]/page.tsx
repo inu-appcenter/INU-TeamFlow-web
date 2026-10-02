@@ -10,16 +10,9 @@ import {
   useTeamNoticeDetail,
   useDeleteTeamNotice,
 } from '@moimi/core/hooks/useNoticeQuery';
+import { categoryColorMap } from '@moimi/core/constants/category';
 import { formatDate } from '@/utils/date/formatDate';
-import { useSearchParams } from 'next/navigation';
-
-const categoryColorMap: Record<string, string> = {
-  CONTEST: '#FBE4F8',
-  STUDY: '#D8FAD8',
-  PROJECT: '#DCEBFF',
-  CLUB: '#FFF1CC',
-  ETC: '#E9E9E9',
-};
+import { useSafeBack } from '@/hooks/useSafeBack';
 
 const teamRoleMap: Record<string, string> = {
   LEADER: '팀장',
@@ -30,6 +23,7 @@ const teamRoleMap: Record<string, string> = {
 export default function TeamNoticeDetail() {
   const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
 
   const teamId = Number(params.id);
   const noticeId = Number(params.noticeId);
@@ -40,21 +34,16 @@ export default function TeamNoticeDetail() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-  const { mutateAsync: deleteNotice } = useDeleteTeamNotice(teamId);
+  const { mutateAsync: deleteNotice, isPending: isDeleting } =
+    useDeleteTeamNotice(teamId);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const searchParams = useSearchParams();
-  const from = searchParams.get('from');
+
+  // 들어온 곳(팀 상세 / 팀 공지 목록 / 전체 공지 / 마이페이지)으로 복귀
+  // 새 탭·URL 직접 진입이면 팀 공지 목록으로
+  const goBack = () => safeBack(`/team/${teamId}/notice`);
 
   if (isLoading) {
-    return (
-      <NoticeDetailSkeleton
-        onBack={() =>
-          from === 'home'
-            ? router.push('/notice')
-            : router.push(`/team/${teamId}/notice`)
-        }
-      />
-    );
+    return <NoticeDetailSkeleton onBack={goBack} />;
   }
 
   if (!notice) {
@@ -72,9 +61,10 @@ export default function TeamNoticeDetail() {
   );
 
   const handleDelete = async () => {
+    if (isDeleting) return;
     try {
       await deleteNotice(noticeId);
-      router.push(`/team/${teamId}/notice`);
+      goBack();
     } catch (err) {
       console.error('공지 삭제 실패', err);
     }
@@ -92,16 +82,7 @@ export default function TeamNoticeDetail() {
                 : '#E9E9E9',
             }}
           >
-            <button
-              onClick={() => {
-                if (from === 'home') {
-                  router.push('/notice'); // 홈페이지 공지
-                } else {
-                  router.push(`/team/${teamId}/notice`); // 팀 공지
-                }
-              }}
-              className="cursor-pointer text-[#2C2C2C]"
-            >
+            <button onClick={goBack} className="cursor-pointer text-[#2C2C2C]">
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
 
@@ -264,7 +245,8 @@ export default function TeamNoticeDetail() {
                   setIsDeleteConfirmOpen(false);
                   await handleDelete();
                 }}
-                className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
+                disabled={isDeleting}
+                className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95 disabled:opacity-50"
               >
                 삭제
               </button>

@@ -13,6 +13,7 @@ export default function InfoPostDetailActions({
   onEdit,
   onDelete,
   onReport,
+  onBeforeScrap,
 }: InfoPostDetailActionsProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
@@ -76,6 +77,7 @@ export default function InfoPostDetailActions({
               type="infoPost"
               id={infoPost.infoPostId}
               initialScrapped={infoPost.isScrap}
+              onBeforeToggle={onBeforeScrap}
             />
             <div className="relative">
               <button

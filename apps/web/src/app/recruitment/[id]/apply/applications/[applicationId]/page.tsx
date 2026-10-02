@@ -16,6 +16,7 @@ import { ApplicationDetailSkeleton } from '@/components/skeleton';
 import { useCreateDirectChatRoom } from '@moimi/core/hooks/chat/useCreateDirectChatRoom';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 import { useCancelApplication } from '@moimi/core/hooks/useMypagePostQuery';
+import { useSafeBack } from '@/hooks/useSafeBack';
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
   WAITING: '대기중',
@@ -34,6 +35,7 @@ const statusColorMap: Record<ApplicationStatus, string> = {
 export default function ApplicationDetail() {
   const router = useRouter();
   const params = useParams();
+  const safeBack = useSafeBack();
 
   const recruitmentId = Number(params.id);
   const applicationId = Number(params.applicationId);
@@ -107,7 +109,7 @@ export default function ApplicationDetail() {
           >
             <button
               onClick={() =>
-                router.push(`/recruitment/${recruitmentId}/apply/applications`)
+                safeBack(`/recruitment/${recruitmentId}/apply/applications`)
               }
               className="cursor-pointer text-[#2C2C2C]"
             >

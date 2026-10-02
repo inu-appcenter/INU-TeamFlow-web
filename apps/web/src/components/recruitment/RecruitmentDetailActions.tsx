@@ -17,6 +17,7 @@ export default function RecruitmentDetailActions({
   onEdit,
   onDelete,
   onReport,
+  onBeforeScrap,
 }: RecruitmentDetailActionsProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
@@ -76,6 +77,7 @@ export default function RecruitmentDetailActions({
               type="recruitment"
               id={recruitmentId}
               initialScrapped={isScrap}
+              onBeforeToggle={onBeforeScrap}
             />
             <div className="relative">
               <button
