@@ -15,7 +15,7 @@ export default function NotificationButton() {
       aria-label={
         unreadCount > 0 ? `알림, 읽지 않은 알림 ${unreadCount}개` : '알림'
       }
-      className="fixed top-4 right-6 z-80 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5] bg-white text-[#2c2c2c] transition-all duration-150 active:scale-90 md:top-8"
+      className="fixed top-4 right-6 z-80 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5] bg-white text-[#2c2c2c] transition-all duration-150 active:scale-90 lg:top-8"
     >
       <FaBell size={18} />
 
