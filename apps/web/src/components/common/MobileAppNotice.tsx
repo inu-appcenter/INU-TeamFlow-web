@@ -112,28 +112,11 @@ export default function MobileAppNotice() {
 
           <button
             type="button"
-            onClick={handleContinue}
-            className="mt-4 flex items-center gap-1 px-3 py-2 text-[14px] font-medium"
+            onClick={() => setDismissed(true)}
+            className="mt-2 flex items-center gap-1 px-3 py-2 text-[14px] font-medium text-[#B0B0B0] transition-all duration-200 active:scale-95"
           >
-            <span className="relative">
-              <span className="text-[#B0B0B0]">웹으로 계속</span>
-              <span
-                className={`absolute inset-0 overflow-hidden whitespace-nowrap text-[#5E92F0] transition-[clip-path] duration-300 ease-out ${
-                  isLeaving
-                    ? '[clip-path:inset(0_0_0_0)]'
-                    : '[clip-path:inset(0_100%_0_0)]'
-                }`}
-              >
-                웹으로 계속
-              </span>
-            </span>
-            <ArrowRight
-              size={14}
-              strokeWidth={2.2}
-              className={`transition-all duration-300 ease-out ${
-                isLeaving ? 'translate-x-1 text-[#5E92F0]' : 'text-[#B0B0B0]'
-              }`}
-            />
+            웹으로 계속
+            <ArrowRight size={14} strokeWidth={2.2} />
           </button>
         </div>
 
