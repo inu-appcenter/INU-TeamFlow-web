@@ -136,7 +136,7 @@ export default function ContentCard(props: CardProps) {
         {(props.content || props.cardType === 'recruitment') && (
           <p
             className={`mt-2 min-h-5 w-full truncate text-sm font-medium ${
-              props.content ? 'text-[#2C2C2C]' : 'text-[#B0B0B0]'
+              props.content ? 'text-[#6c6c6c]' : 'text-[#B0B0B0]'
             }`}
           >
             {props.content || '연결된 정보글이 없습니다'}

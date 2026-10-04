@@ -12,6 +12,25 @@ import Checkbox from '../common/Checkbox';
 import VoteDatePicker from '@/components/vote/VoteDatePicker';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? 0 : 30;
+  const period = h < 12 ? '오전' : '오후';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+
+  return {
+    value: `${pad(h)}:${pad(m)}`,
+    label: `${period} ${h12}:${pad(m)}`,
+  };
+});
+
+const getNextSlot = (time: string) => {
+  const idx = TIME_OPTIONS.findIndex((o) => o.value === time);
+  return TIME_OPTIONS[Math.min(idx + 1, TIME_OPTIONS.length - 1)].value;
+};
+
 export interface EventVoteCreateRequest {
   title: string;
   description: string;
@@ -144,6 +163,11 @@ export default function VoteAddModal({
 
     if (!form.isAllDay && (!form.dailyTimeStart || !form.dailyTimeEnd)) {
       showErrorMessage('투표 시간을 선택해주세요.');
+      return;
+    }
+
+    if (!form.isAllDay && form.dailyTimeStart >= form.dailyTimeEnd) {
+      showErrorMessage('종료 시간은 시작 시간보다 늦어야 해요.');
       return;
     }
 
@@ -312,35 +336,57 @@ export default function VoteAddModal({
               </div>
 
               {!form.isAllDay && (
-                <>
-                  <div className="mb-3 flex gap-3">
-                    <input
-                      type="time"
-                      value={form.dailyTimeStart}
-                      onChange={(e) => {
-                        setForm((prev) => ({
-                          ...prev,
-                          dailyTimeStart: e.target.value,
-                        }));
-                        setErrorMessage('');
-                      }}
-                      className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
-                    />
+                <div className="mb-3 flex gap-3">
+                  <select
+                    value={form.dailyTimeStart}
+                    onChange={(e) => {
+                      const start = e.target.value;
+                      setForm((prev) => ({
+                        ...prev,
+                        dailyTimeStart: start,
+                        // 시작이 종료보다 같거나 늦어지면 종료를 시작+30분으로 밀어줌
+                        dailyTimeEnd:
+                          prev.dailyTimeEnd <= start
+                            ? getNextSlot(start)
+                            : prev.dailyTimeEnd,
+                      }));
+                      setErrorMessage('');
+                    }}
+                    className="h-[55px] flex-1 appearance-none rounded-2xl bg-[#F6F8FA] px-6 text-left text-[16px] font-semibold text-[#2C2C2C] outline-none"
+                  >
+                    {TIME_OPTIONS.map((o) => (
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        disabled={o.value === '23:30'}
+                      >
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
 
-                    <input
-                      type="time"
-                      value={form.dailyTimeEnd}
-                      onChange={(e) => {
-                        setForm((prev) => ({
-                          ...prev,
-                          dailyTimeEnd: e.target.value,
-                        }));
-                        setErrorMessage('');
-                      }}
-                      className="h-[55px] flex-1 rounded-2xl bg-[#F6F8FA] px-6 text-[16px] font-semibold text-[#2C2C2C] outline-none"
-                    />
-                  </div>
-                </>
+                  <select
+                    value={form.dailyTimeEnd}
+                    onChange={(e) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        dailyTimeEnd: e.target.value,
+                      }));
+                      setErrorMessage('');
+                    }}
+                    className="h-[55px] flex-1 appearance-none rounded-2xl bg-[#F6F8FA] px-6 text-left text-[16px] font-semibold text-[#2C2C2C] outline-none"
+                  >
+                    {TIME_OPTIONS.map((o) => (
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        disabled={o.value <= form.dailyTimeStart}
+                      >
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
 
               <textarea

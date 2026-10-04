@@ -218,7 +218,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoginPending}
-              className="group mx-7.5 mb-7 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-3 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1] sm:mx-auto sm:w-[25%] sm:min-w-22 sm:py-2.5"
+              className="group mx-auto mb-7 w-[25%] cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
             >
               <span className="inline-flex items-center justify-center">
                 {LOGIN_TEXT.TITLE}

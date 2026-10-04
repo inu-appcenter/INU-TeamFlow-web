@@ -55,6 +55,14 @@ const formatDateKey = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
+const addMinutes = (time: string, minutes: number) => {
+  const [h, m] = time.split(":").map(Number);
+  const total = Math.min(h * 60 + m + minutes, 23 * 60 + 30);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(
+    total % 60
+  ).padStart(2, "0")}`;
+};
+
 export default function VoteAddModal({
   open,
   onClose,
@@ -117,6 +125,10 @@ export default function VoteAddModal({
     }
     if (!form.isAllDay && (!form.dailyTimeStart || !form.dailyTimeEnd)) {
       showErrorMessage("투표 시간을 선택해주세요");
+      return;
+    }
+    if (!form.isAllDay && form.dailyTimeStart >= form.dailyTimeEnd) {
+      showErrorMessage("종료 시간은 시작 시간보다 늦어야 해요");
       return;
     }
     setStep(2);
@@ -392,8 +404,16 @@ export default function VoteAddModal({
                   <TimeRangeInputs
                     startTime={form.dailyTimeStart}
                     endTime={form.dailyTimeEnd}
-                    onStartTimeChange={(time) => {
-                      setForm((p) => ({ ...p, dailyTimeStart: time }));
+                    minuteInterval={30}
+                    onStartTimeChange={(start) => {
+                      setForm((p) => ({
+                        ...p,
+                        dailyTimeStart: start,
+                        dailyTimeEnd:
+                          p.dailyTimeEnd <= start
+                            ? addMinutes(start, 30)
+                            : p.dailyTimeEnd,
+                      }));
                       setErrorMessage("");
                     }}
                     onEndTimeChange={(time) => {
