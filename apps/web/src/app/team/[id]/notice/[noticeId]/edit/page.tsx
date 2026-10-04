@@ -272,6 +272,7 @@ function NoticeEditForm({
                       key={img.id}
                       className="relative h-[150px] w-[150px] shrink-0 overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
                     >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={img.imageUrl}
                         alt=""
@@ -293,6 +294,7 @@ function NoticeEditForm({
                       key={img.id}
                       className="relative h-[150px] w-[150px] shrink-0 overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA]"
                     >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={img.previewUrl}
                         alt=""

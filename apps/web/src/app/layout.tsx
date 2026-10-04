@@ -10,7 +10,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { ChatSocketProvider } from '@/contexts/ChatSocketContext';
 import { pretendard } from '@/lib/fonts';
 import { useMetadata } from '@/hooks/useMetadata';
-import DesktopRecommendModal from '@/components/common/DesktopRecommendModal';
+import MobileAppNotice from '@/components/common/MobileAppNotice';
 import NavigationTracker from '@/components/common/NavigationTracker';
 
 export default function RootLayout({
@@ -27,13 +27,11 @@ export default function RootLayout({
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <AuthGuard>
-              <ChatSocketProvider>
-                {children}
-                <DesktopRecommendModal />
-              </ChatSocketProvider>
+              <ChatSocketProvider>{children}</ChatSocketProvider>
             </AuthGuard>
           </AuthProvider>
         </QueryClientProvider>
+        <MobileAppNotice />
       </body>
     </html>
   );

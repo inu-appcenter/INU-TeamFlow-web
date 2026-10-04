@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { useInfoPostScraps, useRecruitmentScraps } from '@moimi/core/hooks/useScrapQuery';
+import {
+  useInfoPostScraps,
+  useRecruitmentScraps,
+} from '@moimi/core/hooks/useScrapQuery';
 import Header from '@/components/common/Header';
 import ContentCard from '@/components/common/ContentCard';
 import { formatDate } from '@/utils/date/formatDate';
@@ -206,9 +209,9 @@ export default function Scrap() {
                 cardType="infoPost"
                 category={infoPost.category}
                 title={infoPost.title}
+                content={infoPost.preview}
                 path={`/infoPost/${infoPost.infoPostId}`}
                 createdAt={formatDate(infoPost.createdAt)}
-                content=""
               />
             ))}
 

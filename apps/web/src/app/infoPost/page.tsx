@@ -54,6 +54,7 @@ export default function InfoPost() {
                 cardType="infoPost"
                 category={infoPost.category}
                 title={infoPost.title}
+                content={infoPost.preview}
                 path={`/infoPost/${infoPost.infoPostId}`}
                 createdAt={formatDate(infoPost.createdAt)}
                 thumbnailUrl={infoPost.thumbnailUrl}
