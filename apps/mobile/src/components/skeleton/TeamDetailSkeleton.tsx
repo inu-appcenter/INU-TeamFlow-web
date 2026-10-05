@@ -75,7 +75,7 @@ export function TeamDetailSkeleton({ onBack }: { onBack: () => void }) {
         <Pressable onPress={onBack} hitSlop={10}>
           <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
         </Pressable>
-        <View className="h-9 w-20 rounded-full bg-white/80" />
+        <View className="h-[30px] w-20 rounded-full bg-white/80" />
       </View>
 
       <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
@@ -97,9 +97,7 @@ export function TeamDetailSkeleton({ onBack }: { onBack: () => void }) {
         {/* 캘린더 */}
         <View className="mt-6 rounded-2xl bg-[#F8F9FB] px-4 pb-2.5 pt-2">
           <View className="mb-1 flex-row items-center justify-between border-b-[0.5px] border-[#D6DDE5] py-2">
-            <Text className="text-[18px] font-bold text-[#2C2C2C]">
-              {month}월
-            </Text>
+            <Text className="text-[18px] font-bold text-[#2C2C2C]"></Text>
             <View className="flex-row gap-3">
               <View className="h-8 w-8 rounded-full bg-[#EEF1F4]" />
               <View className="h-8 w-8 rounded-full bg-[#EEF1F4]" />
