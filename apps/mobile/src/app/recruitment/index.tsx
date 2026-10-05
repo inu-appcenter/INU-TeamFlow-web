@@ -10,6 +10,7 @@ import {
   Platform,
   Modal,
 } from "react-native";
+import { RecruitmentListSkeleton } from "@/components/skeleton";
 import { router } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -353,7 +354,7 @@ export default function RecruitmentListScreen() {
     return () => clearTimeout(timer);
   }, [keyword]);
 
-  const { data: recruitmentData } = useRecruitments(
+  const { data: recruitmentData, isLoading } = useRecruitments(
     page - 1,
     PAGE_SIZE,
     debouncedKeyword || undefined
@@ -448,21 +449,27 @@ export default function RecruitmentListScreen() {
           }}
         />
 
-        <View>
-          {filtered.map((recruitment) => (
-            <RecruitmentCard
-              key={recruitment.recruitmentId}
-              recruitment={recruitment}
-            />
-          ))}
-        </View>
+        {isLoading ? (
+          <RecruitmentListSkeleton />
+        ) : (
+          <>
+            <View>
+              {filtered.map((recruitment) => (
+                <RecruitmentCard
+                  key={recruitment.recruitmentId}
+                  recruitment={recruitment}
+                />
+              ))}
+            </View>
 
-        {filtered.length === 0 && (
-          <View className="h-[200px] items-center justify-center">
-            <Text className="text-[14px] text-[#989898]">
-              모집글이 없습니다
-            </Text>
-          </View>
+            {filtered.length === 0 && (
+              <View className="h-[200px] items-center justify-center">
+                <Text className="text-[14px] text-[#989898]">
+                  모집글이 없습니다
+                </Text>
+              </View>
+            )}
+          </>
         )}
 
         {totalPages > 0 && (

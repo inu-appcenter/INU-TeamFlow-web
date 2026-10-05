@@ -36,7 +36,7 @@ export default function MobileNoticePage() {
         <img
           src={`${IMG}/calendar.webp`}
           alt=""
-          className="absolute top-[11%] left-[-2%] w-[40%]"
+          className="absolute top-[11%] left-[-2%] w-[35%]"
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -72,7 +72,7 @@ export default function MobileNoticePage() {
         <img
           src={`${IMG}/moa.webp`}
           alt="moa"
-          className="absolute bottom-[-2%] left-1/2 w-[90%] -translate-x-1/2"
+          className="absolute bottom-[0%] left-1/2 w-[80%] -translate-x-1/2"
         />
       </div>
     </main>

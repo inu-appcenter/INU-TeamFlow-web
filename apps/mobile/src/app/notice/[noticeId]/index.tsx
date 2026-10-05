@@ -12,7 +12,7 @@ import { categoryColorMap } from "@moimi/core/constants/category";
 import { formatDate } from "@/utils/date/formatDate";
 import { getTeamRoleLabel } from "@/utils/user/teamRole";
 import ImagePreviewModal from "@/components/ImagePreviewModal";
-
+import { NoticeDetailSkeleton } from "@/components/skeleton";
 export default function NoticeDetailScreen() {
   const { noticeId, teamId } = useLocalSearchParams<{
     noticeId: string;
@@ -58,11 +58,7 @@ export default function NoticeDetailScreen() {
   };
 
   if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
-        <Text className="text-[14px] text-[#989898]">불러오는 중...</Text>
-      </View>
-    );
+    return <NoticeDetailSkeleton headerColor={headerColor} onBack={goBack} />;
   }
 
   if (!notice) {

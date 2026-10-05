@@ -9,6 +9,7 @@ import {
   Alert,
   Linking,
 } from "react-native";
+import { InfoPostDetailSkeleton } from "@/components/skeleton";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
 import {
@@ -100,12 +101,26 @@ export default function InfoPostDetailScreen() {
 
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
-  if (isLoading || !infoPost) {
+  if (isLoading) {
+    return <InfoPostDetailSkeleton onBack={goBack} />;
+  }
+
+  if (!infoPost) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
-        <Text className="text-[14px] text-[#989898]">
-          {isLoading ? "불러오는 중..." : "존재하지 않는 정보글입니다"}
-        </Text>
+      <View className="flex-1 bg-[#F0F2F5]">
+        <View style={{ paddingTop: 60 }} className="px-5 pb-4">
+          <Pressable
+            onPress={goBack}
+            className="self-start transition-transform duration-150 ease-out active:scale-90"
+          >
+            <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
+          </Pressable>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-[15px] font-semibold text-[#2C2C2C]">
+            존재하지 않는 정보글입니다.
+          </Text>
+        </View>
       </View>
     );
   }
