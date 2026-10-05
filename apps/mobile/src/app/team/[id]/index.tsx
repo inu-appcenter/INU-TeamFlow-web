@@ -52,6 +52,11 @@ import ScheduleListItem from "@/components/ScheduleListItem";
 import CalendarAddModal from "@/components/calendar/CalendarAddModal";
 import CalendarEditModal from "@/components/calendar/CalendarEditModal";
 import TeamMemberDrawer from "@/components/TeamMemberDrawer";
+import {
+  TeamDetailSkeleton,
+  VoteListSkeleton,
+  NoticeListSkeleton,
+} from "@/components/skeleton";
 
 const days = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -89,8 +94,10 @@ export default function TeamDetailScreen() {
 
   const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
   const { data: teamMembers = [] } = useTeamMembers(teamId);
-  const { data: teamNoticesAll = [] } = useTeamNotices(teamId);
-  const { data: allVotes = [] } = useTeamVotes(teamId);
+  const { data: teamNoticesAll = [], isLoading: isNoticesLoading } =
+    useTeamNotices(teamId);
+  const { data: allVotes = [], isLoading: isVotesLoading } =
+    useTeamVotes(teamId);
 
   const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
   const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
@@ -133,19 +140,22 @@ export default function TeamDetailScreen() {
   };
 
   if (isTeamLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
-        <Text className="text-[13px] text-[#9C9C9C]">불러오는 중...</Text>
-      </View>
-    );
+    return <TeamDetailSkeleton onBack={goBack} />;
   }
 
   if (!team) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
-        <Text className="font-semibold text-[#2C2C2C]">
-          존재하지 않는 팀입니다.
-        </Text>
+      <View className="flex-1 bg-[#F0F2F5]">
+        <View style={{ paddingTop: 60 }} className="px-6 pb-4">
+          <Pressable onPress={goBack} hitSlop={10} className="self-start">
+            <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
+          </Pressable>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-[15px] font-semibold text-[#2C2C2C]">
+            존재하지 않는 팀입니다.
+          </Text>
+        </View>
       </View>
     );
   }
@@ -452,7 +462,9 @@ export default function TeamDetailScreen() {
             </Pressable>
           </View>
 
-          {teamVotes.length === 0 ? (
+          {isVotesLoading ? (
+            <VoteListSkeleton />
+          ) : teamVotes.length === 0 ? (
             <View className="items-center justify-center pt-10 py-8">
               <Text className="text-[13px] text-[#989898]">
                 아직 등록된 투표가 없어요
@@ -514,7 +526,9 @@ export default function TeamDetailScreen() {
             </Pressable>
           </View>
 
-          {teamNotices.length === 0 ? (
+          {isNoticesLoading ? (
+            <NoticeListSkeleton />
+          ) : teamNotices.length === 0 ? (
             <View className="items-center justify-center pt-10 py-8">
               <Text className="text-[13px] text-[#989898]">
                 아직 등록된 공지사항이 없어요

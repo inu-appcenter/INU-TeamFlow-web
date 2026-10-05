@@ -9,6 +9,38 @@ import { useAuth } from "@/contexts/AuthContext";
 const INITIAL_SCALE_FACTOR = Dimensions.get("screen").height / 90;
 const DURATION = 600;
 
+// 배경: 로고가 커지기 시작할 때쯤부터 페이드아웃
+const splashKeyframe = new Keyframe({
+  0: {
+    opacity: 1,
+  },
+  40: {
+    opacity: 1,
+  },
+  100: {
+    opacity: 0,
+    easing: Easing.out(Easing.quad),
+  },
+});
+
+// 로고: 살짝 눌렸다가 → 커지면서 사라짐
+const splashLogoKeyframe = new Keyframe({
+  0: {
+    transform: [{ scale: 1 }],
+    opacity: 1,
+  },
+  25: {
+    transform: [{ scale: 0.88 }],
+    opacity: 1,
+    easing: Easing.out(Easing.quad),
+  },
+  100: {
+    transform: [{ scale: 1.4 }],
+    opacity: 0,
+    easing: Easing.in(Easing.cubic),
+  },
+});
+
 export function AnimatedSplashOverlay() {
   const { isLoading } = useAuth();
   const [layoutReady, setLayoutReady] = useState(false);
@@ -25,28 +57,9 @@ export function AnimatedSplashOverlay() {
 
   if (!visible) return null;
 
-  const splashKeyframe = new Keyframe({
-    0: {
-      transform: [{ scale: 1 }],
-      opacity: 1,
-    },
-    20: {
-      opacity: 1,
-    },
-    70: {
-      opacity: 0,
-      easing: Easing.elastic(0.7),
-    },
-    100: {
-      opacity: 0,
-      transform: [{ scale: 1 }],
-      easing: Easing.elastic(0.7),
-    },
-  });
-
   const image = (
     <Image
-      style={styles.image}
+      style={styles.splashImage}
       contentFit="contain"
       source={require("@/assets/images/logo.png")}
     />
@@ -54,6 +67,7 @@ export function AnimatedSplashOverlay() {
 
   return animate ? (
     <Animated.View
+      pointerEvents="none"
       entering={splashKeyframe.duration(DURATION).withCallback((finished) => {
         "worklet";
         if (finished) {
@@ -62,7 +76,9 @@ export function AnimatedSplashOverlay() {
       })}
       style={styles.splashOverlay}
     >
-      {image}
+      <Animated.View entering={splashLogoKeyframe.duration(DURATION)}>
+        {image}
+      </Animated.View>
     </Animated.View>
   ) : (
     <View onLayout={() => setLayoutReady(true)} style={styles.splashOverlay}>
@@ -157,6 +173,10 @@ const styles = StyleSheet.create({
   image: {
     width: 120,
     height: 120,
+  },
+  splashImage: {
+    width: 200,
+    height: 200,
   },
   background: {
     borderRadius: 40,

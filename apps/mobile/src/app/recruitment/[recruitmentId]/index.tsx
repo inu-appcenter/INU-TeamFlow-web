@@ -16,6 +16,7 @@ import { formatDate } from "@/utils/date/formatDate";
 import { getDday } from "@/utils/date/getDday";
 import ScrapButton from "@/components/ScrapButton";
 import ReportModal from "@/components/ReportModal";
+import { RecruitmentDetailSkeleton } from "@/components/skeleton";
 
 const VERIFICATION_MESSAGE = "학교 인증 후 이용할 수 있어요";
 
@@ -83,10 +84,26 @@ export default function RecruitmentDetailScreen() {
 
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
-  if (isLoading || !recruitment) {
+  if (isLoading) {
+    return <RecruitmentDetailSkeleton onBack={goBack} />;
+  }
+
+  if (!recruitment) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F0F2F5]">
-        <Text className="text-[14px] text-[#989898]">불러오는 중...</Text>
+      <View className="flex-1 bg-[#F0F2F5]">
+        <View style={{ paddingTop: 60 }} className="px-5 pb-4">
+          <Pressable
+            onPress={goBack}
+            className="self-start transition-transform duration-150 ease-out active:scale-90"
+          >
+            <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
+          </Pressable>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-[15px] font-semibold text-[#2C2C2C]">
+            존재하지 않는 모집글입니다.
+          </Text>
+        </View>
       </View>
     );
   }
