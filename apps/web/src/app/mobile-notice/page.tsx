@@ -20,10 +20,10 @@ export default function MobileNoticePage() {
   return (
     <main className="fixed inset-0 overflow-y-auto bg-[#E3ECFB]">
       <div className="relative h-full min-h-[640px] w-full overflow-hidden">
-        {/* 배경 원 */}
+        {/* 배경 원
         <div className="absolute top-[-3%] right-[-18%] aspect-square w-[58%] rounded-full bg-[#DBE8FF]" />
         <div className="absolute top-[52%] left-[-22%] aspect-square w-[50%] rounded-full bg-[#DBE8FF]" />
-        <div className="absolute right-[-15%] bottom-[6%] aspect-square w-[40%] rounded-full bg-[#DBE8FF]" />
+        <div className="absolute right-[-15%] bottom-[6%] aspect-square w-[40%] rounded-full bg-[#DBE8FF]" /> */}
 
         {/* 일러스트 */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
