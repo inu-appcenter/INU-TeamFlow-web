@@ -67,7 +67,7 @@ export default function HeroMockup() {
       </motion.div>
 
       <motion.div
-        className="absolute -right-8 -bottom-10 w-[33%] min-w-[160px]"
+        className="absolute -right-0 -bottom-10 w-[33%] min-w-[160px]"
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
