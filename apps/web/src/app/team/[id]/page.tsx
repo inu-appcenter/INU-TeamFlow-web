@@ -85,7 +85,10 @@ export default function TeamDetail() {
 
   const sortedVotes = useMemo(
     () =>
-      [...allVotes].sort((a, b) => b.createdDate.localeCompare(a.createdDate)),
+      [...allVotes].sort(
+        (a, b) =>
+          b.createdDate.localeCompare(a.createdDate) || b.voteId - a.voteId
+      ),
     [allVotes]
   );
   const sortedNotices = useMemo(
@@ -260,7 +263,7 @@ export default function TeamDetail() {
       await deleteEvent({
         eventId,
         scope,
-        occurrence: editSchedule?.occurrenceAt ?? '',
+        occurrence: editSchedule?.occurrenceAt ?? editSchedule?.startAt ?? '',
       });
     } catch (err) {
       console.error('일정 삭제 실패', err);

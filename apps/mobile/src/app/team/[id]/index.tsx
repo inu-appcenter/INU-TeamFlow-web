@@ -273,7 +273,7 @@ export default function TeamDetailScreen() {
       await deleteEvent({
         eventId,
         scope,
-        occurrence: editSchedule?.occurrenceAt ?? "",
+        occurrence: editSchedule?.occurrenceAt ?? editSchedule?.startAt ?? "",
       });
     } catch (err) {
       console.error("일정 삭제 실패", err);
