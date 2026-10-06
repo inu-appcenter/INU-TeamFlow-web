@@ -3,8 +3,11 @@
 import Image from 'next/image';
 import { motion } from 'motion/react';
 
-const WEB_SRC = '/images/landing/hero-web.png';
+const WEB_SRC = '/images/landing/hero-web.webp';
 const MOBILE_SRC = '/images/landing/hero-mobile.webp';
+
+// ⚠️ 실제 스크린샷 픽셀 크기로 맞춰주세요
+const WEB_SIZE = { width: 2880, height: 1620 };
 
 function BrowserFrame() {
   return (
@@ -18,27 +21,26 @@ function BrowserFrame() {
           moimi.appcenter.kr
         </div>
       </div>
-      {/* 화면 */}
-      <div className="relative aspect-[16/10] bg-[#F0F2F5]">
-        <Image
-          src={WEB_SRC}
-          alt="모이미 웹 화면"
-          fill
-          priority
-          sizes="(min-width: 768px) 800px, 100vw"
-          className="object-cover object-top"
-        />
-      </div>
+      {/* 화면: 이미지 원본 비율 그대로 */}
+      <Image
+        src={WEB_SRC}
+        alt="모이미 웹 화면"
+        width={WEB_SIZE.width}
+        height={WEB_SIZE.height}
+        priority
+        sizes="(min-width: 768px) 800px, 100vw"
+        className="block h-auto w-full bg-[#F0F2F5]"
+      />
     </div>
   );
 }
 
 function PhoneFrame() {
   return (
-    <div className="rounded-[2.4rem] bg-gray-900 p-[7px] shadow-2xl">
-      <div className="relative aspect-[9/19.5] overflow-hidden rounded-[2rem] bg-white">
+    <div className="rounded-[2.2rem] bg-gray-900 p-[4px] shadow-2xl">
+      <div className="relative aspect-[9/19.5] overflow-hidden rounded-[calc(2.2rem-4px)] bg-white">
         {/* 노치 */}
-        <div className="absolute top-2.5 left-1/2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-gray-900" />
+        <div className="absolute top-2 left-1/2 z-10 h-[18px] w-[72px] -translate-x-1/2 rounded-full bg-gray-900" />
         <Image
           src={MOBILE_SRC}
           alt="모이미 앱 화면"
@@ -56,6 +58,7 @@ export default function HeroMockup() {
   return (
     <div className="relative pr-8 pb-20">
       <motion.div
+        className="-mt-10"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: 'easeOut' }}
@@ -64,7 +67,7 @@ export default function HeroMockup() {
       </motion.div>
 
       <motion.div
-        className="absolute right-0 bottom-0 w-[33%] min-w-[160px]"
+        className="absolute -right-8 -bottom-10 w-[33%] min-w-[160px]"
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}

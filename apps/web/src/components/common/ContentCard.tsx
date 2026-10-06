@@ -56,9 +56,6 @@ interface InvitationCardProps extends BaseCardProps {
   createdAt: string;
   direction: 'RECEIVED' | 'SENT';
   personName: string;
-  isPending?: boolean;
-  onAccept?: () => void;
-  onReject?: () => void;
 }
 
 export const cardStatusMap = {
@@ -224,44 +221,8 @@ export default function ContentCard(props: CardProps) {
             </div>
           )}
           <div className="absolute right-6 bottom-6 flex h-[60px] items-end justify-end">
-            {props.cardType === 'invitation' &&
-            props.direction === 'RECEIVED' &&
+            {props.cardType === 'application' &&
             props.cardStatus === 'WAITING' ? (
-              <div className="flex shrink-0 flex-col items-end gap-2">
-                <span
-                  className="rounded-full px-3 py-1 text-[13px] font-medium"
-                  style={{
-                    backgroundColor: statusBorderColorMap[props.cardStatus],
-                    color: statusTextColorMap[props.cardStatus],
-                  }}
-                >
-                  {cardStatusMap[props.cardStatus]}
-                </span>
-
-                <div className="flex gap-2">
-                  <span
-                    className="inline-flex items-center rounded-full bg-[#DDF7E5] px-3 py-1 text-[13px] font-medium text-[#2E7845] disabled:bg-[#B0B8C1]"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onAccept?.();
-                    }}
-                  >
-                    수락
-                  </span>
-
-                  <span
-                    className="inline-flex items-center rounded-full bg-[#EEF1F5] px-3 py-1 text-[13px] font-medium text-[#646B75]"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onReject?.();
-                    }}
-                  >
-                    거절
-                  </span>
-                </div>
-              </div>
-            ) : props.cardType === 'application' &&
-              props.cardStatus === 'WAITING' ? (
               <div className="relative shrink-0">
                 <span
                   className="absolute right-0 bottom-full rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap"
