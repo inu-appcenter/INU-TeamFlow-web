@@ -2,11 +2,14 @@ import { useState } from "react";
 import { View, Text, Pressable, Modal, Platform } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
+type MinuteInterval = 1 | 2 | 3 | 4 | 5 | 6 | 10 | 12 | 15 | 20 | 30;
+
 type TimeRangeInputsProps = {
   startTime: string; // "HH:mm"
   endTime: string;
   onStartTimeChange: (time: string) => void;
   onEndTimeChange: (time: string) => void;
+  minuteInterval?: MinuteInterval; // 기본 1분 (캘린더는 그대로)
 };
 
 function timeStringToDate(time: string) {
@@ -22,6 +25,17 @@ function dateToTimeString(date: Date) {
   ).padStart(2, "0")}`;
 }
 
+// 피커가 interval을 무시하는 환경 대비: 가장 가까운 단위로 반올림
+function snapToInterval(time: string, interval: number) {
+  if (interval <= 1) return time;
+  const [h, m] = time.split(":").map(Number);
+  const max = 24 * 60 - interval; // 30분이면 23:30이 최대
+  const total = Math.min(Math.round((h * 60 + m) / interval) * interval, max);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(
+    total % 60
+  ).padStart(2, "0")}`;
+}
+
 function formatTimeLabel(time: string) {
   const [h, m] = time.split(":").map(Number);
   const period = h < 12 ? "오전" : "오후";
@@ -32,15 +46,20 @@ function formatTimeLabel(time: string) {
 function TimeField({
   value,
   onChange,
+  minuteInterval = 1,
 }: {
   value: string;
   onChange: (v: string) => void;
+  minuteInterval?: MinuteInterval;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
+  // 피커에 넘기는 값도 단위에 맞춰둬야 iOS 휠이 어긋나지 않음
+  const pickerValue = timeStringToDate(snapToInterval(value, minuteInterval));
+
   const handleChange = (_: unknown, date?: Date) => {
     if (Platform.OS === "android") setIsOpen(false);
-    if (date) onChange(dateToTimeString(date));
+    if (date) onChange(snapToInterval(dateToTimeString(date), minuteInterval));
   };
 
   return (
@@ -77,10 +96,11 @@ function TimeField({
                 </Pressable>
               </View>
               <DateTimePicker
-                value={timeStringToDate(value)}
+                value={pickerValue}
                 mode="time"
                 display="spinner"
                 is24Hour={false}
+                minuteInterval={minuteInterval}
                 onChange={handleChange}
               />
             </Pressable>
@@ -89,10 +109,11 @@ function TimeField({
       ) : (
         isOpen && (
           <DateTimePicker
-            value={timeStringToDate(value)}
+            value={pickerValue}
             mode="time"
-            display="default"
+            display={minuteInterval > 1 ? "spinner" : "default"}
             is24Hour={false}
+            minuteInterval={minuteInterval}
             onChange={handleChange}
           />
         )
@@ -106,11 +127,20 @@ export default function TimeRangeInputs({
   endTime,
   onStartTimeChange,
   onEndTimeChange,
+  minuteInterval,
 }: TimeRangeInputsProps) {
   return (
     <View className="mb-3 flex-row gap-3">
-      <TimeField value={startTime} onChange={onStartTimeChange} />
-      <TimeField value={endTime} onChange={onEndTimeChange} />
+      <TimeField
+        value={startTime}
+        onChange={onStartTimeChange}
+        minuteInterval={minuteInterval}
+      />
+      <TimeField
+        value={endTime}
+        onChange={onEndTimeChange}
+        minuteInterval={minuteInterval}
+      />
     </View>
   );
 }

@@ -14,6 +14,7 @@ export interface InfoPostSummaryResponse {
   category: InfoPostCategory;
   linkable: boolean;
   title: string;
+  preview: string;
   thumbnailUrl: string | null;
   recruitmentCount: number;
   createdAt: string;

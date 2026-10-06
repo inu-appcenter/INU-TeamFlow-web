@@ -34,8 +34,11 @@ export default function ScheduleListItem({
         opacity: schedule.teamId && schedule.isParticipant === false ? 0.4 : 1,
       }}
     >
-      <View>
-        <Text className="text-[14px] font-medium text-[#2c2c2c]">
+      <View className="min-w-0 flex-1">
+        <Text
+          numberOfLines={1}
+          className="text-[14px] font-medium text-[#2c2c2c]"
+        >
           {schedule.title}
         </Text>
         <Text className="mt-0.5 text-[10px] text-[#989898]">

@@ -100,7 +100,7 @@ export default function ChatScreen() {
       className="flex-1 bg-[#F0F2F5]"
       style={{ paddingTop: 76, paddingHorizontal: 10 }}
     >
-      <View className="mb-3 flex-row items-center justify-between pl-2">
+      <View className="mb-3 flex-row items-center justify-between pl-2 pr-1">
         <Text className="text-[22px] font-bold text-[#2C2C2C]">
           나의 채팅 목록
         </Text>

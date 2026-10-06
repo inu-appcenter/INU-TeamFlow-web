@@ -56,9 +56,6 @@ interface InvitationCardProps extends BaseCardProps {
   createdAt: string;
   direction: 'RECEIVED' | 'SENT';
   personName: string;
-  isPending?: boolean;
-  onAccept?: () => void;
-  onReject?: () => void;
 }
 
 export const cardStatusMap = {
@@ -136,7 +133,7 @@ export default function ContentCard(props: CardProps) {
         {(props.content || props.cardType === 'recruitment') && (
           <p
             className={`mt-2 min-h-5 w-full truncate text-sm font-medium ${
-              props.content ? 'text-[#2C2C2C]' : 'text-[#B0B0B0]'
+              props.content ? 'text-[#6c6c6c]' : 'text-[#B0B0B0]'
             }`}
           >
             {props.content || '연결된 정보글이 없습니다'}
@@ -224,44 +221,8 @@ export default function ContentCard(props: CardProps) {
             </div>
           )}
           <div className="absolute right-6 bottom-6 flex h-[60px] items-end justify-end">
-            {props.cardType === 'invitation' &&
-            props.direction === 'RECEIVED' &&
+            {props.cardType === 'application' &&
             props.cardStatus === 'WAITING' ? (
-              <div className="flex shrink-0 flex-col items-end gap-2">
-                <span
-                  className="rounded-full px-3 py-1 text-[13px] font-medium"
-                  style={{
-                    backgroundColor: statusBorderColorMap[props.cardStatus],
-                    color: statusTextColorMap[props.cardStatus],
-                  }}
-                >
-                  {cardStatusMap[props.cardStatus]}
-                </span>
-
-                <div className="flex gap-2">
-                  <span
-                    className="inline-flex items-center rounded-full bg-[#DDF7E5] px-3 py-1 text-[13px] font-medium text-[#2E7845] disabled:bg-[#B0B8C1]"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onAccept?.();
-                    }}
-                  >
-                    수락
-                  </span>
-
-                  <span
-                    className="inline-flex items-center rounded-full bg-[#EEF1F5] px-3 py-1 text-[13px] font-medium text-[#646B75]"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onReject?.();
-                    }}
-                  >
-                    거절
-                  </span>
-                </div>
-              </div>
-            ) : props.cardType === 'application' &&
-              props.cardStatus === 'WAITING' ? (
               <div className="relative shrink-0">
                 <span
                   className="absolute right-0 bottom-full rounded-full px-3 py-1 text-[13px] font-medium whitespace-nowrap"

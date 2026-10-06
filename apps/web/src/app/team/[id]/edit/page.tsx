@@ -9,6 +9,7 @@ import {
 } from '@moimi/core/hooks/team/useTeamQuery';
 import { useRouter, useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import PostDeleteConfirmModal from '@/components/common/PostDeleteConfirmModal';
 
 export default function TeamEditPage() {
   const router = useRouter();
@@ -20,15 +21,19 @@ export default function TeamEditPage() {
   const { data: team, isLoading } = useTeamDetail(teamId);
   const { mutateAsync: updateTeam } = useUpdateTeam();
 
-  const { mutateAsync: deleteTeamMutate } = useDeleteTeam();
+  const { mutateAsync: deleteTeamMutate, isPending: isDeleting } =
+    useDeleteTeam();
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const handleDelete = async () => {
+    if (isDeleting) return;
     try {
       await deleteTeamMutate(teamId);
+      setIsDeleteConfirmOpen(false);
       router.push('/team');
     } catch (err) {
       console.error('팀 삭제 실패', err);
+      setIsDeleteConfirmOpen(false);
     }
   };
 
@@ -81,40 +86,14 @@ export default function TeamEditPage() {
       />
 
       {isDeleteConfirmOpen && (
-        <div
-          onClick={() => setIsDeleteConfirmOpen(false)}
-          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
-          >
-            <h2 className="text-center text-xl font-bold">팀을 삭제할까요?</h2>
-
-            <p className="mt-2 text-center text-sm text-[#989898]">
-              삭제한 팀은 복구할 수 없어요
-            </p>
-
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={() => setIsDeleteConfirmOpen(false)}
-                className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold"
-              >
-                취소
-              </button>
-
-              <button
-                onClick={async () => {
-                  setIsDeleteConfirmOpen(false);
-                  await handleDelete();
-                }}
-                className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white"
-              >
-                삭제
-              </button>
-            </div>
-          </div>
-        </div>
+        <PostDeleteConfirmModal
+          postLabel="팀"
+          isPending={isDeleting}
+          onClose={() => {
+            if (!isDeleting) setIsDeleteConfirmOpen(false);
+          }}
+          onConfirm={handleDelete}
+        />
       )}
     </>
   );

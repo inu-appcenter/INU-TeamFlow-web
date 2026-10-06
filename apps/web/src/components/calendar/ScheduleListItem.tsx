@@ -37,8 +37,10 @@ export default function ScheduleListItem({
           : darkenColor(EVENT_COLOR_MAP[schedule.color], 25),
       }}
     >
-      <div>
-        <p className="text-sm font-semibold text-[#5C5C5C]">{schedule.title}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-[#5C5C5C]">
+          {schedule.title}
+        </p>
         <p className="text-[11px] text-[#9D9D9D]">
           {schedule.teamName ?? '개인 일정'}
         </p>

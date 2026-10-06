@@ -15,6 +15,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
+import { InfoPostListSkeleton } from "@/components/skeleton";
 import {
   ChevronLeft,
   ChevronRight,
@@ -238,7 +239,7 @@ export default function InfoPostListScreen() {
     sort: ["createdAt,DESC"],
   };
 
-  const { data: infoPostData } = useInfoPosts(queryParams);
+  const { data: infoPostData, isLoading } = useInfoPosts(queryParams);
   const infoPosts = infoPostData?.content ?? [];
   const totalPages = infoPostData?.totalPages ?? 0;
   const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
@@ -317,22 +318,28 @@ export default function InfoPostListScreen() {
           }}
         />
 
-        <View className="flex-row flex-wrap justify-between">
-          {infoPosts.map((item) => (
-            <InfoPostCard
-              key={item.infoPostId}
-              item={item}
-              categoryLabelMap={categoryLabelMap}
-            />
-          ))}
-        </View>
+        {isLoading ? (
+          <InfoPostListSkeleton />
+        ) : (
+          <>
+            <View className="flex-row flex-wrap justify-between">
+              {infoPosts.map((item) => (
+                <InfoPostCard
+                  key={item.infoPostId}
+                  item={item}
+                  categoryLabelMap={categoryLabelMap}
+                />
+              ))}
+            </View>
 
-        {infoPosts.length === 0 && (
-          <View className="h-[200px] items-center justify-center">
-            <Text className="text-[14px] text-[#989898]">
-              등록된 정보글이 없습니다
-            </Text>
-          </View>
+            {infoPosts.length === 0 && (
+              <View className="h-[200px] items-center justify-center">
+                <Text className="text-[14px] text-[#989898]">
+                  등록된 정보글이 없습니다
+                </Text>
+              </View>
+            )}
+          </>
         )}
 
         {totalPages > 0 && (

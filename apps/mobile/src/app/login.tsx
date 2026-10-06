@@ -107,17 +107,6 @@ export default function LoginScreen() {
           </View>
         </View>
       )}
-      <Image
-        source={LOGO}
-        style={{
-          height: 30,
-          width: 120,
-          marginBottom: 25,
-          marginTop: -20,
-          alignSelf: "center",
-        }}
-        resizeMode="contain"
-      />
 
       <View className="rounded-3xl bg-white px-6 pb-8 pt-8 border-[0.5px] border-[#D6DDE5]">
         <Text className="mb-6 text-center text-[22px] font-bold text-[#2c2c2c]">

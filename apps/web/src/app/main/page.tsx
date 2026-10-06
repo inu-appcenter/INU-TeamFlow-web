@@ -130,7 +130,7 @@ export default function Main() {
     <main className="min-h-screen px-3 py-6 sm:px-6">
       <div className="mx-auto max-w-[1180px]">
         {/* 상단 */}
-        <section className="relative mb-8 pt-4 md:min-h-[160px]">
+        <section className="relative mb-8 pt-4 lg:min-h-[160px]">
           <div className="fixed top-6 left-4 z-80 flex flex-col items-center sm:left-6 lg:left-10">
             <Image
               src="/images/logo.svg"
@@ -144,7 +144,7 @@ export default function Main() {
           </div>
 
           {/* 배너: 가로 길이 확장 */}
-          <div className="absolute top-4 left-1/2 hidden h-40 w-[60%] max-w-4xl -translate-x-1/2 rounded-3xl md:block">
+          <div className="absolute top-4 left-1/2 hidden h-40 w-[60%] max-w-4xl -translate-x-1/2 rounded-3xl lg:block">
             <BannerCarousel />
           </div>
 

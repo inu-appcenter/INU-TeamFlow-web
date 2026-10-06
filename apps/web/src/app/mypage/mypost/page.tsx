@@ -173,6 +173,7 @@ export default function MyPostPage() {
                       cardType="infoPost"
                       category={post.category}
                       title={post.title}
+                      content={post.preview}
                       path={`/infoPost/${post.infoPostId}`}
                       createdAt={formatDate(post.createdAt)}
                       thumbnailUrl={post.thumbnailUrl}

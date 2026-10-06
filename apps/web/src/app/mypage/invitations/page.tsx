@@ -186,14 +186,7 @@ export default function InvitationsPage() {
                     : invitation.receiverName
                 }
                 cardStatus={getInvitationCardStatus(invitation.status)}
-                isPending={isPending}
                 onClick={() => setSelectedInvitation(invitation)}
-                onAccept={() =>
-                  changeInvitationStatus(invitation.invitationId, 'ACCEPTED')
-                }
-                onReject={() =>
-                  changeInvitationStatus(invitation.invitationId, 'DECLINED')
-                }
               />
             ))
           )}

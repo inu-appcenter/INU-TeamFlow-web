@@ -122,7 +122,7 @@ export default function Team() {
                 </p>
                 <button
                   onClick={() => router.push('/recruitment')}
-                  className="z-50 mt-2 cursor-pointer rounded-lg bg-[#5E92F0] px-4 py-2 text-sm font-medium text-white transition transition-all duration-150 hover:bg-[#4C82E5] active:scale-90"
+                  className="z-50 mt-2 cursor-pointer rounded-lg bg-[#5E92F0] px-4 py-2.5 text-sm font-medium text-white transition transition-all duration-150 hover:bg-[#4C82E5] active:scale-90"
                 >
                   모집 게시판 보러가기
                 </button>

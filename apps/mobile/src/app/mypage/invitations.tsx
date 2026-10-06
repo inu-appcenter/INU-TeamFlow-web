@@ -130,17 +130,11 @@ function CategoryTabs({
 function InvitationCard({
   invitation,
   direction,
-  isPending,
   onPress,
-  onAccept,
-  onReject,
 }: {
   invitation: InvitationResponse;
   direction: InvitationTab;
-  isPending: boolean;
   onPress: () => void;
-  onAccept: () => void;
-  onReject: () => void;
 }) {
   const color = categoryColorMap[invitation.teamCategory] ?? "#E9E9E9";
   const personLabel = direction === "RECEIVED" ? "보낸 사람" : "받는 사람";
@@ -177,38 +171,9 @@ function InvitationCard({
         {personLabel} : {personName}
       </Text>
 
-      <View className="mt-3 flex-row items-center justify-between">
-        <Text className="text-[12px] text-[#989898]">
-          {formatDate(invitation.createdAt)}
-        </Text>
-
-        {direction === "RECEIVED" && invitation.status === "WAITING" && (
-          <View className="flex-row gap-2">
-            <Pressable
-              onPress={(e) => {
-                e.stopPropagation();
-                onAccept();
-              }}
-              disabled={isPending}
-              className="rounded-full bg-[#5E92F0] px-4 py-1.5 active:opacity-80 disabled:opacity-50"
-            >
-              <Text className="text-[12px] font-semibold text-white">수락</Text>
-            </Pressable>
-            <Pressable
-              onPress={(e) => {
-                e.stopPropagation();
-                onReject();
-              }}
-              disabled={isPending}
-              className="rounded-full bg-[#EEF1F5] px-4 py-1.5 active:opacity-80 disabled:opacity-50"
-            >
-              <Text className="text-[12px] font-semibold text-[#646B75]">
-                거절
-              </Text>
-            </Pressable>
-          </View>
-        )}
-      </View>
+      <Text className="mt-3 text-[12px] text-[#989898]">
+        {formatDate(invitation.createdAt)}
+      </Text>
     </Pressable>
   );
 }
@@ -353,14 +318,7 @@ export default function InvitationsScreen() {
               key={invitation.invitationId}
               invitation={invitation}
               direction={selectedCategory}
-              isPending={isPending}
               onPress={() => setSelectedInvitation(invitation)}
-              onAccept={() =>
-                changeInvitationStatus(invitation.invitationId, "ACCEPTED")
-              }
-              onReject={() =>
-                changeInvitationStatus(invitation.invitationId, "DECLINED")
-              }
             />
           ))
         )}

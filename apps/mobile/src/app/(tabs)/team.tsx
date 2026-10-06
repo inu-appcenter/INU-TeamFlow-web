@@ -101,7 +101,7 @@ export default function TeamScreen() {
         </View>
       )}
 
-      <View className="mb-3 flex-row items-center justify-between pl-2">
+      <View className="mb-3 flex-row items-center justify-between pl-2 pr-1">
         <Text className="text-[22px] font-bold text-[#2C2C2C]">
           나의 팀 목록
         </Text>
