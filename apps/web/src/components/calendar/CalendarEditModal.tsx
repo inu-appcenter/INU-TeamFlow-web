@@ -24,6 +24,7 @@ import {
 } from '@/utils/date/byDay';
 import { createDateTime } from '@/utils/date/createDateTime';
 import { formatDateKey } from '@/utils/date/calendar';
+import PostDeleteConfirmModal from '../common/PostDeleteConfirmModal';
 
 type RepeatType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ScheduleType = 'NORMAL' | 'PERIOD' | 'REPEAT';
@@ -590,41 +591,14 @@ export default function CalendarEditModal({
         )}
 
         {isDeleteConfirmOpen && (
-          <div
-            onClick={() => setIsDeleteConfirmOpen(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
-            >
-              <h3 className="text-center text-xl font-bold text-[#2C2C2C]">
-                일정을 삭제할까요?
-              </h3>
-
-              <p className="mt-2 text-center text-[15px] text-[#989898]">
-                삭제한 일정은 다시 복구할 수 없어요
-              </p>
-
-              <div className="mt-3 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
-                >
-                  취소
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
-                >
-                  삭제
-                </button>
-              </div>
-            </div>
-          </div>
+          <PostDeleteConfirmModal
+            postLabel="일정"
+            onClose={() => setIsDeleteConfirmOpen(false)}
+            onConfirm={() => {
+              setIsDeleteConfirmOpen(false);
+              handleDelete();
+            }}
+          />
         )}
 
         {isScopeModalOpen && (

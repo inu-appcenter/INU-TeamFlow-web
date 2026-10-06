@@ -17,6 +17,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getDepartmentName } from '@/utils/getDepartmentName';
 import { startTeamActivityAttempt } from '@/lib/analytics/teamActivity';
+import PostDeleteConfirmModal from '@/components/common/PostDeleteConfirmModal';
 
 export default function VoteDetailPage() {
   const router = useRouter();
@@ -120,7 +121,12 @@ export default function VoteDetailPage() {
     if (isDeleting) return;
     deleteVoteMutate(voteId, {
       onSuccess: () => {
+        setIsDeleteConfirmOpen(false);
         router.back();
+      },
+      onError: (err) => {
+        console.error('투표 삭제 실패', err);
+        setIsDeleteConfirmOpen(false);
       },
     });
   };
@@ -483,43 +489,16 @@ export default function VoteDetailPage() {
             )}
           </div>
         </Card>
+
         {isDeleteConfirmOpen && (
-          <div
-            onClick={() => setIsDeleteConfirmOpen(false)}
-            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
-            >
-              <h2 className="text-center text-xl font-bold text-[#2C2C2C]">
-                투표를 삭제할까요?
-              </h2>
-
-              <p className="mt-2 text-center text-[15px] text-[#989898]">
-                삭제한 투표는 복구할 수 없어요
-              </p>
-
-              <div className="mt-3 flex gap-3">
-                <button
-                  onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95"
-                >
-                  취소
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsDeleteConfirmOpen(false);
-                    handleDeleteVote();
-                  }}
-                  className="flex-1 cursor-pointer rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95"
-                >
-                  삭제
-                </button>
-              </div>
-            </div>
-          </div>
+          <PostDeleteConfirmModal
+            postLabel="투표"
+            isPending={isDeleting}
+            onClose={() => {
+              if (!isDeleting) setIsDeleteConfirmOpen(false);
+            }}
+            onConfirm={handleDeleteVote}
+          />
         )}
       </section>
     </main>

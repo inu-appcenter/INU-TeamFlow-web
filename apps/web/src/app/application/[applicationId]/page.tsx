@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ChevronLeft, LoaderCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCancelApplication } from '@moimi/core/hooks/useMypagePostQuery';
@@ -38,12 +39,23 @@ export default function ApplicationDetail() {
   const { mutate: cancelApplicationMutate, isPending: isCancelling } =
     useCancelApplication();
 
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+
   const handleCancelApplication = () => {
     if (isCancelling) return;
-    const confirmed = window.confirm('신청을 취소하시겠습니까?');
-    if (!confirmed) return;
-    cancelApplicationMutate(applicationId);
+    cancelApplicationMutate(applicationId, {
+      onSuccess: () => setIsCancelConfirmOpen(false),
+      onError: (err) => {
+        console.error('신청 취소 실패', err);
+        setIsCancelConfirmOpen(false);
+      },
+    });
   };
+
+  const closeCancelConfirm = () => {
+    if (!isCancelling) setIsCancelConfirmOpen(false);
+  };
+
   if (isLoading) return null;
 
   if (!application) {
@@ -163,27 +175,71 @@ export default function ApplicationDetail() {
                 </button>
               </div>
             )}
+
             {!application.isRecruiter && isWaiting && (
               <div className="mt-8 mb-8 flex justify-center">
                 <button
-                  onClick={handleCancelApplication}
+                  type="button"
+                  onClick={() => setIsCancelConfirmOpen(true)}
                   disabled={isCancelling}
                   className="cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-6 py-2 text-base font-semibold text-[#E22222] transition disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isCancelling ? (
-                    <span className="flex items-center gap-2">
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                      신청 취소
-                    </span>
-                  ) : (
-                    '신청 취소'
-                  )}
+                  신청 취소
                 </button>
               </div>
             )}
           </div>
         </Card>
       </section>
+
+      {/* 신청 취소 확인 모달 */}
+      {isCancelConfirmOpen && (
+        <div
+          onClick={closeCancelConfirm}
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-application-title"
+            className="animate-modal-pop w-[360px] rounded-3xl bg-white p-6 shadow-xl"
+          >
+            <h2
+              id="cancel-application-title"
+              className="text-center text-xl font-bold text-[#2C2C2C]"
+            >
+              신청을 취소할까요?
+            </h2>
+            <p className="mt-2 text-center text-[15px] text-[#989898]">
+              취소한 신청은 되돌릴 수 없어요
+            </p>
+
+            <div className="mt-3 flex gap-3">
+              <button
+                type="button"
+                onClick={closeCancelConfirm}
+                disabled={isCancelling}
+                className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2C2C2C] transition-all duration-200 active:scale-95 disabled:opacity-50"
+              >
+                닫기
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCancelApplication}
+                disabled={isCancelling}
+                className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#E22222] py-3 font-semibold text-white transition-all duration-200 active:scale-95 disabled:opacity-50"
+              >
+                {isCancelling && (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                )}
+                신청 취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

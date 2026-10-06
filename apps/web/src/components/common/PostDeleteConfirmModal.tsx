@@ -8,6 +8,10 @@ export default function PostDeleteConfirmModal({
   onClose,
   onConfirm,
 }: PostDeleteConfirmModalProps) {
+  const last = postLabel.charCodeAt(postLabel.length - 1);
+  const hasBatchim =
+    last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0;
+
   return (
     <div
       onClick={onClose}
@@ -24,10 +28,12 @@ export default function PostDeleteConfirmModal({
           id="post-delete-title"
           className="text-center text-xl font-bold text-[#2C2C2C]"
         >
-          {postLabel}을 삭제할까요?
+          {postLabel}
+          {hasBatchim ? '을' : '를'} 삭제할까요?
         </h2>
         <p className="mt-2 text-center text-[15px] text-[#989898]">
-          삭제한 {postLabel}은 복구할 수 없어요
+          삭제한 {postLabel}
+          {hasBatchim ? '은' : '는'} 복구할 수 없어요
         </p>
         <div className="mt-3 flex gap-3">
           <button
