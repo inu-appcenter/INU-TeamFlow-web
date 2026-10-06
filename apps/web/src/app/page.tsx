@@ -1,14 +1,10 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import LandingGate from '@/components/landing/LandingGate';
+import Landing from '@/components/landing/Landing';
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/main');
-  }, [router]);
-
-  return null;
+  return (
+    <LandingGate>
+      <Landing />
+    </LandingGate>
+  );
 }

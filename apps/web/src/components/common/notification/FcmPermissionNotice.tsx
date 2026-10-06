@@ -10,6 +10,21 @@ type Props = {
   onClose: () => void;
 };
 
+const TITLE: Record<Props['permission'], string> = {
+  default: '브라우저 알림을 허용해주세요',
+  denied: '브라우저 알림이 차단되어 있어요',
+  'setup-required': '알림 설정을 확인해주세요',
+};
+
+const DESCRIPTION: Record<Props['permission'], string> = {
+  default:
+    '모이미의 알림 설정은 켜져 있어요\n이 브라우저에서도 알림을 받으려면 권한을 허용해주세요',
+  denied:
+    '모이미의 알림 설정은 켜져 있어요\n브라우저의 사이트 설정에서 알림을 허용한 뒤 돌아오면 다시 확인할게요',
+  'setup-required':
+    '회원가입은 완료됐지만 알림 설정을 저장하지 못했어요\n마이페이지의 설정에서 받고 싶은 알림을 확인하고 완료를 눌러주세요',
+};
+
 export default function FcmPermissionNotice({
   permission,
   isPending,
@@ -79,26 +94,18 @@ export default function FcmPermissionNotice({
           id="fcm-permission-title"
           className="text-center text-xl font-bold text-[#2C2C2C]"
         >
-          {permission === 'setup-required'
-            ? '알림 설정을 확인해주세요'
-            : permission === 'denied'
-              ? '브라우저 알림이 차단되어 있어요'
-              : '브라우저 알림을 허용해주세요'}
+          {TITLE[permission]}
         </h2>
 
         <p
           id="fcm-permission-description"
-          className="mt-3 text-center text-[14px] leading-6 text-[#989898]"
+          className="mt-3 text-center text-[14px] leading-6 break-keep whitespace-pre-line text-[#989898]"
         >
-          {permission === 'setup-required'
-            ? '회원가입은 완료됐지만 알림 설정을 저장하지 못했어요. 마이페이지의 설정에서 받고 싶은 알림을 확인하고 완료를 눌러주세요.'
-            : permission === 'denied'
-              ? '모이미의 알림 설정은 켜져 있어요. 브라우저의 사이트 설정에서 알림을 허용한 뒤 돌아오면 다시 확인할게요.'
-              : '모이미의 알림 설정은 켜져 있어요. 이 브라우저에서도 알림을 받으려면 권한을 허용해주세요.'}
+          {DESCRIPTION[permission]}
         </p>
 
         {error && (
-          <p role="alert" className="mt-3 text-sm text-[#E22222]">
+          <p role="alert" className="mt-3 text-center text-sm text-[#E22222]">
             {error}
           </p>
         )}
@@ -108,7 +115,7 @@ export default function FcmPermissionNotice({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 text-sm font-semibold disabled:opacity-50"
+            className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-2 font-semibold text-[#2c2c2c] disabled:opacity-50"
           >
             {permission === 'default' ? '나중에' : '확인'}
           </button>
@@ -118,7 +125,7 @@ export default function FcmPermissionNotice({
               type="button"
               onClick={onAllow}
               disabled={isPending}
-              className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] py-3 text-sm font-semibold text-white disabled:opacity-50"
+              className="flex-1 cursor-pointer rounded-xl bg-[#5E92F0] py-3 font-semibold text-white disabled:opacity-50"
             >
               {isPending ? '확인 중...' : '알림 허용'}
             </button>

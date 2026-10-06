@@ -21,6 +21,7 @@ export default function RootLayout({
   const [queryClient] = useState(() => new QueryClient());
   const pathname = usePathname();
   const isMobileNotice = pathname === '/mobile-notice';
+  const isLanding = pathname === '/';
   useMetadata();
 
   return (
@@ -29,16 +30,20 @@ export default function RootLayout({
         {isMobileNotice ? (
           children
         ) : (
-          <>
-            <NavigationTracker />
-            <QueryClientProvider client={queryClient}>
-              <AuthProvider>
-                <AuthGuard>
-                  <ChatSocketProvider>{children}</ChatSocketProvider>
-                </AuthGuard>
-              </AuthProvider>
-            </QueryClientProvider>
-          </>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              {isLanding ? (
+                children
+              ) : (
+                <>
+                  <NavigationTracker />
+                  <AuthGuard>
+                    <ChatSocketProvider>{children}</ChatSocketProvider>
+                  </AuthGuard>
+                </>
+              )}
+            </AuthProvider>
+          </QueryClientProvider>
         )}
       </body>
     </html>
