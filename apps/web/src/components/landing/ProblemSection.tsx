@@ -30,14 +30,14 @@ const TOOLS: {
   y: number;
   tone: keyof typeof TONE;
 }[] = [
-  { label: '단톡방', x: -36, y: -28, tone: 'yellow' },
-  { label: '커뮤니티', x: 32, y: -32, tone: 'pink' },
-  { label: '공유 시트', x: -40, y: 6, tone: 'green' },
-  { label: '캘린더 앱', x: 38, y: 2, tone: 'blue' },
-  { label: '설문 폼', x: -28, y: 34, tone: 'pink' },
-  { label: '클라우드 폴더', x: 26, y: 32, tone: 'yellow' },
-  { label: '메모 앱', x: -4, y: -40, tone: 'blue' },
-  { label: '개인 DM', x: 6, y: 40, tone: 'green' },
+  { label: '단톡방', x: -32, y: -26, tone: 'yellow' },
+  { label: '커뮤니티', x: 30, y: -30, tone: 'pink' },
+  { label: '공유 시트', x: -40, y: 4, tone: 'green' },
+  { label: '캘린더 앱', x: 38, y: 0, tone: 'blue' },
+  { label: '설문 폼', x: -28, y: 30, tone: 'pink' },
+  { label: '클라우드 폴더', x: 26, y: 28, tone: 'yellow' },
+  { label: '메모 앱', x: 0, y: -34, tone: 'blue' },
+  { label: '개인 DM', x: 0, y: 34, tone: 'green' },
 ];
 
 const PAIN_START = 0.06;
@@ -136,8 +136,8 @@ export default function ProblemSection({ id }: { id?: string }) {
   const underline = useTransform(scrollYProgress, [0.9, 0.97], [0, 1]);
 
   return (
-    <section id={id} ref={ref} className="relative h-[500vh] bg-[#F0F2F5]">
-      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
+    <section id={id} ref={ref} className="relative h-[500vh] bg-white">
+      <div className="sticky top-20 flex h-[calc(100vh-80px)] items-center justify-center overflow-hidden">
         {TOOLS.map((t, i) => (
           <ToolChip key={t.label} progress={scrollYProgress} index={i} {...t} />
         ))}
