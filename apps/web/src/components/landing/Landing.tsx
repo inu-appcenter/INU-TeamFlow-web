@@ -73,9 +73,9 @@ function StartButton({ size = 'md' }: { size?: 'md' | 'lg' }) {
 
 export default function Landing() {
   return (
-    <div className="min-h-screen min-w-[1280px] bg-[#F0F2F5] text-gray-900">
+    <div className="min-h-screen min-w-[1280px] bg-white text-gray-900">
       {/* Header */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b-[0.5px] border-[#D6DDE5] bg-[#F0F2F5]/80 backdrop-blur">
+      <header className="fixed inset-x-0 top-0 z-50 border-b-[0.5px] border-[#D6DDE5] bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between px-6">
           <Image
             src="/images/logo.svg"
