@@ -54,7 +54,7 @@ export default function MobileNoticePage() {
         <Sparkle className="top-[22%] left-[86.5%] w-[5%]" />
 
         {/* 문구 */}
-        <div className="absolute top-[39%] left-0 flex w-full flex-col items-center px-6 text-center">
+        <div className="absolute top-[38%] left-0 flex w-full flex-col items-center px-6 text-center">
           <div className="mb-5 flex items-end justify-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/logo.svg" alt="Moimi" className="h-7" />
@@ -72,7 +72,7 @@ export default function MobileNoticePage() {
         <img
           src={`${IMG}/moa.webp`}
           alt="moa"
-          className="absolute bottom-[0%] left-1/2 w-[80%] -translate-x-1/2"
+          className="absolute bottom-[-8%] left-1/2 w-[75%] -translate-x-1/2"
         />
       </div>
     </main>

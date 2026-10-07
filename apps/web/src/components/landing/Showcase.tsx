@@ -137,7 +137,7 @@ export default function Showcase({ id }: { id?: string }) {
   const current = SLIDES[index];
 
   return (
-    <section id={id} className="scroll-mt-20 bg-[#F0F2F5] py-32">
+    <section id={id} className="scroll-mt-20 bg-white py-32">
       <div className="mx-auto max-w-6xl px-6">
         {/* 헤더 */}
         <div className="mb-12 text-center">
