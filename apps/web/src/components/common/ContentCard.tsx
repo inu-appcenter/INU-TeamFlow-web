@@ -8,6 +8,7 @@ import {
   categoryMap,
   categoryColorMap,
 } from '@moimi/core/constants/contentCard';
+import Image from 'next/image';
 
 interface BaseCardProps {
   category: string;
@@ -17,6 +18,9 @@ interface BaseCardProps {
   path?: string;
   onClick?: () => void;
 }
+
+const OPTIMIZABLE_PREFIX =
+  'https://d3dbvb22maaxgy.cloudfront.net/info-posts/image/';
 
 interface RecruitmentCardProps extends BaseCardProps {
   cardType: 'recruitment';
@@ -29,6 +33,7 @@ interface InfoPostCardProps extends BaseCardProps {
   cardType: 'infoPost';
   createdAt: string;
   thumbnailUrl?: string | null;
+  priority?: boolean;
 }
 
 interface ApplicationCardProps extends BaseCardProps {
@@ -199,11 +204,14 @@ export default function ContentCard(props: CardProps) {
           )}
           {props.cardType === 'infoPost' && props.thumbnailUrl && (
             <div className="absolute top-1/2 right-6 h-[110px] w-[130px] -translate-y-1/2 overflow-hidden rounded-xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={props.thumbnailUrl}
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                sizes="130px"
+                priority={props.priority}
+                unoptimized={!props.thumbnailUrl.startsWith(OPTIMIZABLE_PREFIX)}
+                className="object-cover"
               />
             </div>
           )}

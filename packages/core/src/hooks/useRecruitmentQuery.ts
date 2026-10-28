@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   getRecruitments,
   getMyRecruitments,
@@ -30,10 +35,16 @@ export const recruitmentKeys = {
   applicationDetail: (id: number) => ["applications", id] as const,
 };
 
-export const useRecruitments = (page = 0, size = 10, keyword?: string) =>
+export const useRecruitments = (
+  page = 0,
+  size = 10,
+  keyword?: string,
+  category?: string
+) =>
   useQuery({
-    queryKey: [...recruitmentKeys.all(), page, size, keyword],
-    queryFn: () => getRecruitments(page, size, keyword),
+    queryKey: [...recruitmentKeys.all(), page, size, keyword, category],
+    queryFn: () => getRecruitments(page, size, keyword, category),
+    placeholderData: keepPreviousData,
   });
 
 export const useMyRecruitments = (page = 0, size = 10) =>

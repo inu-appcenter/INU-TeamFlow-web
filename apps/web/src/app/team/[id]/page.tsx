@@ -22,6 +22,7 @@ import {
   useUpdateTeamEvent,
   useDeleteTeamEvent,
 } from '@moimi/core/hooks/calendar/useEventQuery';
+import Image from 'next/image';
 import {
   useTeamDetail,
   useTeamMembers,
@@ -310,6 +311,7 @@ export default function TeamDetail() {
           >
             <button
               onClick={() => safeBack('/team')}
+              aria-label="뒤로 가기"
               className="cursor-pointer text-[#2C2C2C]"
             >
               <ChevronLeft size={24} strokeWidth={2.5} />
@@ -325,11 +327,13 @@ export default function TeamDetail() {
               <div className="flex items-start justify-between">
                 <div className="relative h-[150px] w-[150px] rounded-2xl border-[0.5px] border-[#D6DDE5]/40 bg-[#F6F8FA]">
                   {team.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={team.imageUrl}
                       alt={team.name}
-                      className="h-full w-full rounded-2xl object-cover"
+                      fill
+                      sizes="150px"
+                      priority
+                      className="rounded-2xl object-cover"
                     />
                   )}
 
@@ -346,6 +350,7 @@ export default function TeamDetail() {
                 <button
                   type="button"
                   onClick={() => setIsMemberDrawerOpen(true)}
+                  aria-label="팀원 목록 열기"
                   className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border-[0.5px] border-[#D6DDE5]/40 bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:hidden"
                 >
                   <Menu size={18} className="text-[#2C2C2C]" />
@@ -405,6 +410,7 @@ export default function TeamDetail() {
               <button
                 type="button"
                 onClick={() => setIsMemberDrawerOpen(true)}
+                aria-label="팀원 목록 열기"
                 className="ml-auto hidden h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border-[0.5px] border-[#D6DDE5] bg-[#F8F9FB] transition-all duration-150 active:scale-95 sm:flex"
               >
                 <Menu size={18} className="text-[#2C2C2C]" />
@@ -430,6 +436,7 @@ export default function TeamDetail() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handlePrevMonth}
+                      aria-label="이전 달"
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEF1F4] text-[#2c2c2c]/40 transition-all duration-150 active:scale-90"
                     >
                       <ChevronLeft size={17} />
@@ -437,6 +444,7 @@ export default function TeamDetail() {
 
                     <button
                       onClick={handleNextMonth}
+                      aria-label="다음 달"
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEF1F4] text-[#2c2c2c]/40 transition-all duration-150 active:scale-90"
                     >
                       <ChevronRight size={17} />
@@ -485,6 +493,7 @@ export default function TeamDetail() {
                   <button
                     className="cursor-pointer"
                     onClick={() => router.push(`/team/${teamId}/vote`)}
+                    aria-label="투표 전체 보기"
                   >
                     <ChevronRight />
                   </button>
@@ -497,6 +506,7 @@ export default function TeamDetail() {
                       onClick={() =>
                         router.push(`/team/${teamId}/vote/${vote.voteId}`)
                       }
+
                       className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left transition"
                     >
                       <div className="min-w-0">
@@ -553,6 +563,7 @@ export default function TeamDetail() {
                       onClick={() =>
                         router.push(`/team/${teamId}/notice/${notice.noticeId}`)
                       }
+                      aria-label="공지사항 전체 보기"
                       className="flex items-center justify-between border-b-[0.5px] border-[#D6DDE5] py-3.5 text-left transition"
                     >
                       <div className="min-w-0 flex-1">

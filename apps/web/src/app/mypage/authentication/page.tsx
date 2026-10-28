@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import Image from 'next/image';
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
+
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
 import { useVerifySchool } from '@moimi/core/hooks/useAuthQuery';
@@ -115,7 +115,7 @@ export default function SchoolAuthenticationPage() {
           </button>
 
           <form onSubmit={handleSubmit} className="flex flex-col">
-            <div className="mb-6 flex flex-col items-center pt-6">
+            <div className="mb-4 flex flex-col items-center pt-6">
               <h1 className="text-[24px] font-semibold text-[#2C2C2C] max-[640px]:text-[22px]">
                 학교 인증
               </h1>
@@ -172,14 +172,14 @@ export default function SchoolAuthenticationPage() {
               </div>
             )}
 
-            <p className="mx-auto mb-1 text-[11px] leading-5 text-[#b0b0b0]">
+            <p className="mx-auto mt-3 mb-1 text-[11px] leading-5 text-[#b0b0b0]">
               입력한 정보는 학교 인증 목적으로만 사용됩니다
             </p>
 
             <button
               type="submit"
               disabled={isPending}
-              className="group relative left-1/2 mb-7 w-[30%] min-w-32 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
+              className="group relative left-1/2 mb-5 w-[30%] min-w-32 -translate-x-1/2 cursor-pointer rounded-xl bg-[#5E92F0] px-5 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
             >
               <span className="inline-flex items-center justify-center">
                 {isPending ? '인증 중...' : '인증하기'}
@@ -199,8 +199,6 @@ export default function SchoolAuthenticationPage() {
           </form>
         </Card>
       </section>
-
-      <BottomNav />
     </main>
   );
 }

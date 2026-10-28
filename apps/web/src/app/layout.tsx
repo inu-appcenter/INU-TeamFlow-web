@@ -12,6 +12,10 @@ import { ChatSocketProvider } from '@/contexts/ChatSocketContext';
 import { pretendard } from '@/lib/fonts';
 import { useMetadata } from '@/hooks/useMetadata';
 import NavigationTracker from '@/components/common/NavigationTracker';
+import BottomNav from '@/components/common/bottom-nav/BottomNav';
+
+// 하단 네비게이션을 보여줄 경로
+const BOTTOM_NAV_PATHS = ['/main', '/calendar', '/team', '/chat', '/mypage'];
 
 export default function RootLayout({
   children,
@@ -22,6 +26,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isMobileNotice = pathname === '/mobile-notice';
   const isLanding = pathname === '/';
+  const showBottomNav = BOTTOM_NAV_PATHS.includes(pathname);
   useMetadata();
 
   return (
@@ -38,7 +43,10 @@ export default function RootLayout({
                 <>
                   <NavigationTracker />
                   <AuthGuard>
-                    <ChatSocketProvider>{children}</ChatSocketProvider>
+                    <ChatSocketProvider>
+                      {children}
+                      {showBottomNav && <BottomNav />}
+                    </ChatSocketProvider>
                   </AuthGuard>
                 </>
               )}

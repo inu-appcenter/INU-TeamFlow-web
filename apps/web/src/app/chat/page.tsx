@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
+
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
 import GroupChatCreateModal from '@/components/chat/GroupChatCreateModal';
@@ -177,7 +177,6 @@ export default function ChatListPage() {
         </Card>
       </section>
 
-      <BottomNav />
       {isGroupModalOpen && (
         <GroupChatCreateModal onClose={() => setIsGroupModalOpen(false)} />
       )}

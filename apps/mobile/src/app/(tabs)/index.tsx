@@ -154,7 +154,8 @@ function RecruitmentRow({
         [ {categoryLabel} ] {recruitment.title}
       </Text>
       <Text
-        className={`mt-1 truncate text-[12px] ${
+        numberOfLines={1}
+        className={`mt-1 truncate text-[12px]  ${
           recruitment.infoPostTitle ? "text-[#2C2C2C]" : "text-[#B0B0B0]"
         }`}
       >
