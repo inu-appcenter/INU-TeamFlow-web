@@ -71,7 +71,7 @@ export default function InputField({
               onBlur={onBlur}
               type={typeOption}
               placeholder={placeHolder}
-              className={`max-[640px]h-13.25 h-12 w-full rounded-full bg-[#F6F8FA] px-4 px-5 text-[15px] text-[#2C2C2C] outline-none placeholder:text-[#989898] max-[640px]:py-2 max-[640px]:text-[13px] ${
+              className={`max-[640px]h-13.25 h-12 w-full rounded-xl bg-[#F6F8FA] px-4 px-5 text-[15px] text-[#2C2C2C] outline-none placeholder:text-[#989898] max-[640px]:py-2 max-[640px]:text-[13px] ${
                 rightElement || check ? 'pr-14' : ''
               }`}
             />

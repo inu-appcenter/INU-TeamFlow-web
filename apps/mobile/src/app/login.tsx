@@ -79,7 +79,7 @@ export default function LoginScreen() {
       { username: trimmedUsername, password },
       {
         onSuccess: async (data) => {
-          await login(data.accessToken);
+          await login(data.accessToken, data.refreshToken);
           router.replace("/" as never); // 모바일은 (tabs) 그룹이 루트 경로라 "/main"이 아니라 "/"
         },
         onError: (error) => {

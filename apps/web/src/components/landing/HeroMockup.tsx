@@ -37,10 +37,10 @@ function BrowserFrame() {
 
 function PhoneFrame() {
   return (
-    <div className="rounded-[2.2rem] bg-gray-900 p-[4px] shadow-2xl">
+    <div className="rounded-[2.2rem] bg-[#F5F5F5] p-[4px] shadow-2xl">
       <div className="relative aspect-[9/19.5] overflow-hidden rounded-[calc(2.2rem-4px)] bg-white">
         {/* 노치 */}
-        <div className="absolute top-2 left-1/2 z-10 h-[18px] w-[72px] -translate-x-1/2 rounded-full bg-gray-900" />
+        <div className="absolute top-2 left-1/2 z-10 h-[18px] w-[72px] -translate-x-1/2 rounded-full bg-gray-300" />
         <Image
           src={MOBILE_SRC}
           alt="모이미 앱 화면"

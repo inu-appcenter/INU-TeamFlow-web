@@ -36,6 +36,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   grantType: string;
   accessToken: string;
+  refreshToken: string;
 }
 
 export interface MyInfoResponse {

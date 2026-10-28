@@ -66,9 +66,11 @@ export function useAuthSession(): AuthSessionState {
         return;
       }
 
+      // 토큰 값은 비교하지 않음: 요청 중 401 → 재발급으로 토큰이 바뀔 수 있음
+      // 다른 탭의 로그인/로그아웃은 storage 이벤트 → fetchUser()로 authVersion이 올라가서 걸러짐
       const isCurrent = () =>
         version === authVersion.current &&
-        localStorage.getItem('accessToken') === token;
+        !!localStorage.getItem('accessToken');
 
       try {
         const me = await getMyProfile();
@@ -104,8 +106,7 @@ export function useAuthSession(): AuthSessionState {
 
         const activeToken = localStorage.getItem('accessToken');
 
-        if (activeToken && activeToken !== token) return;
-
+        // 인터셉터가 재발급까지 실패했다면 토큰은 이미 삭제된 상태
         if (
           !activeToken ||
           (isAxiosError(error) &&
@@ -117,10 +118,7 @@ export function useAuthSession(): AuthSessionState {
             console.error('FCM 구독 정리 실패:', cleanupError);
           }
 
-          if (
-            version === authVersion.current &&
-            (!localStorage.getItem('accessToken') || isCurrent())
-          ) {
+          if (version === authVersion.current) {
             clearSession();
           }
         }
@@ -132,22 +130,32 @@ export function useAuthSession(): AuthSessionState {
   );
 
   useEffect(() => {
-    void fetchUser()
-      .catch(() => undefined)
-      .finally(() => setIsLoading(false));
+    const load = () => {
+      void fetchUser()
+        .catch(() => undefined)
+        .finally(() => setIsLoading(false));
+    };
+
+    // effect 본문에서 직접 호출하지 않고 마이크로태스크로 넘김
+    // (fetchUser 내부 setState가 effect의 동기 실행으로 잡히지 않도록)
+    queueMicrotask(load);
 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== 'accessToken' && event.key !== null) {
         return;
       }
 
-      cancelFcmSync();
-      clearNotice();
-      setUser(null);
+      // 이전 값 → 새 값 교체 = 다른 탭에서 재발급(또는 계정 전환)
+      // → 화면을 비우지 않고 조용히 다시 확인 (계정이 바뀌었으면 fetchUser가 캐시 정리)
+      const isTokenRotation = !!event.oldValue && !!event.newValue;
 
-      void fetchUser()
-        .catch(() => undefined)
-        .finally(() => setIsLoading(false));
+      if (!isTokenRotation) {
+        cancelFcmSync();
+        clearNotice();
+        setUser(null);
+      }
+
+      load();
     };
 
     window.addEventListener('storage', onStorage);
@@ -163,9 +171,8 @@ export function useAuthSession(): AuthSessionState {
     }
 
     stopping.current = true;
-    authVersion.current += 1;
+    const version = ++authVersion.current;
 
-    const token = localStorage.getItem('accessToken');
     const resume = pauseAutomaticFcmSync();
 
     const task = (async () => {
@@ -178,7 +185,9 @@ export function useAuthSession(): AuthSessionState {
           clearNotificationSetupPending(user.userId);
         }
 
-        if (localStorage.getItem('accessToken') === token) {
+        // 토큰 값 대신 버전으로 비교: 로그아웃 중 재발급돼도 정상 로그아웃
+        // (다른 탭에서 새로 로그인하면 storage 이벤트로 버전이 올라가서 건너뜀)
+        if (authVersion.current === version) {
           clearSession();
         }
 

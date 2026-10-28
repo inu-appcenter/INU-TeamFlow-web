@@ -2,7 +2,7 @@
 import { getHttpStatus } from '@/utils/httpError';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useEffect } from 'react';
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
+
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import NotificationSettings from '@/components/mypage/NotificationSettings';
 import { colleges } from '@moimi/core/constants/departments';
@@ -741,7 +741,6 @@ export default function MyPage() {
           </section>
         </section>
 
-        <BottomNav />
         {isProfileImageMenuOpen && (
           <div
             onClick={() => setIsProfileImageMenuOpen(false)}
@@ -881,7 +880,7 @@ export default function MyPage() {
             >
               <h2
                 id="delete-user-title"
-                className="mt-4 text-center text-xl font-bold text-[#2C2C2C]"
+                className="text-center text-xl font-bold text-[#2C2C2C]"
               >
                 정말 탈퇴할까요
               </h2>
@@ -890,7 +889,7 @@ export default function MyPage() {
                 탈퇴한 계정과 관련된 정보는 복구할 수 없습니다
               </p>
 
-              <div className="mt-5 rounded-2xl bg-[#FBFBFB] p-4">
+              <div className="mt-4 rounded-2xl bg-[#FBFBFB] p-4">
                 <p className="text-[13px] leading-5 text-[#666666]">
                   계속하려면 아래 입력창에
                   <span className="mx-1 font-bold text-[#2C2C2C]">

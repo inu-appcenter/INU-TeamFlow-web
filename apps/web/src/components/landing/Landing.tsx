@@ -75,7 +75,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen min-w-[1280px] bg-white text-gray-900">
       {/* Header */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b-[0.5px] border-[#D6DDE5] bg-white/80 backdrop-blur">
+      <header className="fixed inset-x-0 top-0 z-50 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between px-6">
           <Image
             src="/images/logo.svg"
@@ -84,7 +84,7 @@ export default function Landing() {
             height={2184}
             priority
             unoptimized
-            className="mt-0 h-auto w-[125px]"
+            className="mt-0 h-auto w-[120px]"
           />
           <StartButton />
         </div>
@@ -96,32 +96,15 @@ export default function Landing() {
 
         <div className="relative z-10 mx-auto grid max-w-[1400px] items-center gap-12 px-6 md:grid-cols-[1fr_1.7fr]">
           <FadeIn>
-            <p className="mb-4 text-[18px] font-semibold tracking-[3.0px] text-[#5E92F0]">
-              대학생 팀 활동 플랫폼
-            </p>
-            <h1 className="mb-6 text-5xl font-bold">
-              팀플의{' '}
-              <span className="relative isolate inline-block">
-                <motion.span
-                  aria-hidden
-                  className="absolute inset-x-0 bottom-1 -z-10 h-[0.2em] origin-left rounded-sm bg-[#5E92F0]/25"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{
-                    duration: 0.9,
-                    delay: 0.7,
-                    ease: [0.65, 0, 0.35, 1],
-                  }}
-                />
-                시작부터 끝까지
-              </span>
+            <h1 className="mb-4 text-[50px] leading-[1.25] font-bold tracking-[-0.03em] text-[#191F28]">
+              팀플의 시작부터 끝까지,
               <br />
-              <span className="text-[#5E92F0]">모이미</span>에서
+              이제 <span className="text-[#5E92F0]">모이미</span> 하나로
             </h1>
-            <p className="mb-10 text-lg leading-relaxed text-[#818893]">
-              팀원 모집, 일정 조율, 채팅, 공지까지
+            <p className="mb-10 text-[17px] leading-[1.7] tracking-[-0.01em] text-[#6B7684]">
+              팀원 구하기부터 회의 시간 맞추기, 공지 남기기까지
               <br />
-              웹에서도, 앱에서도 한곳에서
+              흩어져 있던 걸 한 곳에 모았어요
             </p>
             <StartButton size="lg" />
           </FadeIn>
@@ -169,7 +152,7 @@ export default function Landing() {
             <p className="text-xl font-bold text-[#2C2C2C]">
               함께라서 더 쉬워지는
             </p>
-            <h2 className="mt-2 text-4xl leading-snug font-bold text-[#2C2C2C]">
+            <h2 className="mt-1 text-4xl leading-snug font-bold text-[#2C2C2C]">
               지금 바로{' '}
               <span className="relative inline-block text-[#5E92F0]">
                 모이미
