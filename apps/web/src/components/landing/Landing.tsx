@@ -94,9 +94,9 @@ export default function Landing() {
       <section className="relative flex min-h-screen items-center overflow-hidden pt-16">
         <HeroBackground />
 
-        <div className="relative z-10 mx-auto grid max-w-[1400px] items-center gap-12 px-6 md:grid-cols-[1fr_1.7fr]">
+        <div className="relative z-10 mx-auto grid max-w-[1400px] grid-cols-[1fr_1.7fr] items-center gap-14 px-6">
           <FadeIn>
-            <h1 className="mb-4 text-[50px] leading-[1.25] font-bold tracking-[-0.03em] text-[#191F28]">
+            <h1 className="mb-4 text-[clamp(40px,3.3vw,50px)] leading-[1.25] font-bold tracking-[-0.03em] whitespace-nowrap text-[#191F28]">
               팀플의 시작부터 끝까지,
               <br />
               이제 <span className="text-[#5E92F0]">모이미</span> 하나로
