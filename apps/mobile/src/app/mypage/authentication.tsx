@@ -115,13 +115,13 @@ export default function SchoolAuthenticationScreen() {
             placeholder="학번을 입력하세요"
             placeholderTextColor="#B0B8C1"
             keyboardType="number-pad"
-            className="mb-4 h-[50px] rounded-full  bg-[#F6F8FA] px-5 text-[#2C2C2C]"
+            className="mb-4 h-[50px] rounded-xl  bg-[#F6F8FA] px-5 text-[#2C2C2C]"
           />
 
           <Text className="mb-1 text-[13px] font-medium text-[#989898]">
             비밀번호
           </Text>
-          <View className="mb-6 flex-row items-center rounded-full  bg-[#F6F8FA] pr-3">
+          <View className="mb-6 flex-row items-center rounded-xl bg-[#F6F8FA] pr-3">
             <TextInput
               value={portalPassword}
               onChangeText={setPortalPassword}

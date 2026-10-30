@@ -279,7 +279,7 @@ export default function RegisterScreen() {
         username: trimmedUsername,
         password,
       });
-      await authLogin(loginResponse.accessToken);
+      await authLogin(loginResponse.accessToken, loginResponse.refreshToken);
     } catch {
       showError("회원가입 완료! 로그인 후 이용해주세요");
       router.replace(ROUTES.LOGIN as never);
@@ -482,7 +482,7 @@ export default function RegisterScreen() {
                   placeholder={REGISTER_TEXT.USERNAME_PLACEHOLDER}
                   placeholderTextColor="#989898"
                   autoCapitalize="none"
-                  className="mb-4 h-[50px] w-full rounded-full bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
+                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
                 />
               </View>
 
@@ -497,7 +497,7 @@ export default function RegisterScreen() {
                     placeholder={REGISTER_TEXT.PASSWORD_PLACEHOLDER}
                     placeholderTextColor="#989898"
                     secureTextEntry={!isPasswordVisible}
-                    className="h-[50px] w-full rounded-full bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
+                    className="h-[50px] w-full rounded-xl bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
                   />
                   <Pressable
                     onPress={() => setIsPasswordVisible((prev) => !prev)}
@@ -528,7 +528,7 @@ export default function RegisterScreen() {
                     placeholder={REGISTER_TEXT.CHECK_PASSWORD_PLACEHOLDER}
                     placeholderTextColor="#989898"
                     secureTextEntry={!isCheckPasswordVisible}
-                    className="h-[50px] w-full rounded-full bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
+                    className="h-[50px] w-full rounded-xl bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
                   />
                   <Pressable
                     onPress={() => setIsCheckPasswordVisible((prev) => !prev)}
@@ -595,7 +595,7 @@ export default function RegisterScreen() {
                   onChangeText={setName}
                   placeholder={REGISTER_TEXT.NAME_PLACEHOLDER}
                   placeholderTextColor="#989898"
-                  className="mb-4 h-[50px] w-full rounded-full bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
+                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
                 />
               </View>
 
@@ -610,7 +610,7 @@ export default function RegisterScreen() {
                   placeholderTextColor="#989898"
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  className="mb-4 h-[50px] w-full rounded-full bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
+                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
                 />
               </View>
 
