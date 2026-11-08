@@ -203,7 +203,7 @@ export default function MobileNoticePage() {
         <section className="relative overflow-hidden bg-[#E9EFFB]">
           <MobileCTABackground />
 
-          <div className="relative flex flex-col items-center px-6 py-20 text-center">
+          <div className="relative flex flex-col items-center px-6 pt-20 pb-10 text-center">
             <motion.div
               initial={{ opacity: 0, y: 40, scale: 0.8 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -244,7 +244,7 @@ export default function MobileNoticePage() {
               </h2>
 
               {/* 안내 카드 */}
-              <div className="mt-10 rounded-2xl bg-white/80 px-5 py-6 shadow-[0_12px_32px_-16px_rgba(94,146,240,0.35)] backdrop-blur">
+              <div className="mt-12 rounded-2xl bg-white/80 px-5 py-6 shadow-[0_12px_32px_-16px_rgba(94,146,240,0.35)] backdrop-blur">
                 <p className="text-[18px] font-bold text-[#2C2C2C]">
                   모바일 앱은 곧 출시 예정이에요
                 </p>

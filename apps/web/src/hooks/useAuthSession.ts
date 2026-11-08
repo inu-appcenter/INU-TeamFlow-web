@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { getMyProfile } from '@moimi/core/api/user';
+import { logout as requestLogout } from '@moimi/core/api/auth';
 import type { UserMeResponse } from '@moimi/core/types/user';
 import type { AuthSessionState } from '@moimi/core/types/auth';
 import { identifyAnalyticsUser, resetAnalyticsIdentity } from '@/lib/analytics';
@@ -106,7 +107,8 @@ export function useAuthSession(): AuthSessionState {
 
         const activeToken = localStorage.getItem('accessToken');
 
-        // 인터셉터가 재발급까지 실패했다면 토큰은 이미 삭제된 상태
+        // 401: 인터셉터가 재발급까지 실패 → 토큰은 이미 삭제된 상태
+        // 403: 정지된 사용자 → 세션 종료
         if (
           !activeToken ||
           (isAxiosError(error) &&
@@ -177,9 +179,22 @@ export function useAuthSession(): AuthSessionState {
 
     const task = (async () => {
       try {
-        await unregisterFcmToken(user?.userId ?? null, accountDeleted);
-      } catch (error) {
-        console.error('FCM 삭제 실패:', error);
+        try {
+          await unregisterFcmToken(user?.userId ?? null, accountDeleted);
+        } catch (error) {
+          console.error('FCM 삭제 실패:', error);
+        }
+
+        // 서버 refresh token 폐기 + 쿠키 삭제
+        // 탈퇴는 서버가 탈퇴 응답에서 처리하므로 호출하지 않음
+        // 실패해도 로컬 로그아웃은 계속 진행
+        if (!accountDeleted) {
+          try {
+            await requestLogout();
+          } catch (error) {
+            console.error('로그아웃 API 실패:', error);
+          }
+        }
       } finally {
         if (accountDeleted && user) {
           clearNotificationSetupPending(user.userId);
@@ -190,7 +205,6 @@ export function useAuthSession(): AuthSessionState {
         if (authVersion.current === version) {
           clearSession();
         }
-
         resume();
         logoutPromise.current = null;
       }

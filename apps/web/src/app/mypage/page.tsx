@@ -642,7 +642,7 @@ export default function MyPage() {
                       type="button"
                       onClick={() => setModify(false)}
                       disabled={isUpdatePending || isImagePending}
-                      className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#F6F8FA] px-2.5 py-2.5 text-[14px] font-semibold text-[#2c2c2c] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex-1 cursor-pointer rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-[#F6F8FA] px-2.5 py-2.5 text-[14px] font-semibold text-[#2c2c2c] transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       취소
                     </button>
@@ -916,7 +916,7 @@ export default function MyPage() {
                   type="button"
                   onClick={closeDeleteUserConfirm}
                   disabled={isDeleteUserPending}
-                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#EEF1F5] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-3 font-semibold text-[#2C2C2C] transition-all duration-150 hover:bg-[#EEF1F5] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   취소
                 </button>

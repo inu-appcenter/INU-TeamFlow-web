@@ -22,8 +22,10 @@ const TONE = {
   yellow: 'bg-[#FFF0C8] text-[#9A7420]',
 } as const;
 
-// 모바일용 배치: 가운데 문장 영역(±12vh)을 피해서 위/아래로 배치
-// x: vw, y: vh (화면 중앙 기준)
+// x: cqw, y: cqh (sticky 박스 중앙 기준, 박스 크기의 %)
+// vw/vh는 인앱 브라우저·주소창에 따라 실제 보이는 영역과 달라서 배치가 틀어짐
+// → 실제 보이는 sticky 박스 기준(container query 단위)으로 배치
+// 위 4개 / 아래 4개, 지그재그로 문장 영역(약 -16 ~ +12)을 피해서 배치
 const TOOLS: {
   label: string;
   x: number;
@@ -31,14 +33,14 @@ const TOOLS: {
   tone: keyof typeof TONE;
   pains: number[];
 }[] = [
-  { label: '메모 앱', x: 0, y: -35, tone: 'blue', pains: [2] },
-  { label: '단톡방', x: -26, y: -27, tone: 'yellow', pains: [1, 3] },
-  { label: '커뮤니티', x: 26, y: -27, tone: 'pink', pains: [0] },
-  { label: '공유 시트', x: -26, y: 17, tone: 'green', pains: [2] },
-  { label: '캘린더 앱', x: 26, y: 17, tone: 'blue', pains: [1] },
-  { label: '설문 폼', x: -22, y: 28, tone: 'pink', pains: [1] },
-  { label: '클라우드 폴더', x: 20, y: 28, tone: 'yellow', pains: [2] },
-  { label: '개인 DM', x: 0, y: 37, tone: 'green', pains: [0, 3] },
+  { label: '커뮤니티', x: -22, y: -36, tone: 'pink', pains: [0] },
+  { label: '메모 앱', x: 20, y: -33, tone: 'blue', pains: [2] },
+  { label: '단톡방', x: -28, y: -24, tone: 'yellow', pains: [1, 3] },
+  { label: '캘린더 앱', x: 26, y: -22, tone: 'blue', pains: [1] },
+  { label: '공유 시트', x: -24, y: 22, tone: 'green', pains: [2] },
+  { label: '설문 폼', x: 24, y: 25, tone: 'pink', pains: [1] },
+  { label: '클라우드 폴더', x: -14, y: 34, tone: 'yellow', pains: [2] },
+  { label: '개인 DM', x: 24, y: 36, tone: 'green', pains: [0, 3] },
 ];
 
 const PAIN_START = 0.06;
@@ -83,9 +85,15 @@ function PainLine({
     start + PAIN_W,
   ];
 
-  const rotateX = useTransform(progress, keys, [75, 0, 0, -75]);
-  const y = useTransform(progress, keys, [80, 0, 0, -80]);
-  const opacity = useTransform(progress, keys, [0, 1, 1, 0]);
+  // 두 줄이라 많이 기울이고 멀리 움직이면 위 질문 문구와 겹침
+  // → 회전·이동 폭을 줄이고, 나갈 때는 더 일찍 사라지게
+  const rotateX = useTransform(progress, keys, [50, 0, 0, -50]);
+  const y = useTransform(progress, keys, [40, 0, 0, -40]);
+  const opacity = useTransform(
+    progress,
+    [keys[0], keys[1], keys[2], start + PAIN_W * 0.85],
+    [0, 1, 1, 0]
+  );
 
   return (
     <motion.p
@@ -115,8 +123,8 @@ function ToolChip({
   pains: number[];
   index: number;
 }) {
-  const tx = useTransform(progress, [0.72, 0.86], [`${x}vw`, '0vw']);
-  const ty = useTransform(progress, [0.72, 0.86], [`${y}vh`, '0vh']);
+  const tx = useTransform(progress, [0.72, 0.86], [`${x}cqw`, '0cqw']);
+  const ty = useTransform(progress, [0.72, 0.86], [`${y}cqh`, '0cqh']);
   const scale = useTransform(progress, [0.72, 0.86], [1, 0.2]);
   const opacity = useTransform(progress, [0.02, 0.08, 0.8, 0.86], [0, 1, 1, 0]);
 
@@ -137,8 +145,8 @@ function ToolChip({
   const focusOpacity = useTransform([hl, dim], ([h, d]: number[]) => {
     return 1 - Math.max(0, d - h) * 0.7;
   });
-  const fx = useTransform(hl, (v) => `${-x * 0.12 * v}vw`);
-  const fy = useTransform(hl, (v) => `${-y * 0.12 * v}vh`);
+  const fx = useTransform(hl, (v) => `${-x * 0.1 * v}cqw`);
+  const fy = useTransform(hl, (v) => `${-y * 0.1 * v}cqh`);
 
   return (
     <motion.div
@@ -202,30 +210,37 @@ export default function MobileProblem({
 
   return (
     <section id={id} ref={ref} className="relative h-[400vh] bg-white">
-      <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden">
+      {/* containerType: size → 자식들이 cqw/cqh(이 박스 기준 %) 단위를 쓸 수 있음 */}
+      <div
+        className="sticky top-0 flex h-svh items-center justify-center overflow-hidden"
+        style={{ containerType: 'size' }}
+      >
         {TOOLS.map((t, i) => (
           <ToolChip key={t.label} progress={scrollYProgress} index={i} {...t} />
         ))}
 
-        <motion.p
-          style={{ opacity: questionOpacity }}
-          className="absolute top-[36%] text-[15px] font-semibold text-[#5E92F0]"
-        >
-          지금 팀플, 이렇지 않나요?
-        </motion.p>
+        {/* 질문 + 문장을 한 묶음으로: 화면 높이와 상관없이 간격 고정 */}
+        <div className="relative flex w-full flex-col items-center">
+          <motion.p
+            style={{ opacity: questionOpacity }}
+            className="text-[15px] font-semibold text-[#5E92F0]"
+          >
+            지금 팀플, 이렇지 않나요?
+          </motion.p>
 
-        <div
-          className="relative flex h-28 w-full items-center justify-center"
-          style={{ perspective: 900, transformStyle: 'preserve-3d' }}
-        >
-          {PAINS.map((p, i) => (
-            <PainLine
-              key={p.lead}
-              progress={scrollYProgress}
-              index={i}
-              {...p}
-            />
-          ))}
+          <div
+            className="relative mt-8 flex h-28 w-full items-center justify-center"
+            style={{ perspective: 900, transformStyle: 'preserve-3d' }}
+          >
+            {PAINS.map((p, i) => (
+              <PainLine
+                key={p.lead}
+                progress={scrollYProgress}
+                index={i}
+                {...p}
+              />
+            ))}
+          </div>
         </div>
 
         <motion.div

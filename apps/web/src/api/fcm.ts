@@ -1,15 +1,9 @@
-import axiosInstance from '@/lib/axiosInstance';
-
+import { createPushToken, deletePushToken } from '@moimi/core/api/pushToken';
 import type { FcmTokenRequest, FcmTokenResponse } from '@moimi/core/types/fcm';
 
 export const createFcmToken = (
   body: FcmTokenRequest
-): Promise<FcmTokenResponse> =>
-  axiosInstance.post('/fcm', body).then((response) => response.data);
+): Promise<FcmTokenResponse> => createPushToken({ ...body, provider: 'FCM' });
 
 export const deleteFcmToken = (body: FcmTokenRequest): Promise<void> =>
-  axiosInstance
-    .delete('/fcm', {
-      data: body,
-    })
-    .then(() => undefined);
+  deletePushToken({ ...body, provider: 'FCM' });
