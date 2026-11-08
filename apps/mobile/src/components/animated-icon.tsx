@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
     height: 120,
   },
   splashImage: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
   },
   background: {
     borderRadius: 40,

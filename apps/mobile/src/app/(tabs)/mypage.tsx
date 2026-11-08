@@ -106,7 +106,7 @@ function VerifyBadgeRing() {
 
 export default function MyPageScreen() {
   const router = useRouter();
-  const { logout: authLogout } = useAuth();
+  const { logout: authLogout, finishAccountDeletion } = useAuth();
   const { data: profileData, isError } = useMyProfile();
   const { mutate: updateMyProfileMutate, isPending: isUpdatePending } =
     useUpdateMyProfile();
@@ -514,7 +514,7 @@ export default function MyPageScreen() {
           onClose={() => setIsSettingsOpen(false)}
           showErrorMessage={showErrorMessage}
           onDeleted={async () => {
-            await authLogout();
+            await finishAccountDeletion();
             router.replace("/login");
           }}
         />

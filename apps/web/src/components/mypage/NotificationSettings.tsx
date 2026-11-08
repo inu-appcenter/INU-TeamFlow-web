@@ -322,7 +322,7 @@ export default function NotificationSettings({
             type="button"
             onClick={handleCancel}
             disabled={!isDirty || isBusy}
-            className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 text-[14px] font-semibold text-[#2C2C2C] transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 cursor-pointer rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-3 text-[14px] font-semibold text-[#2C2C2C] transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             취소
           </button>

@@ -1,4 +1,5 @@
 import "../../global.css";
+import "@/lib/pushNotifications";
 import { useEffect } from "react";
 import {
   DarkTheme,

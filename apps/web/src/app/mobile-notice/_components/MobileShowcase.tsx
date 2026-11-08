@@ -122,7 +122,7 @@ export default function MobileShowcase({ id }: { id?: string }) {
 
   return (
     <section id={id} className="bg-white px-5 pt-10 pb-20">
-      <p className="text-center text-[14px] font-semibold text-[#5E92F0]">
+      <p className="text-center text-[15px] font-bold text-[#5E92F0]">
         PC에서는 이렇게 써요
       </p>
 
@@ -147,7 +147,7 @@ export default function MobileShowcase({ id }: { id?: string }) {
       </div>
 
       {/* 브라우저 프레임 + 슬라이드 (좌우 스와이프) */}
-      <div className="mt-4 overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-white shadow-[0_20px_40px_-24px_rgba(44,44,44,0.3)]">
+      <div className="mt-2 overflow-hidden rounded-xl border-[0.5px] border-[#D6DDE5]/60 bg-white shadow-[0_20px_40px_-24px_rgba(44,44,44,0.3)]">
         <div className="flex items-center gap-1.5 border-b-[0.5px] border-[#D6DDE5]/60 px-3 py-2">
           <span className="h-2 w-2 rounded-full bg-[#FF5F57]" />
           <span className="h-2 w-2 rounded-full bg-[#FEBC2E]" />
