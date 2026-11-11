@@ -48,7 +48,7 @@ export default function InfoPost() {
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {isRestored &&
             !isLoading &&
-            infoPosts.map((infoPost) => (
+            infoPosts.map((infoPost, index) => (
               <ContentCard
                 key={infoPost.infoPostId}
                 cardType="infoPost"
@@ -58,6 +58,7 @@ export default function InfoPost() {
                 path={`/infoPost/${infoPost.infoPostId}`}
                 createdAt={formatDate(infoPost.createdAt)}
                 thumbnailUrl={infoPost.thumbnailUrl}
+                priority={index < 2}
               />
             ))}
         </section>

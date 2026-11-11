@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import Checkbox from '@/components/common/Checkbox';
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
+
 import {
   useDeleteNotifications,
   useNotifications,
@@ -436,8 +436,6 @@ export default function NotificationPage() {
           </p>
         )}
       </div>
-
-      <BottomNav />
     </main>
   );
 }

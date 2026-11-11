@@ -5,19 +5,26 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { DevSettings } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { getMyProfile } from "@moimi/core/api/user";
+import { logout as requestLogout } from "@moimi/core/api/auth";
 import type { UserMeResponse } from "@moimi/core/types/user";
-import { secureTokenStorage, setAccessToken } from "@/lib/tokenStorage";
+import { secureTokenStorage, saveTokens } from "@/lib/tokenStorage";
+import {
+  registerPushToken,
+  unregisterPushToken,
+  forgetPushToken,
+} from "@/lib/pushNotifications";
 
 interface AuthContextValue {
   user: UserMeResponse | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string) => Promise<void>;
+  login: (accessToken: string, refreshToken: string) => Promise<void>;
   refetchUser: () => Promise<void>;
   logout: () => Promise<void>;
+  finishAccountDeletion: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -31,9 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const me = await getMyProfile();
       setUser(me);
-    } catch {
-      await secureTokenStorage.removeToken();
-      setUser(null);
+    } catch (error) {
+      // 인증 실패일 때만 로그아웃 (네트워크 오류로 토큰 날리지 않게)
+      // 401: 인터셉터가 재발급까지 실패한 경우 / 403: 정지된 사용자
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      if (status === 401 || status === 403) {
+        await secureTokenStorage.removeToken();
+        setUser(null);
+      }
     }
   };
 
@@ -49,8 +61,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const login = async (token: string) => {
-    await setAccessToken(token);
+  // 로그인되면(앱 재실행 포함) 푸시 토큰 서버 등록
+  // 이미 등록된 토큰이면 서버가 기존 토큰을 반환하므로 매번 호출해도 됨
+  const userId = user?.userId;
+  useEffect(() => {
+    if (userId == null) return;
+
+    registerPushToken()
+      .then((token) => console.log("[push] 등록:", token))
+      .catch((error) => console.error("[push] 등록 실패:", error));
+  }, [userId]);
+
+  const login = async (accessToken: string, refreshToken: string) => {
+    await saveTokens(accessToken, refreshToken);
     await queryClient.invalidateQueries({ queryKey: ["myInfo"] });
     await fetchUser();
   };
@@ -59,11 +82,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchUser();
   };
 
-  const logout = async () => {
+  // SecureStore의 access/refresh 둘 다 삭제 + 상태/캐시 정리
+  const clearLocalSession = async () => {
     await secureTokenStorage.removeToken();
     setUser(null);
     queryClient.clear();
-    DevSettings.reload();
+  };
+
+  const logout = async () => {
+    // 1. 푸시 토큰 삭제 (인증 필요 → access token 삭제 전에)
+    try {
+      await unregisterPushToken();
+    } catch (error) {
+      console.error("[push] 해제 실패:", error);
+    }
+
+    // 2. refresh token 폐기 (SecureStore에서 꺼내 보내야 하므로 삭제 전에)
+    try {
+      await requestLogout();
+    } catch (error) {
+      console.error("로그아웃 API 실패:", error);
+    }
+
+    // 3. 로컬 정리 (앞 단계가 실패해도 진행)
+    await clearLocalSession();
+  };
+
+  // 탈퇴 시 서버가 refresh token과 푸시 토큰을 이미 삭제 → 로컬만 정리
+  const finishAccountDeletion = async () => {
+    await forgetPushToken();
+    await clearLocalSession();
   };
 
   return (
@@ -75,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         refetchUser,
         logout,
+        finishAccountDeletion,
       }}
     >
       {children}

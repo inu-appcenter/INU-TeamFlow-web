@@ -51,20 +51,18 @@ const SWAP_TIMES = [0, 0.47, 0.59, 1];
 
 const slideVariants = {
   enter: (dir: number) => ({
-    x: dir > 0 ? '12%' : '-12%',
+    x: dir > 0 ? '8%' : '-8%',
     opacity: 0,
-    filter: 'blur(8px)',
   }),
-  center: { x: '0%', opacity: 1, filter: 'blur(0px)' },
+  center: { x: '0%', opacity: 1 },
   exit: (dir: number) => ({
-    x: dir > 0 ? '-12%' : '12%',
+    x: dir > 0 ? '-8%' : '8%',
     opacity: 0,
-    filter: 'blur(8px)',
   }),
 };
 
 function SlideImages({ srcs, label }: { srcs: string[]; label: string }) {
-  const sizes = '(min-width: 1152px) 1100px, 100vw';
+  const sizes = '(min-width: 1008px) 960px, 100vw';
 
   if (srcs.length === 1) {
     return (
@@ -90,9 +88,8 @@ function SlideImages({ srcs, label }: { srcs: string[]; label: string }) {
       <motion.div
         className="absolute inset-0"
         animate={{
-          x: ['0%', '0%', '-8%', '-8%'],
+          x: ['0%', '0%', '-6%', '-6%'],
           opacity: [1, 1, 0, 0],
-          filter: ['blur(0px)', 'blur(0px)', 'blur(8px)', 'blur(8px)'],
         }}
         transition={swap}
       >
@@ -109,9 +106,8 @@ function SlideImages({ srcs, label }: { srcs: string[]; label: string }) {
         className="absolute inset-0"
         initial={{ opacity: 0 }}
         animate={{
-          x: ['8%', '8%', '0%', '0%'],
+          x: ['6%', '6%', '0%', '0%'],
           opacity: [0, 0, 1, 1],
-          filter: ['blur(8px)', 'blur(8px)', 'blur(0px)', 'blur(0px)'],
         }}
         transition={swap}
       >
@@ -137,10 +133,10 @@ export default function Showcase({ id }: { id?: string }) {
   const current = SLIDES[index];
 
   return (
-    <section id={id} className="scroll-mt-20 bg-white py-32">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id={id} className="scroll-mt-20 bg-white py-24">
+      <div className="mx-auto max-w-[960px] px-6">
         {/* 헤더 */}
-        <div className="mb-12 text-center">
+        <div className="mb-10 text-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={index}
@@ -159,12 +155,12 @@ export default function Showcase({ id }: { id?: string }) {
 
         {/* 브라우저 프레임 + 슬라이드 */}
         <div className="relative">
-          <div className="overflow-hidden rounded-3xl border-[0.5px] border-[#D6DDE5]/60 bg-white shadow-[0_24px_60px_-30px_rgba(44,44,44,0.25)]">
-            <div className="flex items-center gap-2 border-b-[0.5px] border-[#D6DDE5]/60 bg-white px-5 py-3.5">
-              <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
-              <span className="h-3 w-3 rounded-full bg-[#FEBC2E]" />
-              <span className="h-3 w-3 rounded-full bg-[#28C840]" />
-              <div className="ml-4 flex-1 rounded-full bg-[#F0F2F5] px-4 py-1.5 text-xs text-[#989898]">
+          <div className="overflow-hidden rounded-2xl border-[0.5px] border-[#D6DDE5]/60 bg-white shadow-[0_24px_60px_-30px_rgba(44,44,44,0.25)]">
+            <div className="flex items-center gap-2 border-b-[0.5px] border-[#D6DDE5]/60 bg-white px-4 py-3">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+              <div className="ml-3 flex-1 rounded-full bg-[#F0F2F5] px-4 py-1 text-xs text-[#989898]">
                 moimi.appcenter.kr
               </div>
             </div>
@@ -182,7 +178,7 @@ export default function Showcase({ id }: { id?: string }) {
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                  transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
                   className="absolute inset-0 overflow-hidden"
                 >
                   <SlideImages srcs={current.srcs} label={current.label} />
@@ -196,22 +192,22 @@ export default function Showcase({ id }: { id?: string }) {
             type="button"
             onClick={() => go(index - 1, -1)}
             aria-label="이전 화면"
-            className="absolute top-1/2 -left-5 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5]/60 bg-white text-[#2C2C2C]/60 shadow-sm transition hover:text-[#2C2C2C] active:scale-90"
+            className="absolute top-1/2 -left-5 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5]/60 bg-white text-[#2C2C2C]/60 shadow-sm transition hover:text-[#2C2C2C] active:scale-90"
           >
-            <ChevronLeft size={20} strokeWidth={2.5} />
+            <ChevronLeft size={18} strokeWidth={2.5} />
           </button>
           <button
             type="button"
             onClick={() => go(index + 1, 1)}
             aria-label="다음 화면"
-            className="absolute top-1/2 -right-5 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5]/60 bg-white text-[#2C2C2C]/60 shadow-sm transition hover:text-[#2C2C2C] active:scale-90"
+            className="absolute top-1/2 -right-5 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[#D6DDE5]/60 bg-white text-[#2C2C2C]/60 shadow-sm transition hover:text-[#2C2C2C] active:scale-90"
           >
-            <ChevronRight size={20} strokeWidth={2.5} />
+            <ChevronRight size={18} strokeWidth={2.5} />
           </button>
         </div>
 
         {/* 탭 + 진행 바 */}
-        <div className="mt-8 grid grid-cols-5 gap-3">
+        <div className="mt-7 grid grid-cols-5 gap-3">
           {SLIDES.map((s, i) => {
             const active = i === index;
             const parts = s.srcs.length;

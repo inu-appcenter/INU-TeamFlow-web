@@ -79,7 +79,7 @@ export default function LoginScreen() {
       { username: trimmedUsername, password },
       {
         onSuccess: async (data) => {
-          await login(data.accessToken);
+          await login(data.accessToken, data.refreshToken);
           router.replace("/" as never); // 모바일은 (tabs) 그룹이 루트 경로라 "/main"이 아니라 "/"
         },
         onError: (error) => {
@@ -124,7 +124,7 @@ export default function LoginScreen() {
               placeholder={LOGIN_TEXT.USERNAME_PLACEHOLDER}
               placeholderTextColor="#989898"
               autoCapitalize="none"
-              className="h-[50px] w-full rounded-full bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
+              className="h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
             />
           </View>
         </View>
@@ -141,7 +141,7 @@ export default function LoginScreen() {
                 placeholder={LOGIN_TEXT.PASSWORD_PLACEHOLDER}
                 placeholderTextColor="#989898"
                 secureTextEntry={!isPasswordVisible}
-                className="h-[50px] w-full rounded-full bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
+                className="h-[50px] w-full rounded-xl bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
               />
               <Pressable
                 onPress={() => setIsPasswordVisible((prev) => !prev)}

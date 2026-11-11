@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import ContentCard from '@/components/common/ContentCard';
 import Header from '@/components/common/Header';
 import { useErrorToast } from '@/hooks/useErrorToast';
@@ -274,8 +273,6 @@ export default function InvitationsPage() {
             </section>
           </div>
         )}
-
-        <BottomNav />
       </div>
     </main>
   );

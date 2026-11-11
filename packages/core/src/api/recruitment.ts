@@ -17,11 +17,12 @@ import type {
 export const getRecruitments = (
   page = 0,
   size = 10,
-  keyword?: string
+  keyword?: string,
+  category?: string
 ): Promise<PageResponse<RecruitmentSummaryResponse>> =>
   getApiClient()
     .get("/recruitments", {
-      params: { page, size, keyword: keyword || undefined },
+      params: { page, size, keyword: keyword || undefined, category },
     })
     .then((res) => res.data);
 

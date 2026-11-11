@@ -1,16 +1,15 @@
 'use client';
 
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import Card from '@/components/main/Card';
-import { BannerCarousel } from '@/components/main/banner/Banner';
+import dynamic from 'next/dynamic';
 import { useMyTeamNotices } from '@moimi/core/hooks/useNoticeQuery';
 import { useRecruitments } from '@moimi/core/hooks/useRecruitmentQuery';
 import { useInfoPosts } from '@moimi/core/hooks/useInfoPostQuery';
 import InfoPostListItem from '@/components/main/infoPost/InfoPostListItem';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useCalendarGrid } from '@moimi/core/hooks/calendar/useCalendarGrid';
@@ -24,14 +23,17 @@ import { categoryFilterOptions } from '@moimi/core/constants/category';
 import { infoPostCategoryFilterOptions } from '@moimi/core/constants/infoPost';
 import type { InfoPostCategory } from '@moimi/core/types/infoPost';
 
+const BannerCarousel = dynamic(
+  () => import('@/components/main/banner/Banner').then((m) => m.BannerCarousel),
+  { ssr: false }
+);
+
 export default function Main() {
   type InfoPostCategoryValue = 'ALL' | InfoPostCategory;
   const router = useRouter();
   const today = new Date();
   const [selectedInfoPostCategory, setSelectedInfoPostCategory] =
     useState<InfoPostCategoryValue>('ALL');
-
-  const infoPostCategoryScrollRef = useRef<HTMLDivElement>(null);
 
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [currentDate, setCurrentDate] = useState(
@@ -50,7 +52,12 @@ export default function Main() {
     isScheduleOnDate(schedule, selectedDateKey)
   );
 
-  const { data: recruitmentData } = useRecruitments(0, 100);
+  const { data: recruitmentData } = useRecruitments(
+    0,
+    4,
+    undefined,
+    selectedCategory === 'ALL' ? undefined : selectedCategory
+  );
   const recruitments = recruitmentData?.content ?? [];
 
   const calendarDates = useCalendarGrid(year, month);
@@ -67,14 +74,8 @@ export default function Main() {
     );
   };
 
-  const filteredRecruitments = recruitments.filter((recruitment) => {
-    if (selectedCategory === 'ALL') return true;
-
-    return recruitment.category === selectedCategory;
-  });
-
-  const mobileRecruitments = filteredRecruitments.slice(0, 4);
-  const desktopRecruitments = filteredRecruitments.slice(0, 3);
+  const mobileRecruitments = recruitments.slice(0, 4);
+  const desktopRecruitments = recruitments.slice(0, 3);
 
   const { data: infoPostData } = useInfoPosts({
     category:
@@ -97,34 +98,6 @@ export default function Main() {
 
   const mobileNotices = sortedNotices.slice(0, 5);
   const desktopNotices = sortedNotices.slice(0, 4);
-
-  useEffect(() => {
-    const container = infoPostCategoryScrollRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const delta =
-        Math.abs(event.deltaY) >= Math.abs(event.deltaX)
-          ? event.deltaY
-          : event.deltaX;
-
-      container.scrollLeft += delta;
-    };
-
-    container.addEventListener('wheel', handleWheel, {
-      passive: false,
-    });
-
-    return () => {
-      container.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
 
   return (
     <main className="min-h-screen px-3 py-6 sm:px-6">
@@ -165,6 +138,7 @@ export default function Main() {
                   <button
                     type="button"
                     onClick={handlePrevMonth}
+                    aria-label="이전 달"
                     className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[#F6F8FA] text-[#2c2c2c]/40 transition-all duration-150 active:scale-90"
                   >
                     <ChevronLeft size={16} />
@@ -173,6 +147,7 @@ export default function Main() {
                   <button
                     type="button"
                     onClick={handleNextMonth}
+                    aria-label="다음 달"
                     className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[#F6F8FA] text-[#2c2c2c]/40 transition-all duration-150 active:scale-90"
                   >
                     <ChevronRight size={16} />
@@ -207,6 +182,7 @@ export default function Main() {
                 <button
                   type="button"
                   onClick={() => router.push('/notice')}
+                  aria-label="공지사항으로 이동"
                   className="z-50 cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80 active:scale-90"
                 >
                   <ChevronRight />
@@ -261,6 +237,7 @@ export default function Main() {
                 <button
                   type="button"
                   onClick={() => router.push('/recruitment')}
+                  aria-label="모집 게시판으로 이동"
                   className="z-50 cursor-pointer text-[#2C2C2C] transition hover:text-[#2C2C2C]/80 active:scale-90"
                 >
                   <ChevronRight />
@@ -460,8 +437,6 @@ export default function Main() {
           </a>
         </footer>
       </div>
-
-      <BottomNav />
     </main>
   );
 }

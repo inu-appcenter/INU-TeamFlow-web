@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
+
 import NotificationButton from '@/components/common/notification/NotificationButton';
 import { useMyInfoPosts } from '@moimi/core/hooks/useInfoPostQuery';
 import {
@@ -237,8 +237,6 @@ export default function MyPostPage() {
             )}
           </section>
         </section>
-
-        <BottomNav />
       </div>
     </main>
   );

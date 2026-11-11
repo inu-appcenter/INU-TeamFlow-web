@@ -92,7 +92,8 @@ export default function Recruitment() {
   const { data: recruitmentData } = useRecruitments(
     page - 1,
     PAGE_SIZE,
-    debouncedKeyword || undefined
+    debouncedKeyword || undefined,
+    selectedCategory === 'ALL' ? undefined : selectedCategory
   );
   const recruitments = recruitmentData?.content ?? [];
   const totalPages = recruitmentData?.totalPages ?? 0;
@@ -123,7 +124,7 @@ export default function Recruitment() {
           ? infoPostTitle.includes(debouncedKeyword)
           : true);
 
-    return matchesCategory && matchesKeyword;
+    return matchesKeyword;
   });
 
   const today = new Date();
@@ -184,6 +185,7 @@ export default function Recruitment() {
               onClick={() =>
                 setPage(Math.max(1, blockStart - PAGE_WINDOW_SIZE))
               }
+              aria-label="이전 페이지 묶음"
               disabled={blockStart === 1}
               className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
             >
@@ -195,6 +197,7 @@ export default function Recruitment() {
                 key={n}
                 type="button"
                 onClick={() => setPage(n)}
+                aria-current={currentPage === n ? 'page' : undefined}
                 className={`flex items-center justify-center px-1 text-[15px] font-semibold transition-all duration-150 active:scale-90 ${
                   currentPage === n
                     ? 'text-[#5E92F0]'
@@ -210,6 +213,7 @@ export default function Recruitment() {
               onClick={() =>
                 setPage(Math.min(totalPages, blockStart + PAGE_WINDOW_SIZE))
               }
+              aria-label="다음 페이지 묶음"
               disabled={blockEnd === totalPages}
               className="flex items-center justify-center text-[#2c2c2c]/40 transition-all duration-150 active:scale-90 disabled:opacity-40"
             >

@@ -1,6 +1,5 @@
 'use client';
 
-import BottomNav from '@/components/common/bottom-nav/BottomNav';
 import Card from '@/components/main/Card';
 import { useMyTeams } from '@moimi/core/hooks/team/useTeamQuery';
 import { ChevronRight, Plus } from 'lucide-react';
@@ -181,8 +180,6 @@ export default function Team() {
           </div>
         </Card>
       </section>
-
-      <BottomNav />
     </main>
   );
 }
