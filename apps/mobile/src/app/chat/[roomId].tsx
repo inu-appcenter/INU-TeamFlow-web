@@ -18,6 +18,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ImagePreviewModal from "@/components/ImagePreviewModal";
+import { useQueryClient } from "@tanstack/react-query";
+import { useChatRoomActive } from "@/hooks/chat/useChatRoomActive";
 import {
   ChevronLeft,
   ImagePlus,
@@ -154,8 +156,29 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
   const { isConnected } = useChatSocketContext();
   const { sendMessage } = useSendChatMessage(roomId);
 
-  useChatMessageSubscription(roomId);
-  useChatReadEventSubscription(roomId);
+  const queryClient = useQueryClient();
+
+  // 화면이 보이고 앱이 켜져 있을 때만 구독 → 아니면 해제해서 서버가 채팅 푸시를 보내게 함
+  const isRoomActive = useChatRoomActive();
+  useChatMessageSubscription(roomId, isRoomActive);
+  useChatReadEventSubscription(roomId, isRoomActive);
+
+  // 구독이 끊겨 있던 동안 온 메시지는 소켓으로 못 받았으므로, 다시 보이면 목록 새로 불러오기
+  const hasBeenActiveRef = useRef(false);
+  const missedWhileInactiveRef = useRef(false);
+  useEffect(() => {
+    if (isRoomActive) {
+      if (missedWhileInactiveRef.current) {
+        missedWhileInactiveRef.current = false;
+        queryClient.invalidateQueries({
+          queryKey: ["chatMessages", "anchor", roomId],
+        });
+      }
+      hasBeenActiveRef.current = true;
+    } else if (hasBeenActiveRef.current) {
+      missedWhileInactiveRef.current = true;
+    }
+  }, [isRoomActive, roomId, queryClient]);
 
   const lastMessageId =
     anchor?.messages[anchor.messages.length - 1]?.chatMessageId;

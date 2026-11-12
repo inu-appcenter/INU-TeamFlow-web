@@ -8,52 +8,35 @@ import type {
   ChatMessageAnchorResponse,
 } from "@moimi/core/types/chat";
 
-export function useChatMessageSubscription(roomId: number) {
+/**
+ * @param enabled false면 구독 해제 (화면이 가려졌거나 앱이 백그라운드)
+ *                서버가 구독 여부로 푸시 생략을 판단하므로 꼭 해제해야 함
+ */
+export function useChatMessageSubscription(roomId: number, enabled = true) {
   const { isConnected } = useChatSocketContext();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log(
-      "[chatSub] effect run, isConnected =",
-      isConnected,
-      "roomId =",
-      roomId
-    );
-    if (!isConnected || !roomId) return;
+    if (!enabled || !isConnected || !roomId) return;
 
     const messageSub = subscribeChatRoom(roomId, (frame: IMessage) => {
-      console.log("[chatSub] 메시지 프레임 수신:", frame.body);
       const message: ChatMessageResponse = JSON.parse(frame.body);
 
       queryClient.setQueryData<ChatMessageAnchorResponse>(
         ["chatMessages", "anchor", roomId],
         (old) => {
-          console.log(
-            "[chatSub] 캐시 업데이트 시도, old 존재?",
-            !!old,
-            "old.messages.length =",
-            old?.messages.length
-          );
           if (!old) return old;
           if (
             old.messages.some((m) => m.chatMessageId === message.chatMessageId)
           ) {
-            console.log("[chatSub] 중복 메시지, 스킵:", message.chatMessageId);
             return old;
           }
-          console.log("[chatSub] 새 메시지 추가:", message.chatMessageId);
           return { ...old, messages: [...old.messages, message] };
         }
       );
     });
 
-    console.log(
-      "[chatSub] subscribe 결과:",
-      messageSub ? "구독 성공" : "구독 실패(null)"
-    );
-
     return () => {
-      console.log("[chatSub] cleanup, unsubscribe 시도");
       const client = getChatClient();
       if (client.connected) {
         try {
@@ -63,5 +46,5 @@ export function useChatMessageSubscription(roomId: number) {
         }
       }
     };
-  }, [isConnected, roomId, queryClient]);
+  }, [enabled, isConnected, roomId, queryClient]);
 }

@@ -23,6 +23,7 @@ import {
   categoryFilterOptions,
 } from "@moimi/core/constants/category";
 import { darkenColor } from "@/utils/color/darkenColor";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 
 export default function TeamScreen() {
   const router = useRouter();
@@ -36,7 +37,11 @@ export default function TeamScreen() {
   const { checkVerified } = useSchoolVerificationGuard(showErrorMessage);
 
   const [selectedCategory, setSelectedCategory] = useState("ALL");
-  const { data: teams = [], isLoading } = useMyTeams();
+  const { data: teams = [], isLoading, refetch } = useMyTeams();
+
+  // 다른 탭/화면에 갔다가 돌아오면 팀 목록 다시 불러오기
+  // (방출·탈퇴·새 팀 합류 등 반영)
+  useRefreshOnFocus(refetch);
 
   const indicatorX = useSharedValue(0);
   const indicatorWidth = useSharedValue(0);

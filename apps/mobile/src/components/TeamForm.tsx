@@ -398,7 +398,7 @@ export default function TeamForm({
               onPress={(e) => e.stopPropagation()}
               className="w-full max-w-[340px] rounded-3xl bg-white p-6"
             >
-              <Text className="text-center text-[19px] font-bold text-[#2C2C2C]">
+              <Text className="text-center text-[18px] font-bold text-[#2C2C2C]">
                 새 팀을 생성할까요?
               </Text>
               <View className="mt-4 flex-row gap-3">

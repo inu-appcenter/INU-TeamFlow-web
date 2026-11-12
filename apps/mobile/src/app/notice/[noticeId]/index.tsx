@@ -73,7 +73,7 @@ export default function NoticeDetailScreen() {
           </Pressable>
         </View>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-[15px] font-semibold text-[#2C2C2C]">
+          <Text className="text-[15px] -mt-[80px] font-semibold text-[#2C2C2C]">
             존재하지 않는 공지입니다.
           </Text>
         </View>
@@ -226,7 +226,7 @@ export default function NoticeDetailScreen() {
             onPress={(e) => e.stopPropagation()}
             className="w-full max-w-[340px] rounded-3xl bg-white p-6"
           >
-            <Text className="text-center text-[19px] font-bold text-[#2C2C2C]">
+            <Text className="text-center text-[18px] font-bold text-[#2C2C2C]">
               공지를 삭제할까요?
             </Text>
             <Text className="mt-2 text-center text-[14px] text-[#989898]">

@@ -713,15 +713,15 @@ export default function ChatRoomDrawer({
                 onPress={(e) => e.stopPropagation()}
                 className="w-full max-w-[340px] rounded-3xl bg-white p-6"
               >
-                <Text className="text-center text-lg font-bold text-[#2C2C2C]">
+                <Text className="text-center text-[18px] font-bold text-[#2C2C2C]">
                   정말 채팅방을 나가시겠어요?
                 </Text>
                 <View className="mt-4 flex-row gap-3">
                   <Pressable
                     onPress={() => setConfirmLeave(false)}
-                    className="flex-1 items-center rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3"
+                    className="flex-1 items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
                   >
-                    <Text className="text-sm font-semibold text-[#2C2C2C]">
+                    <Text className="text-[14px] text-center font-semibold text-[#2C2C2C]">
                       취소
                     </Text>
                   </Pressable>
@@ -729,9 +729,9 @@ export default function ChatRoomDrawer({
                     onPress={handleLeave}
                     disabled={isLeaving}
                     style={{ opacity: isLeaving ? 0.5 : 1 }}
-                    className="flex-1 items-center rounded-xl bg-[#E22222] py-3"
+                    className="flex-1 items-center rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
                   >
-                    <Text className="text-sm font-semibold text-white">
+                    <Text className="text-[14px] text-center font-semibold text-white">
                       나가기
                     </Text>
                   </Pressable>

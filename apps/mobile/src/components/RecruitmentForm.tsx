@@ -513,13 +513,13 @@ export default function RecruitmentForm({
               onPress={(e) => e.stopPropagation()}
               className="w-full max-w-[340px] rounded-3xl bg-white p-6"
             >
-              <Text className="text-center text-[19px] font-bold text-[#2C2C2C]">
+              <Text className="text-center text-[18px] font-bold text-[#2C2C2C]">
                 모집글을 생성할까요?
               </Text>
               <View className="mt-4 flex-row gap-3">
                 <Pressable
                   onPress={() => setIsConfirmOpen(false)}
-                  className="flex-1 rounded-xl border border-[#D6DDE5] bg-[#F6F8FA] py-3 transition-transform duration-150 ease-out active:scale-95"
+                  className="flex-1 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-center text-[14px] font-semibold text-[#2C2C2C]">
                     취소
@@ -530,7 +530,7 @@ export default function RecruitmentForm({
                     setIsConfirmOpen(false);
                     await submit();
                   }}
-                  className="flex-1 rounded-xl bg-[#5E92F0] py-3 transition-transform duration-150 ease-out active:scale-95"
+                  className="flex-1 rounded-xl bg-[#5E92F0] py-4 transition-transform duration-150 ease-out active:scale-95"
                 >
                   <Text className="text-center text-[14px] font-semibold text-white">
                     생성
