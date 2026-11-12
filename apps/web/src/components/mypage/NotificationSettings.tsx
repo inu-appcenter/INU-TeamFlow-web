@@ -243,7 +243,7 @@ export default function NotificationSettings({
           </p>
         </div>
 
-        <div className="flex min-h-[180px] items-center justify-center rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white">
+        <div className="mb-4 flex min-h-[180px] items-center justify-center rounded-3xl border-[0.5px] border-[#D6DDE5] bg-white">
           <p className="text-[14px] text-[#989898]">
             알림 설정을 불러오는 중...
           </p>

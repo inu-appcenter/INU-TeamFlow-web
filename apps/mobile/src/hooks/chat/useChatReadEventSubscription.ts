@@ -44,7 +44,10 @@ function bumpReadCount(
   });
 }
 
-export function useChatReadEventSubscription(roomId: number) {
+/**
+ * @param enabled false면 구독 해제 (화면이 가려졌거나 앱이 백그라운드)
+ */
+export function useChatReadEventSubscription(roomId: number, enabled = true) {
   const { isConnected } = useChatSocketContext();
   const { data: me } = useMyInfo();
   const queryClient = useQueryClient();
@@ -62,7 +65,7 @@ export function useChatReadEventSubscription(roomId: number) {
   }, [me?.userId]);
 
   useEffect(() => {
-    if (!isConnected || !roomId) return;
+    if (!enabled || !isConnected || !roomId) return;
 
     const readSub = subscribeChatRoomRead(roomId, (frame: IMessage) => {
       const readEvent: ChatReadEvent = JSON.parse(frame.body);
@@ -187,5 +190,5 @@ export function useChatReadEventSubscription(roomId: number) {
         }
       }
     };
-  }, [isConnected, roomId]);
+  }, [enabled, isConnected, roomId]);
 }

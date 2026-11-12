@@ -407,7 +407,7 @@ export default function RecruitmentDetailScreen() {
             onPress={(e) => e.stopPropagation()}
             className="w-full max-w-[340px] rounded-3xl bg-white p-6"
           >
-            <Text className="text-center text-[19px] font-bold text-[#2C2C2C]">
+            <Text className="text-center text-[18px] font-bold text-[#2C2C2C]">
               모집글을 삭제할까요?
             </Text>
             <Text className="mt-2 text-center text-[14px] text-[#989898]">
