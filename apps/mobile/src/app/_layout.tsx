@@ -14,6 +14,7 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import { AppState, useColorScheme } from "react-native";
+import { getHttpStatus } from "@/utils/etc/httpError";
 import {
   QueryClient,
   QueryClientProvider,
@@ -29,7 +30,18 @@ import { ChatSocketProvider } from "@/contexts/ChatSocketContext";
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // 인증·권한·없음 에러는 재시도해도 결과가 같으므로 바로 실패 처리
+      retry: (failureCount, error) => {
+        const status = getHttpStatus(error);
+        if (status === 401 || status === 403 || status === 404) return false;
+        return failureCount < 3;
+      },
+    },
+  },
+});
 
 function PathnameTracker() {
   const pathname = usePathname();

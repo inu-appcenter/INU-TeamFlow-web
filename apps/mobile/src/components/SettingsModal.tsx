@@ -11,6 +11,7 @@ import { X } from "lucide-react-native";
 import { useDeleteUser, useMyProfile } from "@moimi/core/hooks/useUserQuery";
 import { getHttpStatus } from "@/utils/etc/httpError";
 import NotificationSettings from "@/components/NotificationSettings";
+import PushPermissionBanner from "@/components/PushPermissionBanner";
 
 type SettingsModalProps = {
   visible: boolean;
@@ -98,6 +99,8 @@ export default function SettingsModal({
           contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
           showsVerticalScrollIndicator={false}
         >
+          <PushPermissionBanner />
+
           <NotificationSettings
             showErrorMessage={showErrorMessage}
             onDirtyChange={setHasUnsavedNotificationChanges}

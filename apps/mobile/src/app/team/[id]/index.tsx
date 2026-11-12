@@ -1,14 +1,6 @@
 // app/team/[id]/index.tsx
-import { useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  Modal,
-  Image,
-  Linking,
-} from "react-native";
+import { useCallback, useState } from "react";
+import { View, Text, Pressable, ScrollView, Modal, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ChevronLeft,
@@ -47,6 +39,8 @@ import { formatDateKey, isScheduleOnDate } from "@/utils/date/calendar";
 import { formatDate } from "@/utils/date/formatDate";
 import { getTeamRoleLabel } from "@/utils/user/teamRole";
 import { getDday } from "@/utils/date/getDday";
+import { getHttpStatus } from "@/utils/etc/httpError";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import MonthGridWithEvents from "@/components/MonthGridWithEvents";
 import ScheduleListItem from "@/components/ScheduleListItem";
 import CalendarAddModal from "@/components/calendar/CalendarAddModal";
@@ -59,23 +53,6 @@ import {
 } from "@/components/skeleton";
 
 const days = ["일", "월", "화", "수", "목", "금", "토"];
-
-function InfoRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <View className="flex-row items-start py-1 ">
-      <Text style={{ width: 60 }} className="text-[13px] text-[#989898]">
-        {label}
-      </Text>
-      <View className="flex-1">{children}</View>
-    </View>
-  );
-}
 
 export default function TeamDetailScreen() {
   const router = useRouter();
@@ -92,12 +69,39 @@ export default function TeamDetailScreen() {
   const [isAddSelectOpen, setIsAddSelectOpen] = useState(false);
   const [isVoteAddOpen, setIsVoteAddOpen] = useState(false);
 
-  const { data: team, isLoading: isTeamLoading } = useTeamDetail(teamId);
-  const { data: teamMembers = [] } = useTeamMembers(teamId);
-  const { data: teamNoticesAll = [], isLoading: isNoticesLoading } =
-    useTeamNotices(teamId);
-  const { data: allVotes = [], isLoading: isVotesLoading } =
-    useTeamVotes(teamId);
+  const {
+    data: team,
+    isLoading: isTeamLoading,
+    error: teamError,
+    refetch: refetchTeam,
+  } = useTeamDetail(teamId);
+  const { data: teamMembers = [], refetch: refetchMembers } =
+    useTeamMembers(teamId);
+  const {
+    data: teamNoticesAll = [],
+    isLoading: isNoticesLoading,
+    refetch: refetchNotices,
+  } = useTeamNotices(teamId);
+  const {
+    data: allVotes = [],
+    isLoading: isVotesLoading,
+    refetch: refetchVotes,
+  } = useTeamVotes(teamId);
+
+  // 다른 화면에 갔다가 돌아오면 다시 불러오기
+  // (방출, 매니저 지정/해제, 새 공지·투표 등 반영)
+  const refetchAll = useCallback(() => {
+    refetchTeam();
+    refetchMembers();
+    refetchNotices();
+    refetchVotes();
+  }, [refetchTeam, refetchMembers, refetchNotices, refetchVotes]);
+  useRefreshOnFocus(refetchAll);
+
+  // 방출·팀 삭제로 접근 권한이 없어진 경우
+  // refetch가 실패해도 React Query는 이전 data를 유지하므로 error로 따로 판단
+  const teamErrorStatus = getHttpStatus(teamError);
+  const hasNoAccess = teamErrorStatus === 403 || teamErrorStatus === 404;
 
   const { mutateAsync: createEvent } = useCreateTeamEvent(teamId);
   const { mutateAsync: updateEvent } = useUpdateTeamEvent(teamId);
@@ -111,7 +115,6 @@ export default function TeamDetailScreen() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
 
   const schedules = useTeamMonthSchedules(teamId, year, month);
@@ -138,6 +141,34 @@ export default function TeamDetailScreen() {
       router.replace("/team");
     }
   };
+
+  if (hasNoAccess) {
+    return (
+      <View className="flex-1 bg-[#F0F2F5]">
+        <View style={{ paddingTop: 60 }} className="px-6 pb-4">
+          <Pressable onPress={goBack} hitSlop={10} className="self-start">
+            <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
+          </Pressable>
+        </View>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="-mt-[80px] text-[16px] font-semibold text-[#2C2C2C]">
+            더 이상 이 팀의 멤버가 아니에요
+          </Text>
+          <Text className="mt-2 text-center text-[13px] leading-5 text-[#989898]">
+            팀에서 내보내졌거나 팀이 삭제됐어요
+          </Text>
+          <Pressable
+            onPress={() => router.replace("/team")}
+            className="mt-5 rounded-xl bg-[#5E92F0] px-6 py-3 transition-transform duration-150 ease-out active:scale-95"
+          >
+            <Text className="text-[14px] font-semibold text-white">
+              팀 목록으로
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
   if (isTeamLoading) {
     return <TeamDetailSkeleton onBack={goBack} />;
@@ -352,43 +383,6 @@ export default function TeamDetailScreen() {
             </Text>
           </View>
         </View>
-
-        {/* <View className="mt-3">
-          <InfoRow label="링크">
-            <Pressable
-              disabled={!team.link}
-              onPress={() => team.link && Linking.openURL(team.link)}
-            >
-              <Text
-                numberOfLines={1}
-                className={
-                  team.link
-                    ? "text-[13px] text-[#5E92F0] underline"
-                    : "text-[13px] text-[#989898]"
-                }
-              >
-                {team.link || "-"}
-              </Text>
-            </Pressable>
-          </InfoRow>
-          <InfoRow label="SNS">
-            <Pressable
-              disabled={!team.sns}
-              onPress={() => team.sns && Linking.openURL(team.sns)}
-            >
-              <Text
-                numberOfLines={1}
-                className={
-                  team.sns
-                    ? "text-[13px] text-[#5E92F0] underline"
-                    : "text-[13px] text-[#989898]"
-                }
-              >
-                {team.sns || "-"}
-              </Text>
-            </Pressable>
-          </InfoRow>
-        </View> */}
 
         <View className="mt-6 rounded-2xl bg-[#F8F9FB] px-4 pt-2 pb-2.5">
           <View className="mb-1 flex-row items-center justify-between border-b-[0.5px] border-[#D6DDE5] py-2 pb-2">
