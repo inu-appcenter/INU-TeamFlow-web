@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Animated,
 } from "react-native";
-import { useEffect, useRef as useReactRef } from "react";
 import { useLocalSearchParams, router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import {
@@ -18,7 +17,7 @@ import {
 import { useCreateDirectChatRoom } from "@moimi/core/hooks/chat/useCreateDirectChatRoom";
 import { categoryColorMap } from "@moimi/core/constants/contentCard";
 import { getDepartmentName } from "@/utils/user/getDepartmentName";
-import { formatDate } from "@/utils/date/formatDate"; // TODO: 모바일에 없으면 생성 필요 (web: @/utils/date/formatDate)
+import { formatDate } from "@/utils/date/formatDate";
 import type { ApplicationStatus } from "@moimi/core/types/recruitment";
 
 const statusLabelMap: Record<ApplicationStatus, string> = {
@@ -71,7 +70,7 @@ export default function ApplicationDetailScreen() {
   const createDirectChatRoom = useCreateDirectChatRoom();
 
   const [toastVisible, setToastVisible] = useState(false);
-  const toastOpacity = useReactRef(new Animated.Value(0)).current;
+  const toastOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!toastVisible) return;
@@ -119,10 +118,16 @@ export default function ApplicationDetailScreen() {
       const room = await createDirectChatRoom.mutateAsync(
         application.applicantId
       );
-      // TODO: /chat/[roomId] 화면이 아직 없음 — 만들고 나서 라우팅 확인
-      // router.push({ pathname: "/chat/[roomId]", params: { roomId: String(room.chatRoomId), roomName: room.roomName, roomType: room.chatRoomType } });
+      router.push({
+        pathname: "/chat/[roomId]",
+        params: {
+          roomId: String(room.chatRoomId),
+          roomName: room.roomName,
+          roomType: room.chatRoomType,
+        },
+      });
     } catch (error) {
-      console.error(error);
+      console.error("1:1 채팅방 생성 실패", error);
     }
   };
 

@@ -30,7 +30,7 @@ import type {
   GetInfoPostsParams,
   InfoPostCategory,
 } from "@moimi/core/types/infoPost";
-import { formatDate } from "@/utils/date/formatDate"; // TODO: 아직 없으면 생성 필요
+import { formatDate } from "@/utils/date/formatDate";
 
 const PAGE_SIZE = 20;
 const PAGE_WINDOW_SIZE = 5;
@@ -223,6 +223,16 @@ export default function InfoPostListScreen() {
     router.push("/infoPost/create");
   };
 
+  // 들어온 화면으로 돌아가기 (push하면 홈이 스택에 계속 쌓임)
+  // 이전 화면이 없으면(알림·딥링크 등) 홈으로 교체
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedKeyword(keyword.trim()), 300);
     return () => clearTimeout(timer);
@@ -281,7 +291,7 @@ export default function InfoPostListScreen() {
       <View className="flex-row items-center justify-between px-4 pb-3 pt-16">
         <View className="flex-row items-center gap-3">
           <Pressable
-            onPress={() => router.push(`/`)}
+            onPress={goBack}
             className="h-9 w-9 items-center justify-center transition-transform duration-150 ease-out active:scale-90"
           >
             <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
