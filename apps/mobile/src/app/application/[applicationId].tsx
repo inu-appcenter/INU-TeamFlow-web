@@ -112,10 +112,19 @@ export default function MyApplicationDetailScreen() {
 
   const handleStartDirectChat = async () => {
     try {
-      await createDirectChatRoom.mutateAsync(application.applicantId);
-      // TODO: /chat/[roomId] 라우팅 확인되면 여기서 이동
+      const room = await createDirectChatRoom.mutateAsync(
+        application.applicantId
+      );
+      router.push({
+        pathname: "/chat/[roomId]",
+        params: {
+          roomId: String(room.chatRoomId),
+          roomName: room.roomName,
+          roomType: room.chatRoomType,
+        },
+      });
     } catch (error) {
-      console.error(error);
+      console.error("1:1 채팅방 생성 실패", error);
     }
   };
 

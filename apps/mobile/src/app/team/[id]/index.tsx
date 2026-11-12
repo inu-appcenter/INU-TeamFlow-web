@@ -115,8 +115,6 @@ export default function TeamDetailScreen() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
 
-  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
-
   const schedules = useTeamMonthSchedules(teamId, year, month);
   const calendarDates = useCalendarGrid(year, month);
   const weeks = useCalendarWeeks(calendarDates);
@@ -310,12 +308,6 @@ export default function TeamDetailScreen() {
       console.error("일정 삭제 실패", err);
     }
     setEditSchedule(null);
-  };
-
-  const handleLeaveOrDeleteTeam = () => {
-    // TODO 2단계: 실제 탈퇴/삭제 API 연결
-    console.log(isLeader ? "delete team" : "leave team");
-    setIsLeaveConfirmOpen(false);
   };
 
   return (
@@ -562,52 +554,6 @@ export default function TeamDetailScreen() {
           )}
         </View>
       </ScrollView>
-
-      {/* 팀 삭제/탈퇴 확인 */}
-      <Modal
-        transparent
-        visible={isLeaveConfirmOpen}
-        animationType="fade"
-        onRequestClose={() => setIsLeaveConfirmOpen(false)}
-      >
-        <Pressable
-          onPress={() => setIsLeaveConfirmOpen(false)}
-          className="flex-1 items-center justify-center bg-black/40 px-6"
-        >
-          <Pressable
-            onPress={(e) => e.stopPropagation()}
-            className="w-full max-w-[340px] rounded-3xl bg-white px-6 py-6"
-          >
-            <Text className="text-[16px] font-semibold text-[#2C2C2C]">
-              {isLeader ? "팀을 삭제할까요?" : "팀에서 탈퇴할까요?"}
-            </Text>
-            <Text className="mt-2 text-[13px] text-[#989898]">
-              {isLeader
-                ? "삭제하면 되돌릴 수 없어요."
-                : "탈퇴하면 다시 초대받아야 참여할 수 있어요."}
-            </Text>
-
-            <View className="mt-6 flex-row gap-3">
-              <Pressable
-                onPress={() => setIsLeaveConfirmOpen(false)}
-                className="flex-1 items-center rounded-xl bg-[#F1F3F6] py-4"
-              >
-                <Text className="text-[14px] font-medium text-[#2C2C2C]">
-                  취소
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={handleLeaveOrDeleteTeam}
-                className="flex-1 items-center rounded-xl bg-[#E45B5B] py-4"
-              >
-                <Text className="text-[14px] font-medium text-white">
-                  {isLeader ? "삭제" : "탈퇴"}
-                </Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
 
       <Modal
         transparent

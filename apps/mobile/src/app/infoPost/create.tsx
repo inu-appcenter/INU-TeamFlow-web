@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { router } from "expo-router";
 import InfoPostForm from "@/components/InfoPostForm";
-import { useCreateInfoPost } from "@moimi/core/hooks/useInfoPostQuery"; // TODO: 실제 export명 확인 필요
+import { useCreateInfoPost } from "@moimi/core/hooks/useInfoPostQuery";
 import { useSchoolVerificationGuard } from "@moimi/core/hooks/useSchoolVerificationGuard";
 
 export default function InfoPostCreateScreen() {

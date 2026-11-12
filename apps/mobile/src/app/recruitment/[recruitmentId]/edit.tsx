@@ -29,7 +29,6 @@ export default function RecruitmentEditScreen() {
     title: recruitment.title,
     category: recruitment.category,
     description: recruitment.description,
-    // TODO: 실제 필드명이 infoPostId인지 announcementId인지 확인 필요
     announcementId: recruitment.infoPostId
       ? Number(recruitment.infoPostId)
       : undefined,
@@ -53,12 +52,17 @@ export default function RecruitmentEditScreen() {
         },
       });
 
-      router.replace({
-        pathname: "/recruitment/[recruitmentId]",
-        params: { recruitmentId: String(recruitmentIdNum) },
-      });
+      // 상세로 돌아가기 (replace하면 상세 화면이 스택에 두 번 쌓임)
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace({
+          pathname: "/recruitment/[recruitmentId]",
+          params: { recruitmentId: String(recruitmentIdNum) },
+        });
+      }
     } catch (err) {
-      console.log("모집글 수정 실패", err);
+      console.error("모집글 수정 실패", err);
     }
   };
 

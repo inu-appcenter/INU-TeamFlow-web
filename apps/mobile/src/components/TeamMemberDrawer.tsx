@@ -229,13 +229,20 @@ export default function TeamMemberDrawer({
   };
 
   const handleDirectMessage = async (member: TeamMemberResponse) => {
-    setOpenMenuMember(null);
-    setMenuAnchorTop(null);
-    const room = await createDirectRoom(member.userId);
-    // router.push({
-    //   pathname: `/chat/${room.chatRoomId}`,
-    //   params: { roomName: room.roomName, roomType: room.chatRoomType },
-    // });
+    try {
+      const room = await createDirectRoom(member.userId);
+      handleClose();
+      router.push({
+        pathname: "/chat/[roomId]",
+        params: {
+          roomId: String(room.chatRoomId),
+          roomName: room.roomName,
+          roomType: room.chatRoomType,
+        },
+      });
+    } catch {
+      showError("채팅방을 열지 못했어요");
+    }
   };
 
   const handleClose = () => {

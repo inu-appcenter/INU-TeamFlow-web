@@ -1,13 +1,19 @@
 import { useState } from "react";
-import { View, Text, Modal, Pressable } from "react-native";
+import { View, Text, Modal, Pressable, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import TeamForm, { type TeamFormData } from "@/components/TeamForm";
 import { isDefaultTeamImage } from "@/utils/image/isDefaultTeamImage";
+import { getImageKeyFromUrl } from "@/utils/image/getImageKey";
 import {
   useTeamDetail,
   useUpdateTeam,
   useDeleteTeam,
 } from "@moimi/core/hooks/team/useTeamQuery";
+
+// 기존 이미지는 전체 URL로 들어오므로 키만 뽑아서 보냄
+// 새로 업로드한 이미지는 이미 키라서 그대로 사용
+const toImageKey = (value: string) =>
+  value.startsWith("http") ? getImageKeyFromUrl(value) : value;
 
 export default function TeamEditScreen() {
   const router = useRouter();
@@ -16,15 +22,29 @@ export default function TeamEditScreen() {
 
   const { data: team, isLoading } = useTeamDetail(teamId);
   const { mutateAsync: updateTeam } = useUpdateTeam();
-  const { mutateAsync: deleteTeamMutate } = useDeleteTeam();
+  const { mutateAsync: deleteTeamMutate, isPending: isDeleting } =
+    useDeleteTeam();
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(""), 1800);
+  };
 
   const handleDelete = async () => {
+    if (isDeleting) return;
     try {
       await deleteTeamMutate(teamId);
-      router.push("/team");
+      setIsDeleteConfirmOpen(false);
+      // 팀 상세·수정 화면이 스택에 남지 않도록 전부 닫고 팀 목록으로
+      // (push하면 뒤로가기 시 삭제된 팀의 수정 화면으로 돌아감)
+      if (router.canDismiss()) router.dismissAll();
+      router.replace("/team");
     } catch (err) {
       console.error("팀 삭제 실패", err);
+      setIsDeleteConfirmOpen(false);
+      showErrorMessage("팀 삭제에 실패했어요");
     }
   };
 
@@ -56,23 +76,22 @@ export default function TeamEditScreen() {
       team.imageUrl && !isDefaultTeamImage(team.imageUrl) ? team.imageUrl : "",
   };
 
+  // TeamForm이 에러 토스트를 띄우므로 실패는 throw로 넘김
   const handleSubmit = async (form: TeamFormData) => {
-    try {
-      await updateTeam({
-        teamId,
-        body: {
-          name: form.name,
-          category: form.category,
-          description: form.description,
-          link: form.link || undefined,
-          sns: form.sns || undefined,
-          imageKey: form.imageUrl || undefined,
-        },
-      });
-      router.push(`/team/${teamId}`);
-    } catch (err) {
-      console.error("팀 수정 실패", err);
-    }
+    await updateTeam({
+      teamId,
+      body: {
+        name: form.name,
+        category: form.category,
+        description: form.description,
+        link: form.link || undefined,
+        sns: form.sns || undefined,
+        imageKey: form.imageUrl ? toImageKey(form.imageUrl) : undefined,
+      },
+    });
+    // 팀 상세로 돌아가기 (push하면 같은 상세가 스택에 하나 더 쌓임)
+    // 팀 상세는 useRefreshOnFocus로 수정 내용을 다시 불러옴
+    router.back();
   };
 
   return (
@@ -84,14 +103,34 @@ export default function TeamEditScreen() {
         onDelete={() => setIsDeleteConfirmOpen(true)}
       />
 
+      {errorMessage ? (
+        <View
+          style={{
+            position: "absolute",
+            top: 120,
+            alignSelf: "center",
+            zIndex: 50,
+          }}
+          className="rounded-full bg-[#2C2C2C] px-5 py-2"
+        >
+          <Text className="text-sm font-semibold text-white">
+            {errorMessage}
+          </Text>
+        </View>
+      ) : null}
+
       <Modal
         transparent
         visible={isDeleteConfirmOpen}
         animationType="fade"
-        onRequestClose={() => setIsDeleteConfirmOpen(false)}
+        onRequestClose={() => {
+          if (!isDeleting) setIsDeleteConfirmOpen(false);
+        }}
       >
         <Pressable
-          onPress={() => setIsDeleteConfirmOpen(false)}
+          onPress={() => {
+            if (!isDeleting) setIsDeleteConfirmOpen(false);
+          }}
           className="flex-1 items-center justify-center bg-black/40 px-6"
         >
           <Pressable
@@ -107,6 +146,8 @@ export default function TeamEditScreen() {
             <View className="mt-5 flex-row gap-3">
               <Pressable
                 onPress={() => setIsDeleteConfirmOpen(false)}
+                disabled={isDeleting}
+                style={{ opacity: isDeleting ? 0.5 : 1 }}
                 className="flex-1 items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-[#2C2C2C]">
@@ -114,14 +155,14 @@ export default function TeamEditScreen() {
                 </Text>
               </Pressable>
               <Pressable
-                onPress={async () => {
-                  setIsDeleteConfirmOpen(false);
-                  await handleDelete();
-                }}
-                className="flex-1 items-center rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
+                onPress={handleDelete}
+                disabled={isDeleting}
+                style={{ opacity: isDeleting ? 0.6 : 1 }}
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-[#E22222] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
+                {isDeleting && <ActivityIndicator size="small" color="#fff" />}
                 <Text className="text-[14px] font-semibold text-white">
-                  삭제
+                  {isDeleting ? "삭제 중..." : "삭제"}
                 </Text>
               </Pressable>
             </View>
