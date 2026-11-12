@@ -21,6 +21,13 @@ import ImagePreviewModal from "@/components/ImagePreviewModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { useChatRoomActive } from "@/hooks/chat/useChatRoomActive";
 import {
+  IMAGE_PICKER_OPTIONS,
+  toUploadableImage,
+  isUnsupportedImage,
+  uploadToPresignedUrl,
+  type UploadableImage,
+} from "@/utils/image/pickImage";
+import {
   ChevronLeft,
   ImagePlus,
   Send,
@@ -104,8 +111,9 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
 
   const [isUploading, setIsUploading] = useState(false);
   // 선택만 하고 아직 전송하지 않은 이미지 (확인 모달용)
-  const [pendingAsset, setPendingAsset] =
-    useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [pendingAsset, setPendingAsset] = useState<UploadableImage | null>(
+    null
+  );
   const [imageSendError, setImageSendError] = useState("");
   // 메시지 이미지 확대 보기
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
@@ -246,55 +254,39 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
   };
 
   // 이미지 선택 → 바로 전송하지 않고 확인 모달 열기
+  // iOS HEIC → JPEG로 변환해서 받음 (서버가 HEIC를 거절함)
   const handlePickImage = async () => {
     Keyboard.dismiss();
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-    });
+    const result = await ImagePicker.launchImageLibraryAsync(
+      IMAGE_PICKER_OPTIONS
+    );
     if (result.canceled || !result.assets[0]) return;
 
+    const image = toUploadableImage(result.assets[0]);
     setImageSendError("");
-    setPendingAsset(result.assets[0]);
-  };
 
-  const closeImageConfirm = () => {
-    if (isUploading) return;
-    setPendingAsset(null);
-    setImageSendError("");
+    if (isUnsupportedImage(image)) {
+      setImageSendError("지원하지 않는 이미지 형식이에요");
+      return;
+    }
+
+    setPendingAsset(image);
   };
 
   // 모달에서 "전송" → 업로드 후 메시지 전송
   const handleConfirmImageSend = async () => {
     if (!pendingAsset || isUploading) return;
 
-    const asset = pendingAsset;
-    const fileName = asset.fileName ?? `image-${Date.now()}.jpg`;
-    const contentType = asset.mimeType ?? "image/jpeg";
-
     setIsUploading(true);
     setImageSendError("");
     try {
-      // useChatImageUpload는 브라우저 File 객체(file.name/file.type)를 기대하는데
-      // RN ImagePicker 결과는 File이 아니라서 캐스팅해도 name이 비어 presigned URL
-      // 요청에 fileName이 안 실렸었음(이미지가 안 뜨던 원인) -> 공지 작성 화면과
-      // 동일하게 presigned URL을 직접 받아서 PUT하는 방식으로 변경.
       const { uploadUrl, imageKey } = await getChatImagePresignedUrl({
-        fileName,
-        contentType,
+        fileName: pendingAsset.fileName,
+        contentType: pendingAsset.mimeType,
       });
 
-      const blob = await (await fetch(asset.uri)).blob();
-      const res = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": contentType },
-        body: blob,
-      });
-      // fetch는 4xx/5xx에서 throw하지 않으므로 직접 체크
-      if (!res.ok) {
-        throw new Error(`이미지 업로드 실패 (${res.status})`);
-      }
+      await uploadToPresignedUrl(uploadUrl, pendingAsset);
 
       sendMessage({ messageType: "IMAGE", imageKey });
       setPendingAsset(null);
@@ -304,6 +296,13 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  // 확인 모달 닫기 (업로드 중에는 닫지 않음)
+  const closeImageConfirm = () => {
+    if (isUploading) return;
+    setPendingAsset(null);
+    setImageSendError("");
   };
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {

@@ -36,11 +36,16 @@ import {
   useMyProfile,
   useUpdateMyProfile,
   useProfilePresignedUrl,
-  useUploadProfileImage,
 } from "@moimi/core/hooks/useUserQuery";
 import { useAuth } from "@/contexts/AuthContext";
 import SelectField from "@/components/SelectField";
 import SettingsModal from "@/components/SettingsModal";
+import {
+  IMAGE_PICKER_OPTIONS,
+  toUploadableImage,
+  isUnsupportedImage,
+  uploadToPresignedUrl,
+} from "@/utils/image/pickImage";
 
 const DEFAULT_PROFILE_IMAGE = require("@/assets/images/default-profile.png");
 
@@ -114,8 +119,10 @@ export default function MyPageScreen() {
     mutateAsync: presignedUrlMutateAsync,
     isPending: isPresignedPending,
   } = useProfilePresignedUrl();
-  const { mutateAsync: uploadImageMutateAsync, isPending: isUploadPending } =
-    useUploadProfileImage();
+
+  // S3 업로드는 core 훅 대신 uploadToPresignedUrl로 직접 → 상태도 직접 관리
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const isImagePending = isPresignedPending || isUploadingImage;
 
   const [modify, setModify] = useState(false);
   const [editName, setEditName] = useState("");
@@ -133,7 +140,6 @@ export default function MyPageScreen() {
   const [isDefaultImageSelected, setIsDefaultImageSelected] = useState(false);
   const [isProfileImageMenuOpen, setIsProfileImageMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const isImagePending = isPresignedPending || isUploadPending;
 
   const showErrorMessage = (message: string) => {
     setErrorMessage(message);
@@ -220,14 +226,14 @@ export default function MyPageScreen() {
     setIsProfileImageMenuOpen(false);
   };
 
-  // 변경
+  // 모달이 닫히는 애니메이션이 끝난 뒤 사진 선택 창을 열어야 iOS에서 안 막힘
+  // iOS HEIC → JPEG로 변환해서 받음 (서버가 HEIC를 거절함)
   const openImagePicker = () => {
     return new Promise<ImagePicker.ImagePickerResult>((resolve) => {
       setTimeout(async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 0.8,
-        });
+        const result = await ImagePicker.launchImageLibraryAsync(
+          IMAGE_PICKER_OPTIONS
+        );
         resolve(result);
       }, 400);
     });
@@ -238,33 +244,32 @@ export default function MyPageScreen() {
     const result = await openImagePicker();
     if (result.canceled || !result.assets[0]) return;
 
-    const asset = result.assets[0];
-    const fileName = asset.fileName ?? `image-${Date.now()}.jpg`;
-    const mimeType = asset.mimeType ?? "image/jpeg";
-    const previousImage = editProfileImageUri;
+    const image = toUploadableImage(result.assets[0]);
+    if (isUnsupportedImage(image)) {
+      showErrorMessage("지원하지 않는 이미지 형식이에요");
+      return;
+    }
 
-    setEditProfileImageUri(asset.uri);
+    const previousImage = editProfileImageUri;
+    setEditProfileImageUri(image.uri);
     setIsDefaultImageSelected(false);
+    setIsUploadingImage(true);
 
     try {
       const { uploadUrl, imageKey } = await presignedUrlMutateAsync({
-        fileName,
-        contentType: mimeType,
+        fileName: image.fileName,
+        contentType: image.mimeType,
       });
 
-      const response = await fetch(asset.uri);
-      const arrayBuffer = await response.arrayBuffer();
-      const blob = new Blob([arrayBuffer], { type: mimeType });
-
-      await uploadImageMutateAsync({
-        uploadUrl,
-        file: blob as unknown as File,
-      });
+      await uploadToPresignedUrl(uploadUrl, image);
 
       setEditImageKey(imageKey);
-    } catch {
+    } catch (error) {
+      console.error("프로필 이미지 업로드 실패", error);
       setEditProfileImageUri(previousImage);
       showErrorMessage("이미지 업로드에 실패했어요");
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 

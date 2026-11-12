@@ -20,13 +20,15 @@ import {
   useGetPresignedUrls,
 } from "@moimi/core/hooks/useNoticeQuery";
 import { categoryMap, categoryColorMap } from "@moimi/core/constants/category";
+import {
+  IMAGE_PICKER_OPTIONS,
+  toUploadableImage,
+  isUnsupportedImage,
+  uploadToPresignedUrl,
+  type UploadableImage,
+} from "@/utils/image/pickImage";
 
-type LocalImage = {
-  id: string;
-  uri: string;
-  fileName: string;
-  mimeType: string;
-};
+type LocalImage = UploadableImage & { id: string };
 
 function InputField({
   label,
@@ -143,18 +145,24 @@ export default function TeamNoticeWriteScreen() {
       return;
     }
 
+    // iOS HEIC → JPEG로 변환해서 받음 (서버가 HEIC를 거절함)
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      ...IMAGE_PICKER_OPTIONS,
       allowsMultipleSelection: true,
-      quality: 0.8,
     });
     if (result.canceled) return;
 
-    const newImages: LocalImage[] = result.assets.map((asset) => ({
-      id: `${asset.fileName ?? "image"}-${Date.now()}-${Math.random()}`,
-      uri: asset.uri,
-      fileName: asset.fileName ?? `image-${Date.now()}.jpg`,
-      mimeType: asset.mimeType ?? "image/jpeg",
+    const picked = result.assets.map((asset, index) =>
+      toUploadableImage(asset, index)
+    );
+    if (picked.some(isUnsupportedImage)) {
+      showErrorMessage("지원하지 않는 이미지 형식이에요");
+      return;
+    }
+
+    const newImages: LocalImage[] = picked.map((img) => ({
+      ...img,
+      id: `${img.uri}-${Date.now()}-${Math.random()}`,
     }));
 
     setImages((prev) => [...prev, ...newImages]);
@@ -180,18 +188,9 @@ export default function TeamNoticeWriteScreen() {
         );
 
         await Promise.all(
-          presignedList.map(async (presigned, i) => {
-            const blob = await (await fetch(images[i].uri)).blob();
-            const res = await fetch(presigned.uploadUrl, {
-              method: "PUT",
-              headers: { "Content-Type": images[i].mimeType },
-              body: blob,
-            });
-            // fetch는 4xx/5xx에서 throw하지 않으므로 직접 체크
-            if (!res.ok) {
-              throw new Error(`이미지 업로드 실패 (${res.status})`);
-            }
-          })
+          presignedList.map((presigned, i) =>
+            uploadToPresignedUrl(presigned.uploadUrl, images[i])
+          )
         );
 
         imageKeys = presignedList.map((p) => p.imageKey);

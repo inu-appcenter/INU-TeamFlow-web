@@ -19,6 +19,12 @@ import {
   DEFAULT_CATEGORY_COLOR,
 } from "@moimi/core/constants/category";
 import { darkenColor } from "@/utils/color/darkenColor";
+import {
+  IMAGE_PICKER_OPTIONS,
+  toUploadableImage,
+  isUnsupportedImage,
+  uploadToPresignedUrl,
+} from "@/utils/image/pickImage";
 
 export type TeamCategory = "CONTEST" | "STUDY" | "CLUB" | "PROJECT" | "ETC";
 
@@ -82,36 +88,38 @@ export default function TeamForm({
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-    });
+    // iOS HEIC → JPEG로 변환해서 받음 (서버가 HEIC를 거절함)
+    const result = await ImagePicker.launchImageLibraryAsync(
+      IMAGE_PICKER_OPTIONS
+    );
     if (result.canceled || !result.assets?.[0]) return;
 
-    const asset = result.assets[0];
-    setPreviewUri(asset.uri);
+    const image = toUploadableImage(result.assets[0]);
+    if (isUnsupportedImage(image)) {
+      showErrorMessage("지원하지 않는 이미지 형식이에요");
+      return;
+    }
+
+    // 실패하면 원래 상태로 되돌리기 위해 보관
+    const prevPreviewUri = previewUri;
+    const prevImageUrl = form.imageUrl;
+
+    setPreviewUri(image.uri);
     setIsUploadingImage(true);
 
     try {
-      const fileName = asset.fileName ?? `team-${Date.now()}.jpg`;
-      const contentType = asset.mimeType ?? "image/jpeg";
-
       const { uploadUrl, imageKey } = await getPresignedUrl({
-        fileName,
-        contentType,
+        fileName: image.fileName,
+        contentType: image.mimeType,
       });
 
-      const blob = await (await fetch(asset.uri)).blob();
-
-      await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": contentType },
-        body: blob,
-      });
+      await uploadToPresignedUrl(uploadUrl, image);
 
       setForm((prev) => ({ ...prev, imageUrl: imageKey }));
     } catch (err) {
       console.error("이미지 업로드 실패", err);
+      setPreviewUri(prevPreviewUri);
+      setForm((prev) => ({ ...prev, imageUrl: prevImageUrl }));
       showErrorMessage("이미지 업로드에 실패했어요");
     } finally {
       setIsUploadingImage(false);

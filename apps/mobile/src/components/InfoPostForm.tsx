@@ -14,9 +14,16 @@ import * as ImagePicker from "expo-image-picker";
 import { ChevronLeft, ImagePlus, X } from "lucide-react-native";
 import { categoryColorMap } from "@moimi/core/constants/contentCard";
 import { infoPostCategoryFilterOptions } from "@moimi/core/constants/infoPost";
-import { useUploadInfoPostImages } from "@moimi/core/hooks/useInfoPostQuery";
+import { getInfoPostImagePresignedUrls } from "@moimi/core/api/infoPost";
 import type { InfoPostCategory } from "@moimi/core/types/infoPost";
 import { darkenColor } from "@/utils/color/darkenColor";
+import {
+  IMAGE_PICKER_OPTIONS,
+  toUploadableImage,
+  isUnsupportedImage,
+  uploadToPresignedUrl,
+  type UploadableImage,
+} from "@/utils/image/pickImage";
 
 export interface InfoPostFormData {
   category: InfoPostCategory;
@@ -28,13 +35,6 @@ export interface InfoPostFormData {
 interface InitialImage {
   imageUrl: string;
   imageKey: string;
-}
-
-interface SelectedImage {
-  uri: string;
-  fileName?: string;
-  mimeType?: string;
-  imageKey?: string;
 }
 
 interface InfoPostFormProps {
@@ -57,6 +57,34 @@ const infoPostCategoryOptions = infoPostCategoryFilterOptions.filter(
 );
 const MAX_IMAGE_COUNT = 3;
 
+/**
+ * RN 이미지 업로드
+ * core의 useUploadInfoPostImages는 웹 File[] 전용이라 사용하지 않음
+ * (RN Blob은 ArrayBuffer로 만들 수 없음) → TeamForm·채팅 이미지와 같은 방식
+ */
+async function uploadImages(images: UploadableImage[]): Promise<string[]> {
+  if (images.length === 0) return [];
+
+  const presignedUrls = await getInfoPostImagePresignedUrls(
+    images.map((img) => ({
+      fileName: img.fileName,
+      contentType: img.mimeType,
+    }))
+  );
+
+  if (presignedUrls.length !== images.length) {
+    throw new Error("이미지 업로드 URL 개수가 일치하지 않습니다.");
+  }
+
+  await Promise.all(
+    presignedUrls.map(({ uploadUrl }, index) =>
+      uploadToPresignedUrl(uploadUrl, images[index])
+    )
+  );
+
+  return presignedUrls.map(({ imageKey }) => imageKey);
+}
+
 export default function InfoPostForm({
   mode,
   initialData,
@@ -67,14 +95,13 @@ export default function InfoPostForm({
   const [form, setForm] = useState<InfoPostFormData>(
     initialData ?? defaultForm
   );
-  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
+  const [selectedImages, setSelectedImages] = useState<UploadableImage[]>([]);
   const [existingImages, setExistingImages] =
     useState<InitialImage[]>(initialImages);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  const uploadImages = useUploadInfoPostImages();
 
   const showErrorMessage = (message: string) => {
     setErrorMessage(message);
@@ -97,7 +124,7 @@ export default function InfoPostForm({
     }
   }, [mode, initialImages]);
 
-  const isBusy = isSubmitting || uploadImages.isPending;
+  const isBusy = isSubmitting || isUploadingImages;
   const totalImageCount = existingImages.length + selectedImages.length;
   const currentColor = categoryColorMap[form.category] ?? "#E9E9E9";
 
@@ -114,22 +141,23 @@ export default function InfoPostForm({
       return;
     }
 
+    // iOS HEIC → JPEG로 변환해서 받음 (서버가 HEIC를 거절함)
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      ...IMAGE_PICKER_OPTIONS,
       allowsMultipleSelection: true,
       selectionLimit: availableCount,
-      quality: 0.8,
     });
 
     if (result.canceled) return;
 
-    const newImages: SelectedImage[] = result.assets
+    const newImages = result.assets
       .slice(0, availableCount)
-      .map((asset) => ({
-        uri: asset.uri,
-        fileName: asset.fileName ?? `image-${Date.now()}.jpg`,
-        mimeType: asset.mimeType ?? "image/jpeg",
-      }));
+      .map((asset, index) => toUploadableImage(asset, index));
+
+    if (newImages.some(isUnsupportedImage)) {
+      showErrorMessage("지원하지 않는 이미지 형식이에요");
+      return;
+    }
 
     setSelectedImages((prev) => [...prev, ...newImages]);
   };
@@ -161,18 +189,15 @@ export default function InfoPostForm({
       setIsSubmitting(true);
 
       const existingImageKeys = existingImages.map((img) => img.imageKey);
-      const imagesToUpload = selectedImages.filter((img) => !img.imageKey);
 
       let uploadedKeys: string[] = [];
-      if (imagesToUpload.length > 0) {
-        // TODO: useUploadInfoPostImages가 RN {uri,name,type} 형식을 받는지 확인 필요 (web은 File[])
-        uploadedKeys = await uploadImages.mutateAsync(
-          imagesToUpload.map((img) => ({
-            uri: img.uri,
-            name: img.fileName,
-            type: img.mimeType,
-          })) as unknown as File[]
-        );
+      if (selectedImages.length > 0) {
+        setIsUploadingImages(true);
+        try {
+          uploadedKeys = await uploadImages(selectedImages);
+        } finally {
+          setIsUploadingImages(false);
+        }
       }
 
       const imageKeys = [...existingImageKeys, ...uploadedKeys].slice(
@@ -418,7 +443,7 @@ export default function InfoPostForm({
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" color="#fff" />
                 <Text className="text-[15px] font-semibold text-white">
-                  {uploadImages.isPending ? "이미지 업로드 중" : "처리 중"}
+                  {isUploadingImages ? "이미지 업로드 중" : "처리 중"}
                 </Text>
               </View>
             ) : (

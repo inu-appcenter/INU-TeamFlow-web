@@ -18,8 +18,14 @@ import {
   useUpdateTeamNotice,
   useGetPresignedUrls,
 } from "@moimi/core/hooks/useNoticeQuery";
-import { uploadImageToS3 } from "@/utils/image/uploadImageToS3";
 import { getImageKeyFromUrl } from "@/utils/image/getImageKey";
+import {
+  IMAGE_PICKER_OPTIONS,
+  toUploadableImage,
+  isUnsupportedImage,
+  uploadToPresignedUrl,
+  type UploadableImage,
+} from "@/utils/image/pickImage";
 
 const categoryColorMap: Record<string, string> = {
   CONTEST: "#FBE4F8",
@@ -38,12 +44,7 @@ const categoryMap: Record<string, string> = {
 };
 
 type ExistingImage = { id: string; imageKey: string; imageUrl: string };
-type LocalImage = {
-  id: string;
-  uri: string;
-  fileName: string;
-  mimeType: string;
-};
+type LocalImage = UploadableImage & { id: string };
 
 function InputField({
   label,
@@ -207,6 +208,18 @@ export default function NoticeEditScreen() {
     setTimeout(() => setErrorMessage(""), 1800);
   };
 
+  // 공지 상세로 돌아가기 (replace하면 상세가 스택에 두 번 쌓임)
+  const goBackToDetail = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace({
+        pathname: "/notice/[noticeId]",
+        params: { noticeId: String(noticeIdNum), teamId: String(teamIdNum) },
+      });
+    }
+  };
+
   const handleSelectImages = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
@@ -214,22 +227,29 @@ export default function NoticeEditScreen() {
       return;
     }
 
+    // iOS HEIC → JPEG로 변환해서 받음 (서버가 HEIC를 거절함)
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      ...IMAGE_PICKER_OPTIONS,
       allowsMultipleSelection: true,
-      quality: 0.8,
     });
 
     if (result.canceled) return;
 
-    const picked: LocalImage[] = result.assets.map((asset) => ({
-      id: `${asset.uri}-${Date.now()}-${Math.random()}`,
-      uri: asset.uri,
-      fileName: asset.fileName ?? "image.jpg",
-      mimeType: asset.mimeType ?? "image/jpeg",
-    }));
+    const picked = result.assets.map((asset, index) =>
+      toUploadableImage(asset, index)
+    );
+    if (picked.some(isUnsupportedImage)) {
+      showErrorMessage("지원하지 않는 이미지 형식이에요");
+      return;
+    }
 
-    setNewImages((prev) => [...prev, ...picked]);
+    setNewImages((prev) => [
+      ...prev,
+      ...picked.map((img) => ({
+        ...img,
+        id: `${img.uri}-${Date.now()}-${Math.random()}`,
+      })),
+    ]);
   };
 
   const handleSubmit = async () => {
@@ -249,11 +269,7 @@ export default function NoticeEditScreen() {
 
         await Promise.all(
           presignedList.map((presigned, i) =>
-            uploadImageToS3(
-              presigned.uploadUrl,
-              newImages[i].uri,
-              newImages[i].mimeType
-            )
+            uploadToPresignedUrl(presigned.uploadUrl, newImages[i])
           )
         );
 
@@ -275,12 +291,9 @@ export default function NoticeEditScreen() {
         },
       });
 
-      router.replace({
-        pathname: "/notice/[noticeId]",
-        params: { noticeId: String(noticeIdNum), teamId: String(teamIdNum) },
-      });
+      goBackToDetail();
     } catch (err) {
-      console.log("공지 수정 실패", err);
+      console.error("공지 수정 실패", err);
       showErrorMessage("공지 수정에 실패했어요");
     } finally {
       setIsSubmitting(false);
@@ -442,9 +455,12 @@ export default function NoticeEditScreen() {
               }
               setIsConfirmOpen(true);
             }}
-            className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-10 py-3.5 transition-transform duration-150 ease-out active:scale-95 disabled:opacity-60"
+            style={{ opacity: isSubmitting ? 0.6 : 1 }}
+            className="rounded-xl border-[0.5px] border-[#D6DDE5] bg-[#5E92F0] px-10 py-3.5 transition-transform duration-150 ease-out active:scale-95"
           >
-            <Text className="text-[15px] font-semibold text-white">수정</Text>
+            <Text className="text-[15px] font-semibold text-white">
+              {isSubmitting ? "수정 중..." : "수정"}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>
