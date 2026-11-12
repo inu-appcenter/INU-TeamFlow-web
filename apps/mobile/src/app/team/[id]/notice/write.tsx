@@ -377,7 +377,7 @@ export default function TeamNoticeWriteScreen() {
             <View className="mt-4 flex-row gap-3">
               <Pressable
                 onPress={() => setIsConfirmOpen(false)}
-                className="flex-1 items-center rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4"
+                className="flex-1 items-center transition-transform duration-150 ease-out active:scale-95 rounded-xl border border-[#D6DDE5]/60 bg-[#F6F8FA] py-4"
               >
                 <Text className="text-[14px] font-semibold text-[#2C2C2C]">
                   취소
@@ -389,7 +389,7 @@ export default function TeamNoticeWriteScreen() {
                   await handleSubmit();
                 }}
                 disabled={isSubmitting}
-                className="flex-1 items-center rounded-xl bg-[#5E92F0] py-4"
+                className="flex-1 items-center rounded-xl bg-[#5E92F0] py-4 transition-transform duration-150 ease-out active:scale-95"
               >
                 <Text className="text-[14px] font-semibold text-white">
                   작성

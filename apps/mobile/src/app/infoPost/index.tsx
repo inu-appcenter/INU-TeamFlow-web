@@ -293,7 +293,7 @@ export default function InfoPostListScreen() {
           onPress={handleCreate}
           className="h-9 w-9 items-center justify-center rounded-full bg-[#5E92F0] transition-transform duration-150 ease-out active:scale-95"
         >
-          <Plus size={16} strokeWidth={2.5} color="#fff" />
+          <Plus size={17} strokeWidth={2.5} color="#fff" />
         </Pressable>
       </View>
 
