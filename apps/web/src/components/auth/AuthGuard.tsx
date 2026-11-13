@@ -3,8 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-
-const PUBLIC_PATHS = ['/login', '/register', '/policy'];
+import { PUBLIC_PATHS } from '@/constants/publicPaths';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
