@@ -8,7 +8,9 @@ import {
   View,
 } from "react-native";
 import { BlurView } from "expo-blur";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -47,6 +49,7 @@ const SPRING = {
   mass: 1,
   overshootClamping: true,
 };
+const DRAG_STRETCH = 0.1; // 드래그 중 인디케이터 가로로 늘어나는 비율
 
 const ACTIVE_COLOR = "rgba(44,44,44,0.9)"; // #2c2c2c/90
 const INACTIVE_COLOR = "rgba(162,169,178,0.8)"; // #A2A9B2/80
@@ -61,14 +64,19 @@ export default function BottomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const unreadChatCount = useUnreadChatCount();
   const [barWidth, setBarWidth] = useState(0);
+  // 드래그 중 손가락이 올라가 있는 탭 (드래그 안 할 때는 null)
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const routes = state.routes.filter((r) => TAB_CONFIG[r.name]);
   const activeName = state.routes[state.index]?.name;
   const activeIndex = routes.findIndex((r) => r.name === activeName);
   const itemWidth = barWidth / routes.length;
+  const maxX = Math.max(routes.length - 1, 0) * itemWidth;
 
   const translateX = useSharedValue(0);
   const opacity = useSharedValue(0);
+  const dragProgress = useSharedValue(0);
+  const lastDragIndex = useSharedValue(-1);
   const didInit = useRef(false);
 
   useEffect(() => {
@@ -88,12 +96,77 @@ export default function BottomTabBar({ state, navigation }: BottomTabBarProps) {
   }, [activeIndex, itemWidth]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [
+      { translateX: translateX.value },
+      { scaleX: 1 + dragProgress.value * DRAG_STRETCH },
+    ],
     opacity: opacity.value,
   }));
 
   const onLayout = (e: LayoutChangeEvent) =>
     setBarWidth(e.nativeEvent.layout.width);
+
+  const navigateTo = (index: number) => {
+    const route = routes[index];
+    if (!route) return false;
+
+    const isFocused = route.name === activeName;
+    const event = navigation.emit({
+      type: "tabPress",
+      target: route.key,
+      canPreventDefault: true,
+    });
+    if (!isFocused && !event.defaultPrevented) {
+      navigation.navigate(route.name, route.params);
+      return true;
+    }
+    return false;
+  };
+
+  // 드래그를 놓았을 때: 다른 탭이면 이동, 같은 탭이거나 이동이 막히면 원래 자리로
+  const finishDrag = (index: number) => {
+    if (routes[index]?.name === activeName) return;
+    const moved = navigateTo(index);
+    if (!moved && itemWidth) {
+      translateX.value = withSpring(
+        Math.max(activeIndex, 0) * itemWidth,
+        SPRING
+      );
+    }
+  };
+
+  const panGesture = Gesture.Pan()
+    .enabled(itemWidth > 0 && activeIndex !== -1)
+    // 가로로 10px 이상 밀어야 슬라이드로 인식 → 짧은 탭은 Pressable이 처리
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-20, 20])
+    .onStart(() => {
+      lastDragIndex.value = -1;
+      dragProgress.value = withSpring(1, SPRING);
+    })
+    .onUpdate((e) => {
+      // 손가락 위치가 인디케이터 가운데로 오도록
+      const x = Math.min(Math.max(e.x - itemWidth / 2, 0), maxX);
+      translateX.value = x;
+
+      const index = Math.round(x / itemWidth);
+      if (index !== lastDragIndex.value) {
+        lastDragIndex.value = index;
+        runOnJS(setDragIndex)(index);
+      }
+    })
+    .onEnd(() => {
+      const index = Math.round(translateX.value / itemWidth);
+      translateX.value = withSpring(index * itemWidth, SPRING);
+      runOnJS(finishDrag)(index);
+    })
+    .onFinalize(() => {
+      dragProgress.value = withSpring(0, SPRING);
+      runOnJS(setDragIndex)(null);
+    });
+
+  // 드래그 중이면 손가락 아래 탭을, 아니면 현재 탭을 강조
+  const highlightIndex = dragIndex ?? activeIndex;
 
   return (
     <View
@@ -118,57 +191,49 @@ export default function BottomTabBar({ state, navigation }: BottomTabBarProps) {
           <View style={[StyleSheet.absoluteFill, styles.androidBg]} />
         )}
 
-        <View style={styles.row} onLayout={onLayout}>
-          {itemWidth > 0 && (
-            <Animated.View
-              pointerEvents="none"
-              style={[styles.indicator, { width: itemWidth }, indicatorStyle]}
-            />
-          )}
+        <GestureDetector gesture={panGesture}>
+          <View style={styles.row} onLayout={onLayout}>
+            {itemWidth > 0 && (
+              <Animated.View
+                pointerEvents="none"
+                style={[styles.indicator, { width: itemWidth }, indicatorStyle]}
+              />
+            )}
 
-          {routes.map((route) => {
-            const { label, icon: Icon } = TAB_CONFIG[route.name];
-            const isFocused = route.name === activeName;
-            const color = isFocused ? ACTIVE_COLOR : INACTIVE_COLOR;
-            const badgeCount = route.name === "chat" ? unreadChatCount : 0;
+            {routes.map((route, index) => {
+              const { label, icon: Icon } = TAB_CONFIG[route.name];
+              const isFocused = route.name === activeName;
+              const color =
+                index === highlightIndex ? ACTIVE_COLOR : INACTIVE_COLOR;
+              const badgeCount = route.name === "chat" ? unreadChatCount : 0;
 
-            const onPress = () => {
-              const event = navigation.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name, route.params);
-              }
-            };
-
-            return (
-              <Pressable
-                key={route.key}
-                onPress={onPress}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: isFocused }}
-                accessibilityLabel={label}
-                style={styles.item}
-              >
-                <View style={styles.iconWrap}>
-                  <Icon size={20} strokeWidth={1.8} color={color} />
-                  {badgeCount > 0 && (
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>
-                        {badgeCount > 99 ? "99+" : badgeCount}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <Text numberOfLines={1} style={[styles.label, { color }]}>
-                  {label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+              return (
+                <Pressable
+                  key={route.key}
+                  onPress={() => navigateTo(index)}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: isFocused }}
+                  accessibilityLabel={label}
+                  style={styles.item}
+                >
+                  <View style={styles.iconWrap}>
+                    <Icon size={20} strokeWidth={1.8} color={color} />
+                    {badgeCount > 0 && (
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>
+                          {badgeCount > 99 ? "99+" : badgeCount}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text numberOfLines={1} style={[styles.label, { color }]}>
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );
