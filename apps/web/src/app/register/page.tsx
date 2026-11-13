@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Check,
   ChevronLeft,
@@ -10,7 +10,7 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import type { ComponentProps } from 'react';
 import Card from '@/components/main/Card';
 import InputField from '@/components/register/InputField';
@@ -37,9 +37,24 @@ import { capture } from '@/lib/analytics/client';
 
 type RegisterStep = 'terms' | 'info';
 
-export default function Register() {
+// useSearchParams는 Suspense 경계가 필요함 (App Router 빌드 에러 방지)
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <Register />
+    </Suspense>
+  );
+}
+
+function Register() {
   const router = useRouter();
-  const [step, setStep] = useState<RegisterStep>('terms');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // 단계는 URL(?step=info)로 관리 → 브라우저 뒤로가기/스와이프 시 1단계로 돌아감
+  const step: RegisterStep =
+    searchParams.get('step') === 'info' ? 'info' : 'terms';
+
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [confirmedAge, setConfirmedAge] = useState(false);
@@ -88,6 +103,21 @@ export default function Register() {
     });
   }, []);
 
+  // 필수 동의 없이 2단계 URL로 들어온 경우(새로고침, 직접 링크) → 1단계로
+  useEffect(() => {
+    if (step === 'info' && !isRequiredAgreed) {
+      router.replace(pathname);
+    }
+  }, [step, isRequiredAgreed, router, pathname]);
+
+  const goToInfoStep = () => {
+    router.push(`${pathname}?step=info`);
+  };
+
+  const goToTermsStep = () => {
+    router.replace(pathname);
+  };
+
   const handleAllAgreement = () => {
     const next = !isAllAgreed;
 
@@ -98,7 +128,8 @@ export default function Register() {
 
   const handleBack = () => {
     if (step === 'info') {
-      setStep('terms');
+      // 1단계 → push로 들어왔으니 back으로 돌아가면 히스토리가 꼬이지 않음
+      router.back();
       return;
     }
 
@@ -133,7 +164,7 @@ export default function Register() {
         });
 
         showErrorMessage('필수 항목에 동의해주세요');
-        setStep('terms');
+        goToTermsStep();
         return;
       }
 
@@ -287,7 +318,7 @@ export default function Register() {
         </div>
       )}
 
-      <section className="mx-auto flex min-h-[calc(100dvh-32px)] w-full max-w-3xl flex-col justify-center px-0 px-5 max-[640px]:px-2">
+      <section className="mx-auto flex min-h-[calc(100dvh-32px)] w-full max-w-3xl flex-col justify-center px-5 max-[640px]:px-2">
         <Card className="animate-modal-pop overflow-hidden p-0 transition-all duration-200">
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div>
@@ -313,8 +344,9 @@ export default function Register() {
 
             <div className="mx-auto mb-4 flex w-full max-w-80 items-center px-2 sm:px-4">
               <div className="flex flex-col items-center gap-2">
+                {/* 2단계에서는 1단계를 완료 표시(체크) */}
                 <div className="flex size-7 items-center justify-center rounded-full bg-[#5E92F0] text-[13px] font-semibold text-white">
-                  1
+                  {step === 'info' ? <Check size={14} strokeWidth={3} /> : 1}
                 </div>
 
                 <span
@@ -480,7 +512,7 @@ export default function Register() {
                 <button
                   type="button"
                   disabled={!isRequiredAgreed}
-                  onClick={() => setStep('info')}
+                  onClick={goToInfoStep}
                   className="group mx-auto mt-7 flex w-auto cursor-pointer items-center justify-center rounded-xl bg-[#5E92F0] px-10 py-2.5 text-[16px] font-semibold text-white transition-all duration-150 hover:bg-[#5C86EB] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#B0B8C1]"
                 >
                   <span className="inline-flex items-center justify-center">
