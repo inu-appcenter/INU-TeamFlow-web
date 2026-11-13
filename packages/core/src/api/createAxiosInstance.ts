@@ -17,6 +17,9 @@ export interface TokenStorage {
 export interface AuthRedirect {
   getCurrentPath: () => string;
   redirectToLogin: () => void;
+  // 로그인 없이 볼 수 있는 페이지 (회원가입, 정책 등)
+  // → 인증 실패해도 토큰만 지우고 로그인 화면으로 보내지 않음
+  isPublicPath?: (path: string) => boolean;
 }
 
 interface CreateAxiosInstanceOptions {
@@ -130,11 +133,16 @@ export function createAxiosInstance({
   };
 
   // 인터셉터에서 인증 실패 시 강제 로그아웃
+  // 로그인/공개 페이지에 있으면 토큰만 지우고 이동하지 않음
+  // → 늦게 도착한 401 때문에 회원가입 도중 로그인 화면으로 튕기는 문제 방지
   const forceLogout = async () => {
     await tokenStorage.removeToken();
-    if (authRedirect.getCurrentPath() !== ROUTES.LOGIN) {
-      authRedirect.redirectToLogin();
-    }
+
+    const currentPath = authRedirect.getCurrentPath();
+    if (currentPath === ROUTES.LOGIN) return;
+    if (authRedirect.isPublicPath?.(currentPath)) return;
+
+    authRedirect.redirectToLogin();
   };
 
   instance.interceptors.request.use(
@@ -158,11 +166,11 @@ export function createAxiosInstance({
         return Promise.reject(error);
       }
 
-      // 토큰 없이 보낸 요청(로그아웃 상태)은 재발급하지 않음
-      // → 남아있는 refreshToken 쿠키로 몰래 재로그인되는 것 방지
+      // 토큰 없이 보낸 요청(로그아웃 상태)은 재발급도, 강제 로그아웃도 하지 않음
+      // - 재발급 X: 남아있는 refreshToken 쿠키로 몰래 재로그인되는 것 방지
+      // - 리다이렉트 X: 끝낼 세션이 없음 (로그인 필요 페이지 보호는 AuthGuard 담당)
       const usedToken = getBearerToken(original);
       if (!usedToken) {
-        await forceLogout();
         return Promise.reject(error);
       }
 

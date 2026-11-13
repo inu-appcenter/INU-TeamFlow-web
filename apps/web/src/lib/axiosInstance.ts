@@ -4,6 +4,7 @@ import { ROUTES } from '@moimi/core/constants/routes';
 
 import { resetAnalyticsIdentity } from '@/lib/analytics';
 import { installAnalyticsInterceptors } from '@/lib/analytics/http';
+import { isPublicPath } from '@/constants/publicPaths';
 
 // 개발 환경은 next.config rewrites 프록시를 타도록 같은 출처로 요청
 const API_BASE =
@@ -34,6 +35,9 @@ const axiosInstance = createAxiosInstance({
     redirectToLogin: () => {
       window.location.href = ROUTES.LOGIN;
     },
+
+    // 회원가입/정책 페이지에서는 401이 와도 로그인 화면으로 보내지 않음
+    isPublicPath,
   },
 });
 
