@@ -7,7 +7,7 @@ export const termsPolicy = {
 
   title: "모이미 서비스 이용약관",
 
-  effectiveDate: "[시행일]",
+  effectiveDate: "2026년 11월 13일",
 
   sections: [
     {
@@ -478,7 +478,7 @@ export const termsPolicy = {
         },
         {
           type: "paragraph",
-          text: "본 약관은 [시행일]부터 적용됩니다.",
+          text: "본 약관은 2026년 11월 13일부터 적용됩니다.",
           emphasis: true,
         },
       ],

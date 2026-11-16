@@ -13,7 +13,7 @@ export const communityGuidelines = {
     "몇 가지 약속만 지켜주시면 더 좋은 서비스를 만들 수 있을 것 같아요.",
   ],
 
-  effectiveDate: "[시행일]",
+  effectiveDate: "2026년 11월 13일",
 
   sections: [
     {
@@ -219,7 +219,7 @@ export const communityGuidelines = {
               items: [
                 {
                   label: "시행일",
-                  value: "[시행일]",
+                  value: "2026년 11월 13일",
                 },
                 {
                   label: "문의",
