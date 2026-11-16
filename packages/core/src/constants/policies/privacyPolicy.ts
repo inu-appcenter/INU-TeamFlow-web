@@ -7,7 +7,7 @@ export const privacyPolicy = {
 
   title: "모이미 개인정보 처리방침",
 
-  effectiveDate: "[시행일]",
+  effectiveDate: "2026년 11월 13일",
   version: "v1.0",
 
   intro: [
@@ -338,7 +338,7 @@ export const privacyPolicy = {
         },
         {
           type: "paragraph",
-          text: "본 처리방침은 [시행일]부터 적용합니다.",
+          text: "본 처리방침은 2026년 11월 13일부터 적용합니다.",
           emphasis: true,
         },
       ],
