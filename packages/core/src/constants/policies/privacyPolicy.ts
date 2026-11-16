@@ -8,7 +8,7 @@ export const privacyPolicy = {
   title: "모이미 개인정보 처리방침",
 
   effectiveDate: "2026년 11월 13일",
-  version: "v1.0",
+  version: "v1.1",
 
   intro: [
     '모이미 운영팀(이하 "운영팀")은 모이미 서비스(이하 "서비스")를 운영하며, 이용자의 개인정보를 중요하게 생각하고 「개인정보 보호법」 등 관계 법령을 준수합니다.',
@@ -33,7 +33,7 @@ export const privacyPolicy = {
             "서비스 제공: 팀 생성 및 참여, 팀원 모집, 일정 관리, 투표, 공지, 채팅 기능 제공, 부정 이용 방지",
             "학교 인증: 재학생 여부 확인 및 중복 인증 방지",
             "알림 제공: 팀 초대, 일정, 공지, 채팅 등 서비스 이용에 필요한 알림 발송",
-            "서비스 운영 및 개선: 오류 대응, 이용 통계 분석, 보안 및 서비스 품질 개선",
+            "서비스 운영 및 개선: 오류 대응, 보안 및 서비스 품질 개선",
             "민원 처리: 문의, 요청 및 분쟁 대응",
           ],
         },
@@ -96,7 +96,7 @@ export const privacyPolicy = {
         {
           type: "unordered-list",
           items: [
-            "처리 항목: 기기 알림 토큰(FCM Token), 알림 설정 정보",
+            "처리 항목: 기기 알림 토큰(웹: FCM 토큰, 앱: Expo 푸시 토큰), 기기 종류(웹, iOS), 알림 설정 정보",
             "이용 목적: 서비스 이용에 필요한 푸시 알림 발송",
             "보유 기간: 알림 토큰 삭제, 로그아웃, 회원 탈퇴 또는 토큰 유효성 상실 시까지",
           ],
@@ -109,9 +109,21 @@ export const privacyPolicy = {
         {
           type: "unordered-list",
           items: [
-            "처리 항목: 접속 일시, 서비스 이용 기록, 오류 기록, IP 주소, 기기·브라우저 정보",
+            "처리 항목: 접속 일시, 요청 경로, 회원 식별자(ID), 오류 기록",
             "이용 목적: 서비스 안정성 확보, 부정 이용 방지, 오류 분석 및 보안 대응",
-            "보유 기간: [보유 기간]",
+            "보유 기간: 최대 7일간 보관 후 삭제",
+          ],
+        },
+        {
+          type: "subheading",
+          text: "바. 모바일 앱 접근 권한",
+        },
+        {
+          type: "unordered-list",
+          items: [
+            "사진(선택): 프로필 이미지 설정 및 공지·게시글·채팅의 이미지 첨부",
+            "알림(선택): 팀 초대, 일정, 공지, 채팅 등 푸시 알림 수신",
+            "선택 권한은 허용하지 않아도 서비스를 이용할 수 있으며, 해당 기능만 제한됩니다. 권한은 기기 설정에서 언제든 변경할 수 있습니다.",
           ],
         },
       ],
@@ -153,14 +165,16 @@ export const privacyPolicy = {
 
         {
           type: "card",
-          title: "Amazon Web Services, Inc. (Amazon S3)",
+          title: "Amazon Web Services, Inc. (Amazon S3, CloudFront)",
           blocks: [
             {
               type: "unordered-list",
               items: [
-                "위탁 업무: 프로필 이미지 및 서비스 내 첨부 이미지 저장",
+                "위탁 업무: 프로필 이미지 및 서비스 내 첨부 이미지 저장 및 전송",
                 "처리 항목: 이용자가 업로드한 이미지 파일 및 파일 식별 정보",
+                "저장 위치: 아시아 태평양(서울) 리전. 이미지 전송 과정에서 CloudFront의 해외 엣지 서버에 일시적으로 캐시될 수 있습니다.",
                 "보유 기간: 회원 탈퇴 또는 이미지 삭제 시까지",
+                "연락처: https://aws.amazon.com/contact-us/compliance-support/",
               ],
             },
           ],
@@ -173,17 +187,56 @@ export const privacyPolicy = {
             {
               type: "unordered-list",
               items: [
-                "위탁 업무: 서비스 푸시 알림 발송",
-                "처리 항목: 기기 알림 토큰, 알림 발송에 필요한 메시지 정보",
+                "위탁 업무: 웹 푸시 알림 발송",
+                "처리 항목: 웹 알림 토큰(FCM 토큰), 알림 메시지",
+                "이전 국가: 미국",
+                "이전 일시 및 방법: 알림 발송 시 네트워크를 통해 전송",
                 "보유 기간: 토큰 삭제, 회원 탈퇴 또는 서비스 제공 종료 시까지",
+                "연락처: https://support.google.com/policies/contact/general_privacy_form",
               ],
             },
           ],
         },
 
         {
-          type: "note",
-          text: "※ 위 서비스의 실제 데이터 처리 국가, 이전 일시·방법 및 수탁자 연락처는 운영 환경과 계약 내용을 확인한 뒤 본문에 구체적으로 기재합니다.",
+          type: "card",
+          title: "650 Industries, Inc. (Expo Push Notification Service)",
+          blocks: [
+            {
+              type: "unordered-list",
+              items: [
+                "위탁 업무: 모바일 앱 푸시 알림 발송 중계",
+                "처리 항목: 앱 알림 토큰(Expo 푸시 토큰), 알림 메시지",
+                "이전 국가: 미국",
+                "이전 일시 및 방법: 알림 발송 시 네트워크를 통해 전송",
+                "보유 기간: 토큰 삭제, 회원 탈퇴 또는 서비스 제공 종료 시까지",
+                "연락처: privacy@expo.dev",
+              ],
+            },
+          ],
+        },
+
+        {
+          type: "card",
+          title: "Apple Inc. (Apple Push Notification service)",
+          blocks: [
+            {
+              type: "unordered-list",
+              items: [
+                "위탁 업무: iOS 기기로 푸시 알림 전달",
+                "처리 항목: 기기 알림 토큰, 알림 메시지",
+                "이전 국가: 미국",
+                "이전 일시 및 방법: 알림 발송 시 네트워크를 통해 전송",
+                "보유 기간: 토큰 삭제, 회원 탈퇴 또는 서비스 제공 종료 시까지",
+                "연락처: https://www.apple.com/kr/privacy/contact/",
+              ],
+            },
+          ],
+        },
+
+        {
+          type: "paragraph",
+          text: "이용자는 앱 또는 기기 설정에서 알림을 끄거나 로그아웃하여 알림 토큰의 이전을 거부할 수 있습니다. 이 경우 푸시 알림을 받을 수 없으나 그 밖의 서비스는 이용할 수 있습니다.",
         },
       ],
     },
@@ -220,8 +273,8 @@ export const privacyPolicy = {
         {
           type: "unordered-list",
           items: [
-            "회원정보 조회·수정: 마이페이지 > 회원정보",
-            "회원 탈퇴: 마이페이지 > 설정 > 회원탈퇴",
+            "회원정보 조회·수정: 마이페이지 > 회원 정보",
+            "회원 탈퇴: 마이페이지 > 설정 > 계정 관리 > 회원 탈퇴",
             "개인정보 관련 요청: 마이페이지 > 문의하기",
           ],
         },
@@ -293,8 +346,29 @@ export const privacyPolicy = {
     },
 
     {
+      id: "cookies",
+      title: "10. 자동 수집 장치의 설치·운영 및 거부",
+
+      blocks: [
+        {
+          type: "paragraph",
+          text: "운영팀은 웹 서비스에서 로그인 상태 유지를 위해 쿠키를 사용합니다.",
+        },
+        {
+          type: "unordered-list",
+          items: [
+            "사용 목적: 로그인 인증 및 로그인 상태 유지",
+            "저장 정보: 인증 토큰",
+            "거부 방법: 브라우저 설정에서 쿠키 저장을 거부할 수 있습니다. 다만 쿠키 저장을 거부하면 로그인이 필요한 서비스를 이용할 수 없습니다.",
+            "모바일 앱은 쿠키 대신 기기의 보안 저장소에 인증 정보를 저장하며, 로그아웃하거나 앱을 삭제하면 함께 삭제됩니다.",
+          ],
+        },
+      ],
+    },
+
+    {
       id: "privacy-contact",
-      title: "10. 개인정보 보호책임자 및 문의처",
+      title: "11. 개인정보 보호책임자 및 문의처",
 
       blocks: [
         {
@@ -309,7 +383,7 @@ export const privacyPolicy = {
               items: [
                 {
                   label: "개인정보 보호책임자",
-                  value: "모이미 운영팀",
+                  value: "손동민 (모이미 운영팀)",
                 },
                 {
                   label: "이메일",
@@ -325,7 +399,7 @@ export const privacyPolicy = {
 
     {
       id: "changes",
-      title: "11. 개인정보 처리방침의 변경",
+      title: "12. 개인정보 처리방침의 변경",
 
       blocks: [
         {

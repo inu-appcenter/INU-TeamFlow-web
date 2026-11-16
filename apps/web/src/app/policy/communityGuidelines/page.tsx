@@ -297,7 +297,17 @@ export default function CommunityGuidelines() {
                     <span className="font-medium text-gray-900">
                       {item.label}
                     </span>
-                    : {item.value}
+                    :{' '}
+                    {'href' in item && item.href ? (
+                      <a
+                        href={item.href}
+                        className="underline underline-offset-4"
+                      >
+                        {item.value}
+                      </a>
+                    ) : (
+                      item.value
+                    )}
                   </p>
                 ))}
               </div>
