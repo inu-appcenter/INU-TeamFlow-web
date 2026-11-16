@@ -225,3 +225,8 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* 정책 페이지는 폰에서도 보이도록 최소 너비 해제 */
+:root:has(.policy-page) {
+  --app-min-width: 0px;
+}

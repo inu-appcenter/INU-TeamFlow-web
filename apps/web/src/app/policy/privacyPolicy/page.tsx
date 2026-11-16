@@ -52,23 +52,16 @@ export default function PrivacyPolicy() {
     (section) => section.id === 'children'
   );
 
+  const cookiesSection = privacyPolicy.sections.find(
+    (section) => section.id === 'cookies'
+  );
+
   const privacyContactSection = privacyPolicy.sections.find(
     (section) => section.id === 'privacy-contact'
   );
 
   const changesSection = privacyPolicy.sections.find(
     (section) => section.id === 'changes'
-  );
-
-  const outsourcingIntro = outsourcingSection?.blocks.find(
-    (block) => block.type === 'paragraph'
-  );
-
-  const outsourcingCards =
-    outsourcingSection?.blocks.filter((block) => block.type === 'card') ?? [];
-
-  const outsourcingNote = outsourcingSection?.blocks.find(
-    (block) => block.type === 'note'
   );
 
   const contactCard = privacyContactSection?.blocks.find(
@@ -229,53 +222,59 @@ export default function PrivacyPolicy() {
                   {outsourcingSection.title}
                 </h2>
 
-                {outsourcingIntro && (
-                  <p className="leading-7 text-gray-700">
-                    {outsourcingIntro.text}
-                  </p>
-                )}
+                {/* 데이터 순서대로 렌더링 (문단 → 카드들 → 문단) */}
+                <div className="space-y-5">
+                  {outsourcingSection.blocks.map((block, index) => {
+                    if (block.type === 'paragraph') {
+                      return (
+                        <p
+                          key={`${block.text}-${index}`}
+                          className="leading-7 text-gray-700"
+                        >
+                          {block.text}
+                        </p>
+                      );
+                    }
 
-                <div className="mt-5 space-y-5">
-                  {outsourcingCards.map((card, index) => (
-                    <div
-                      key={
-                        'title' in card && card.title
-                          ? card.title
-                          : `outsourcing-${index}`
-                      }
-                      className="rounded-xl bg-gray-50 p-5"
-                    >
-                      {'title' in card && card.title && (
-                        <h3 className="font-semibold text-gray-900">
-                          {card.title}
-                        </h3>
-                      )}
+                    if (block.type === 'card') {
+                      return (
+                        <div
+                          key={
+                            'title' in block && block.title
+                              ? block.title
+                              : `outsourcing-${index}`
+                          }
+                          className="rounded-xl bg-gray-50 p-5"
+                        >
+                          {'title' in block && block.title && (
+                            <h3 className="font-semibold text-gray-900">
+                              {block.title}
+                            </h3>
+                          )}
 
-                      {card.blocks.map((block, blockIndex) => {
-                        if (block.type !== 'unordered-list') {
-                          return null;
-                        }
+                          {block.blocks.map((inner, innerIndex) => {
+                            if (inner.type !== 'unordered-list') {
+                              return null;
+                            }
 
-                        return (
-                          <ul
-                            key={`outsourcing-list-${blockIndex}`}
-                            className={listClass}
-                          >
-                            {block.items.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        );
-                      })}
-                    </div>
-                  ))}
+                            return (
+                              <ul
+                                key={`outsourcing-list-${index}-${innerIndex}`}
+                                className={listClass}
+                              >
+                                {inner.items.map((item) => (
+                                  <li key={item}>{item}</li>
+                                ))}
+                              </ul>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })}
                 </div>
-
-                {outsourcingNote && (
-                  <p className="mt-5 text-sm leading-6 text-gray-500">
-                    {outsourcingNote.text}
-                  </p>
-                )}
               </section>
             )}
 
@@ -430,7 +429,43 @@ export default function PrivacyPolicy() {
               </section>
             )}
 
-            {/* 10 */}
+            {/* 10 자동 수집 장치(쿠키) */}
+            {cookiesSection && (
+              <section className="py-8">
+                <h2 className={sectionTitleClass}>{cookiesSection.title}</h2>
+
+                {cookiesSection.blocks.map((block, index) => {
+                  if (block.type === 'paragraph') {
+                    return (
+                      <p
+                        key={`${block.text}-${index}`}
+                        className={
+                          index === 0
+                            ? 'leading-7 text-gray-700'
+                            : 'mt-4 leading-7 text-gray-700'
+                        }
+                      >
+                        {block.text}
+                      </p>
+                    );
+                  }
+
+                  if (block.type === 'unordered-list') {
+                    return (
+                      <ul key={`cookies-${index}`} className={listClass}>
+                        {block.items.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    );
+                  }
+
+                  return null;
+                })}
+              </section>
+            )}
+
+            {/* 11 */}
             {privacyContactSection && (
               <section className="py-8">
                 <h2 className={sectionTitleClass}>
@@ -474,7 +509,7 @@ export default function PrivacyPolicy() {
               </section>
             )}
 
-            {/* 11 */}
+            {/* 12 */}
             {changesSection && (
               <section className="py-8">
                 <h2 className={sectionTitleClass}>{changesSection.title}</h2>

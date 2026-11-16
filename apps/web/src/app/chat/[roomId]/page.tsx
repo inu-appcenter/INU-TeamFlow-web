@@ -12,7 +12,6 @@ import {
   isSameDay,
   isSameMinute,
 } from '@/utils/date/formatChatDate';
-import { useChatRoomMembers } from '@moimi/core/hooks/chat/useChatRoomMembers';
 import { formatChatMessageTime } from '@/utils/date/formatChatMessageTime';
 import { useChatSocketContext } from '@/contexts/ChatSocketContext';
 import { useSendChatMessage } from '@/hooks/chat/useSendChatMessage';
