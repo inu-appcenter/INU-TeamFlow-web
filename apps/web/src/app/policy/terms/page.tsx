@@ -131,10 +131,7 @@ export default function TermsPage() {
   const liabilityList = liabilitySection?.blocks.find(isOrderedList);
 
   // 제11조
-  const restrictionParagraph = restrictionSection?.blocks.find(isParagraph);
-
-  const restrictionLists =
-    restrictionSection?.blocks.filter(isOrderedList) ?? [];
+  const restrictionList = restrictionSection?.blocks.find(isOrderedList);
 
   // 제12조
   const withdrawalList = withdrawalSection?.blocks.find(isOrderedList);
@@ -385,40 +382,27 @@ export default function TermsPage() {
             )}
 
             {/* 제11조 */}
-            {restrictionSection && (
+            {restrictionSection && restrictionList && (
               <section className="py-8">
                 <h2 className={sectionTitleClass}>
                   {restrictionSection.title}
                 </h2>
 
-                {restrictionParagraph && (
-                  <p className="leading-7 text-gray-700">
-                    {restrictionParagraph.text}
-                  </p>
-                )}
+                <ol className="list-decimal space-y-3 pl-5 leading-7 text-gray-700">
+                  {restrictionList.items.map((item) => (
+                    <li key={item.text}>
+                      {item.text}
 
-                {restrictionLists[0] && (
-                  <ol className="mt-4 list-decimal space-y-2 pl-5 leading-7 text-gray-700">
-                    {restrictionLists[0].items.map((item) => (
-                      <li key={item.text}>{item.text}</li>
-                    ))}
-                  </ol>
-                )}
-
-                {restrictionLists[1] && (
-                  <ol
-                    start={
-                      'start' in restrictionLists[1]
-                        ? restrictionLists[1].start
-                        : undefined
-                    }
-                    className="mt-5 list-decimal space-y-3 pl-5 leading-7 text-gray-700"
-                  >
-                    {restrictionLists[1].items.map((item) => (
-                      <li key={item.text}>{item.text}</li>
-                    ))}
-                  </ol>
-                )}
+                      {'children' in item && Array.isArray(item.children) && (
+                        <ol className="mt-3 list-decimal space-y-2 pl-5">
+                          {item.children.map((child) => (
+                            <li key={child.text}>{child.text}</li>
+                          ))}
+                        </ol>
+                      )}
+                    </li>
+                  ))}
+                </ol>
               </section>
             )}
 

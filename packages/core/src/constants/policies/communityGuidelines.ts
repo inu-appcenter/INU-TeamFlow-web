@@ -107,7 +107,7 @@ export const communityGuidelines = {
 
         {
           type: "paragraph",
-          text: "서로를 존중하는 건전한 인천대 학생의 모습을 보여주세요.",
+          text: "서로를 존중하는 건전한 인천대학교 학생의 모습을 보여주세요.",
         },
       ],
     },
@@ -224,6 +224,11 @@ export const communityGuidelines = {
                 {
                   label: "문의",
                   value: "모이미 운영팀",
+                },
+                {
+                  label: "이메일",
+                  value: "moimi.official@gmail.com",
+                  href: "mailto:moimi.official@gmail.com",
                 },
               ],
             },
