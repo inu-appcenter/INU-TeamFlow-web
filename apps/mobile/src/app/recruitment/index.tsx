@@ -9,6 +9,7 @@ import {
   LayoutChangeEvent,
   Platform,
   Modal,
+  RefreshControl,
 } from "react-native";
 import { RecruitmentListSkeleton } from "@/components/skeleton";
 import { router } from "expo-router";
@@ -39,6 +40,8 @@ import { darkenColor } from "@/utils/color/darkenColor";
 import { getDday } from "@/utils/date/getDday";
 import { formatDate } from "@/utils/date/formatDate";
 import type { RecruitmentSummaryResponse } from "@moimi/core/types/recruitment";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 
 const PAGE_SIZE = 20;
 const PAGE_WINDOW_SIZE = 5;
@@ -354,11 +357,25 @@ export default function RecruitmentListScreen() {
     return () => clearTimeout(timer);
   }, [keyword]);
 
-  const { data: recruitmentData, isLoading } = useRecruitments(
-    page - 1,
-    PAGE_SIZE,
-    debouncedKeyword || undefined
-  );
+  // 들어온 화면으로 돌아가기 (push하면 홈이 스택에 계속 쌓임)
+  // 이전 화면이 없으면(알림·딥링크 등) 홈으로 교체
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
+  };
+
+  const {
+    data: recruitmentData,
+    isLoading,
+    refetch,
+  } = useRecruitments(page - 1, PAGE_SIZE, debouncedKeyword || undefined);
+  // 글 작성·상세에서 돌아오면 목록 다시 불러오기
+  useRefreshOnFocus(refetch);
+  // 맨 위에서 당겨서 새로고침
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const recruitments = recruitmentData?.content ?? [];
   const totalPages = recruitmentData?.totalPages ?? 0;
   const currentPage = page;
@@ -407,7 +424,7 @@ export default function RecruitmentListScreen() {
       <View className="flex-row items-center justify-between px-4 pb-3 pt-16">
         <View className="flex-row items-center gap-3">
           <Pressable
-            onPress={() => router.push(`/`)}
+            onPress={goBack}
             className="h-9 w-9 items-center justify-center transition-transform duration-150 ease-out active:scale-90"
           >
             <ChevronLeft size={24} strokeWidth={2.5} color="#2C2C2C" />
@@ -417,9 +434,12 @@ export default function RecruitmentListScreen() {
 
         <Pressable
           onPress={handleCreate}
-          className="h-9 w-9 items-center justify-center rounded-full bg-[#5E92F0] transition-transform duration-150 ease-out active:scale-95"
+          className="flex-row items-center gap-1.5 rounded-lg bg-[#5E92F0] py-3 pr-4 pl-3.5 transition-transform duration-150 ease-out active:scale-95"
         >
           <Plus size={16} strokeWidth={2.5} color="#fff" />
+          <Text className="text-[14px] font-semibold text-white">
+            모집글 쓰기
+          </Text>
         </Pressable>
       </View>
 
@@ -427,6 +447,13 @@ export default function RecruitmentListScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetchingByUser}
+            onRefresh={refetchByUser}
+            tintColor="#C7CBD1"
+          />
+        }
       >
         <SearchBar
           searchType={searchType}

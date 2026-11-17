@@ -7,6 +7,7 @@ import {
   TextInput,
   Image,
   LayoutChangeEvent,
+  RefreshControl,
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -31,6 +32,8 @@ import type {
   InfoPostCategory,
 } from "@moimi/core/types/infoPost";
 import { formatDate } from "@/utils/date/formatDate";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 
 const PAGE_SIZE = 20;
 const PAGE_WINDOW_SIZE = 5;
@@ -249,7 +252,11 @@ export default function InfoPostListScreen() {
     sort: ["createdAt,DESC"],
   };
 
-  const { data: infoPostData, isLoading } = useInfoPosts(queryParams);
+  const { data: infoPostData, isLoading, refetch } = useInfoPosts(queryParams);
+  // 글 작성·상세에서 돌아오면 목록 다시 불러오기
+  useRefreshOnFocus(refetch);
+  // 맨 위에서 당겨서 새로고침
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const infoPosts = infoPostData?.content ?? [];
   const totalPages = infoPostData?.totalPages ?? 0;
   const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
@@ -301,9 +308,12 @@ export default function InfoPostListScreen() {
 
         <Pressable
           onPress={handleCreate}
-          className="h-9 w-9 items-center justify-center rounded-full bg-[#5E92F0] transition-transform duration-150 ease-out active:scale-95"
+          className="flex-row items-center gap-1.5 rounded-lg bg-[#5E92F0] py-3 pr-4 pl-3.5 transition-transform duration-150 ease-out active:scale-95"
         >
-          <Plus size={17} strokeWidth={2.5} color="#fff" />
+          <Plus size={16} strokeWidth={2.5} color="#fff" />
+          <Text className="text-[14px] font-semibold text-white">
+            정보글 쓰기
+          </Text>
         </Pressable>
       </View>
 
@@ -311,6 +321,13 @@ export default function InfoPostListScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetchingByUser}
+            onRefresh={refetchByUser}
+            tintColor="#C7CBD1"
+          />
+        }
       >
         <InfoPostSearchBar
           keyword={keyword}
