@@ -230,3 +230,12 @@
 :root:has(.policy-page) {
   --app-min-width: 0px;
 }
+/* 정책 페이지는 폰에서도 보이도록 최소 너비 해제 */
+:root:has(.policy-page) {
+  --app-min-width: 0px;
+}
+
+/* 긴 URL·이메일이 화면 밖으로 넘치지 않도록 필요할 때만 줄바꿈 */
+.policy-page {
+  overflow-wrap: anywhere;
+}

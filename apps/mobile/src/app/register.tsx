@@ -369,7 +369,7 @@ export default function RegisterScreen() {
 
               <Pressable
                 onPress={handleAllAgreement}
-                className="mb-3 flex-row items-center gap-3 rounded-xl bg-[#F6F8FA] px-5 py-3 active:opacity-70"
+                className="mb-3 flex-row items-center gap-3 rounded-xl bg-[#F6F8FA] px-5 py-3 active:opacity-70 transition-transform duration-150 ease-out active:scale-95"
               >
                 <CheckCircle checked={isAllAgreed} />
                 <Text className="font-semibold text-[#2C2C2C]">전체 동의</Text>
@@ -463,16 +463,14 @@ export default function RegisterScreen() {
                   isRequiredAgreed ? "bg-[#5E92F0]" : "bg-[#B0B8C1]"
                 }`}
               >
-                <Text className="text-[15px] font-semibold text-white">
-                  다음
-                </Text>
+                <Text className="text-[15px] font-bold text-white">다음</Text>
               </Pressable>
             </View>
           )}
 
           {step === "account" && (
             <View>
-              <View className="mb-1 mt-2">
+              <View className="mb-1">
                 <Text className="mx-1 mb-1 text-[12px] font-medium text-[#989898]">
                   {REGISTER_TEXT.USERNAME_LABEL}
                 </Text>
@@ -482,7 +480,7 @@ export default function RegisterScreen() {
                   placeholder={REGISTER_TEXT.USERNAME_PLACEHOLDER}
                   placeholderTextColor="#989898"
                   autoCapitalize="none"
-                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
+                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C] transition-transform duration-150 ease-out active:scale-95"
                 />
               </View>
 
@@ -497,7 +495,7 @@ export default function RegisterScreen() {
                     placeholder={REGISTER_TEXT.PASSWORD_PLACEHOLDER}
                     placeholderTextColor="#989898"
                     secureTextEntry={!isPasswordVisible}
-                    className="h-[50px] w-full rounded-xl bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
+                    className="h-[50px] w-full rounded-xl bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C] transition-transform duration-150 ease-out active:scale-95"
                   />
                   <Pressable
                     onPress={() => setIsPasswordVisible((prev) => !prev)}
@@ -528,7 +526,7 @@ export default function RegisterScreen() {
                     placeholder={REGISTER_TEXT.CHECK_PASSWORD_PLACEHOLDER}
                     placeholderTextColor="#989898"
                     secureTextEntry={!isCheckPasswordVisible}
-                    className="h-[50px] w-full rounded-xl bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C]"
+                    className="h-[50px] w-full rounded-xl bg-[#F6F8FA] pl-5 pr-14 text-[15px] text-[#2C2C2C] transition-transform duration-150 ease-out active:scale-95"
                   />
                   <Pressable
                     onPress={() => setIsCheckPasswordVisible((prev) => !prev)}
@@ -575,11 +573,9 @@ export default function RegisterScreen() {
 
               <Pressable
                 onPress={handleGoToProfile}
-                className="mt-6 items-center self-center rounded-xl bg-[#5E92F0] px-14 h-[42px] justify-center transition-transform duration-150 ease-out active:scale-90"
+                className="mt-4 items-center self-center rounded-xl bg-[#5E92F0] px-14 h-[42px] justify-center transition-transform duration-150 ease-out active:scale-90"
               >
-                <Text className="text-[15px] font-semibold text-white">
-                  다음
-                </Text>
+                <Text className="text-[15px] font-bold text-white">다음</Text>
               </Pressable>
             </View>
           )}
@@ -595,7 +591,7 @@ export default function RegisterScreen() {
                   onChangeText={setName}
                   placeholder={REGISTER_TEXT.NAME_PLACEHOLDER}
                   placeholderTextColor="#989898"
-                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
+                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C] transition-transform duration-150 ease-out active:scale-95"
                 />
               </View>
 
@@ -610,7 +606,7 @@ export default function RegisterScreen() {
                   placeholderTextColor="#989898"
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C]"
+                  className="mb-4 h-[50px] w-full rounded-xl bg-[#F6F8FA] px-5 text-[15px] text-[#2C2C2C] transition-transform duration-150 ease-out active:scale-95"
                 />
               </View>
 

@@ -38,7 +38,7 @@ const POLICY_LINKS = [
 
 function PolicyFooter() {
   return (
-    <View className="mt-4 flex-row flex-wrap items-center justify-center gap-x-3 gap-y-2 px-2 py-4">
+    <View className="mt-4 mb-2 flex-row flex-wrap items-center justify-center gap-x-3 gap-y-2 px-2 py-4">
       {POLICY_LINKS.map((link, index) => (
         <View key={link.path} className="flex-row items-center gap-x-3">
           <Pressable
@@ -47,7 +47,7 @@ function PolicyFooter() {
             className="active:opacity-60"
           >
             <Text
-              className={`text-[10px] ${
+              className={`text-[11px] ${
                 link.bold ? "font-semibold text-[#2C2C2C]" : "text-[#989898]"
               }`}
             >
@@ -293,13 +293,13 @@ export default function MainScreen() {
             <View className="flex-row items-center gap-2">
               <Pressable
                 onPress={handlePrevMonth}
-                className="h-8 w-8 items-center justify-center rounded-full bg-[#F6F8FA] transition-transform duration-150 ease-out active:scale-90"
+                className="h-8 w-8 items-center justify-center rounded-full bg-[#F6F8FA] transition-all duration-150 ease-out active:scale-90"
               >
                 <ChevronLeft size={16} strokeWidth={2.5} color="#B0B8C1" />
               </Pressable>
               <Pressable
                 onPress={handleNextMonth}
-                className="h-8 w-8 items-center justify-center rounded-full bg-[#F6F8FA] transition-transform duration-150 ease-out active:scale-90"
+                className="h-8 w-8 items-center justify-center rounded-full bg-[#F6F8FA] transition-all duration-150 ease-out active:scale-90"
               >
                 <ChevronRight size={16} strokeWidth={2.5} color="#B0B8C1" />
               </Pressable>
