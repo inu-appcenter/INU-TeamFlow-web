@@ -35,6 +35,7 @@ export const ChatSocketProvider = ({ children }: { children: ReactNode }) => {
 
     let mounted = true;
     let backgroundTimer: ReturnType<typeof setTimeout> | null = null;
+    let backgroundAt: number | null = null;
     const client = getChatClient();
 
     client.onConnect = () => {
@@ -71,6 +72,7 @@ export const ChatSocketProvider = ({ children }: { children: ReactNode }) => {
     // 포그라운드 복귀: 다시 연결 → 화면에 있는 구독 훅들이 isConnected를 보고 재구독
     const appStateSub = AppState.addEventListener("change", (status) => {
       if (status === "background") {
+        backgroundAt = Date.now();
         if (backgroundTimer) clearTimeout(backgroundTimer);
         backgroundTimer = setTimeout(() => {
           backgroundTimer = null;
@@ -80,10 +82,27 @@ export const ChatSocketProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (status === "active") {
+        const wasAwayLong =
+          backgroundAt !== null &&
+          Date.now() - backgroundAt >= BACKGROUND_DISCONNECT_DELAY_MS;
+        backgroundAt = null;
+
         if (backgroundTimer) {
           clearTimeout(backgroundTimer);
           backgroundTimer = null;
         }
+
+        if (wasAwayLong) {
+          // 백그라운드 동안 OS가 소켓을 끊었을 수 있음 (타이머가 못 돌았거나 끊는 도중 정지)
+          // → 살아 있는 척하는 연결을 즉시 버리고 새로 연결
+          setIsConnected(false);
+          client.deactivate({ force: true }).finally(() => {
+            if (mounted) client.activate();
+          });
+          return;
+        }
+
+        // 아주 잠깐(0.5초 미만) 나갔다 온 경우: 기존 연결 유지
         if (!client.active) {
           client.activate();
         }
