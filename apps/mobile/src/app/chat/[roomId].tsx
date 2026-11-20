@@ -40,6 +40,7 @@ import { useChatMessageAnchor } from "@/hooks/chat/useChatMessageAnchor";
 import { useChatMessageHistory } from "@moimi/core/hooks/chat/useChatMessageHistory";
 import { useSendChatMessage } from "@moimi/core/hooks/chat/useSendChatMessage";
 import { useMyInfo } from "@moimi/core/hooks/useAuthQuery";
+import { useChatRooms } from "@moimi/core/hooks/chat/useChatRooms";
 import { useChatSocketContext } from "@/contexts/ChatSocketContext";
 import { useChatMessageSubscription } from "@/hooks/chat/useChatMessageSubscription";
 import { useChatReadEventSubscription } from "@/hooks/chat/useChatReadEventSubscription";
@@ -79,7 +80,11 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
     memberProfileUrls?: string;
   }>();
 
-  const { data: anchor, isLoading } = useChatMessageAnchor(roomId);
+  const {
+    data: anchor,
+    isLoading,
+    isFetchedAfterMount,
+  } = useChatMessageAnchor(roomId);
   const [draft, setDraft] = useState("");
   const insets = useSafeAreaInsets();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -138,6 +143,23 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
     }
   }, [params.memberProfileUrls]);
 
+  // 푸시로 들어오면 route params(방 이름/이미지/타입)가 없으므로 채팅방 목록에서 채움
+  const { data: teamRooms } = useChatRooms("TEAM");
+  const { data: groupRooms } = useChatRooms("GROUP");
+  const { data: directRooms } = useChatRooms("DIRECT");
+  const roomFromList = [teamRooms, groupRooms, directRooms]
+    .flat()
+    .find((room) => room?.chatRoomId === roomId);
+
+  useEffect(() => {
+    if (!roomFromList || params.roomName) return;
+    setRoomInfo({
+      roomType: roomFromList.chatRoomType,
+      roomName: roomFromList.roomName,
+      roomImageUrl: roomFromList.imageUrl,
+    });
+  }, [roomFromList, params.roomName]);
+
   const oldestLoadedId = anchor?.messages[0]?.chatMessageId;
 
   const {
@@ -174,8 +196,9 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
   // 구독이 끊겨 있던 동안 온 메시지는 소켓으로 못 받았으므로, 다시 보이면 목록 새로 불러오기
   const hasBeenActiveRef = useRef(false);
   const missedWhileInactiveRef = useRef(false);
+  const isLive = isRoomActive && isConnected;
   useEffect(() => {
-    if (isRoomActive) {
+    if (isLive) {
       if (missedWhileInactiveRef.current) {
         missedWhileInactiveRef.current = false;
         queryClient.invalidateQueries({
@@ -186,13 +209,13 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
     } else if (hasBeenActiveRef.current) {
       missedWhileInactiveRef.current = true;
     }
-  }, [isRoomActive, roomId, queryClient]);
+  }, [isLive, roomId, queryClient]);
 
   const lastMessageId =
     anchor?.messages[anchor.messages.length - 1]?.chatMessageId;
   useMarkRoomRead(
     roomId,
-    lastMessageId,
+    isFetchedAfterMount ? lastMessageId : undefined,
     anchor?.lastReadMessageId ?? undefined
   );
 
@@ -202,11 +225,11 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
   >(null);
   const hasFrozenReadDividerRef = useRef(false);
   useEffect(() => {
-    if (anchor && !hasFrozenReadDividerRef.current) {
+    if (anchor && isFetchedAfterMount && !hasFrozenReadDividerRef.current) {
       setFrozenLastReadMessageId(anchor.lastReadMessageId);
       hasFrozenReadDividerRef.current = true;
     }
-  }, [anchor]);
+  }, [anchor, isFetchedAfterMount]);
 
   // 시간순으로 렌더링 메타데이터를 먼저 계산한 뒤 inverted FlatList용으로 뒤집는다.
   // 웹의 scrollHeight 보정/IntersectionObserver는 FlatList의 inverted +

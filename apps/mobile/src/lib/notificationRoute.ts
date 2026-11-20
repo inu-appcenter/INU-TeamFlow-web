@@ -16,7 +16,7 @@ const REWRITES: [RegExp, (match: RegExpMatchArray) => string[]][] = [
 // 모바일에 실제로 있는 화면 (src/app 기준, 쿼리 제외)
 const SUPPORTED: RegExp[] = [
   /^\/$/,
-  /^\/(calendar|chat|explore|team|mypage|notification)$/,
+  /^\/(calendar|chat|team|mypage|notification)$/,
   /^\/chat\/\d+$/,
   /^\/team\/\d+$/,
   /^\/team\/\d+\/notice$/,
