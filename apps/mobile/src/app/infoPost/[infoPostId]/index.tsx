@@ -257,29 +257,6 @@ export default function InfoPostDetailScreen() {
               </Pressable>
             </InfoRow>
           )}
-
-          {!!infoPost.attachments?.length && (
-            <InfoRow label="첨부파일">
-              <View className="gap-1">
-                {infoPost.attachments.map((file, i) => {
-                  const fileUrl = getSafeUrl(file.url);
-                  if (!fileUrl) return null;
-                  return (
-                    <Pressable
-                      key={`${file.url}-${i}`}
-                      onPress={() => Linking.openURL(fileUrl).catch(() => {})}
-                      hitSlop={8}
-                      className="active:opacity-60"
-                    >
-                      <Text className="text-[14px] text-[#5E92F0] underline">
-                        {file.name}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </InfoRow>
-          )}
         </View>
 
         <View className="mt-6 border-b-[0.5px] border-[#D6DDE5]" />
