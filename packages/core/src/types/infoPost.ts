@@ -32,6 +32,12 @@ export interface InfoPostImage {
   sortOrder: number;
 }
 
+export interface InfoPostAttachment {
+  name: string;
+  url: string;
+  fileType: string;
+}
+
 export interface InfoPostDetailResponse {
   infoPostId: number;
   category: InfoPostCategory;
@@ -40,6 +46,7 @@ export interface InfoPostDetailResponse {
   title: string;
   content: string;
   images: InfoPostImage[];
+  attachments?: InfoPostAttachment[];
   author: InfoPostAuthor;
   isAuthor: boolean;
   recruitmentCount: number;
