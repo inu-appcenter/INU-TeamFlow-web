@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import * as Notifications from "expo-notifications";
 import {
   View,
   Text,
@@ -210,6 +211,22 @@ function ChatRoomScreenInner({ roomId }: { roomId: number }) {
       missedWhileInactiveRef.current = true;
     }
   }, [isLive, roomId, queryClient]);
+
+  // 이 방을 보고 있으면 알림 센터에 남은 같은 방 알림 지우기
+  useEffect(() => {
+    if (!isRoomActive) return;
+    Notifications.getPresentedNotificationsAsync()
+      .then((presented) => {
+        presented
+          .filter(
+            (n) => String(n.request.content.data?.roomId) === String(roomId)
+          )
+          .forEach((n) =>
+            Notifications.dismissNotificationAsync(n.request.identifier)
+          );
+      })
+      .catch(() => {});
+  }, [isRoomActive, roomId]);
 
   const lastMessageId =
     anchor?.messages[anchor.messages.length - 1]?.chatMessageId;
