@@ -26,6 +26,7 @@ import type { ReportRequest } from "@moimi/core/types/report";
 import { formatDate } from "@/utils/date/formatDate";
 import ScrapButton from "@/components/ScrapButton";
 import ReportModal from "@/components/ReportModal";
+import ImagePreviewModal from "@/components/ImagePreviewModal";
 
 const VERIFICATION_MESSAGE = "학교 인증 후 이용할 수 있어요";
 
@@ -83,6 +84,8 @@ export default function InfoPostDetailScreen() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  // 이미지 확대 보기 (훅이라 아래 조기 return보다 위에 있어야 함)
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   const [errorMessage, setErrorMessage] = useState("");
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -268,12 +271,17 @@ export default function InfoPostDetailScreen() {
         {sortedImages.length > 0 && (
           <View className="mt-4 gap-4">
             {sortedImages.map((image) => (
-              <Image
+              <Pressable
                 key={`${image.imageUrl}-${image.sortOrder}`}
-                source={{ uri: image.imageUrl }}
-                style={{ width: "100%", height: 320, borderRadius: 12 }}
-                resizeMode="contain"
-              />
+                onPress={() => setPreviewImageUrl(image.imageUrl)}
+                className="active:opacity-80"
+              >
+                <Image
+                  source={{ uri: image.imageUrl }}
+                  style={{ width: "100%", height: 320, borderRadius: 12 }}
+                  resizeMode="contain"
+                />
+              </Pressable>
             ))}
           </View>
         )}
@@ -389,6 +397,11 @@ export default function InfoPostDetailScreen() {
           onSubmit={handleSubmitReport}
         />
       )}
+
+      <ImagePreviewModal
+        imageUrl={previewImageUrl}
+        onClose={() => setPreviewImageUrl(null)}
+      />
     </View>
   );
 }

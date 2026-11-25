@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { View, Text, ScrollView, Pressable, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  TextInput,
+  RefreshControl,
+} from "react-native";
 import { router } from "expo-router";
 import { ChevronLeft, ChevronDown, Mail, Search } from "lucide-react-native";
 import { useMyTeamNotices } from "@moimi/core/hooks/useNoticeQuery";
@@ -10,6 +17,8 @@ import { getTeamRoleLabel } from "@/utils/user/teamRole";
 import type { TeamNoticeSummary } from "@moimi/core/types/notice";
 import { Platform, Modal } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 
 type SearchType = "title" | "team";
 
@@ -185,7 +194,11 @@ function NoticeListItem({ notice }: { notice: TeamNoticeSummary }) {
 }
 
 export default function NoticeListScreen() {
-  const { data: notices = [] } = useMyTeamNotices();
+  const { data: notices = [], refetch } = useMyTeamNotices();
+  // 상세에서 읽고 돌아오면 읽음 상태 다시 불러오기
+  useRefreshOnFocus(refetch);
+  // 맨 위에서 당겨서 새로고침
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const [keyword, setKeyword] = useState("");
   const [searchType, setSearchType] = useState<SearchType>("title");
 
@@ -223,6 +236,13 @@ export default function NoticeListScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetchingByUser}
+            onRefresh={refetchByUser}
+            tintColor="#989898"
+          />
+        }
       >
         <NoticeSearchBar
           searchType={searchType}

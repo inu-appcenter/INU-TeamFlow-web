@@ -20,7 +20,7 @@ import {
   Search,
 } from "lucide-react-native";
 import { Picker } from "@react-native-picker/picker";
-
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { useMyTeamNotices } from "@moimi/core/hooks/useNoticeQuery";
 import { useTeamDetail } from "@moimi/core/hooks/team/useTeamQuery";
 import { categoryMap, categoryColorMap } from "@moimi/core/constants/category";
@@ -154,7 +154,9 @@ export default function TeamNoticeScreen() {
 
   const normalizedKeyword = keyword.replace(/\s/g, "");
 
-  const { data: notices = [] } = useMyTeamNotices();
+  const { data: notices = [], refetch } = useMyTeamNotices();
+  // 상세에서 읽고 돌아오면 읽음 상태 다시 불러오기
+  useRefreshOnFocus(refetch);
 
   const teamNotices = notices.filter((notice) => notice.teamId === teamId);
 

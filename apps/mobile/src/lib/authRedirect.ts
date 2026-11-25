@@ -14,3 +14,5 @@ export const mobileAuthRedirect: AuthRedirect = {
     router.replace(ROUTES.LOGIN as never);
   },
 };
+
+export const getCurrentPath = () => currentPath;

@@ -21,10 +21,9 @@ import {
   QueryClientProvider,
   focusManager,
 } from "@tanstack/react-query";
-
+import { setCurrentPath, getCurrentPath } from "@/lib/authRedirect";
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { setCurrentPath } from "@/lib/authRedirect";
 import { resolveNotificationStack } from "@/lib/notificationRoute";
 import "@/lib/apiClient";
 import { ChatSocketProvider } from "@/contexts/ChatSocketContext";
@@ -97,8 +96,11 @@ function NotificationNavigator() {
     if (!pendingStack || isLoading) return;
 
     if (isAuthenticated) {
-      for (const path of pendingStack) {
-        router.push(path as Href);
+      const target = pendingStack[pendingStack.length - 1];
+      if (getCurrentPath() !== target) {
+        for (const path of pendingStack) {
+          router.push(path as Href);
+        }
       }
     }
     setPendingStack(null);

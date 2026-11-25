@@ -91,6 +91,9 @@ type CardProps =
 export default function ContentCard(props: CardProps) {
   const router = useRouter();
 
+  // 썸네일이 있으면 제목·미리보기가 썸네일과 겹치지 않도록 오른쪽 여백 확보
+  const hasThumbnail = props.cardType === 'infoPost' && !!props.thumbnailUrl;
+
   const statusLabel = props.cardStatus
     ? cardStatusMap[props.cardStatus]
     : undefined;
@@ -115,7 +118,11 @@ export default function ContentCard(props: CardProps) {
         }}
         onClick={handleCardClick}
       >
-        <div className="flex min-w-0 items-center gap-2">
+        <div
+          className={`flex min-w-0 items-center gap-2 ${
+            hasThumbnail ? 'pr-[154px]' : ''
+          }`}
+        >
           <span
             className="shrink-0 truncate rounded-full px-2.5 py-1 text-xs font-semibold"
             style={{
@@ -139,7 +146,7 @@ export default function ContentCard(props: CardProps) {
           <p
             className={`mt-2 min-h-5 w-full truncate text-sm font-medium ${
               props.content ? 'text-[#6c6c6c]' : 'text-[#B0B0B0]'
-            }`}
+            } ${hasThumbnail ? 'pr-[154px]' : ''}`}
           >
             {props.content || '연결된 정보글이 없습니다'}
           </p>
