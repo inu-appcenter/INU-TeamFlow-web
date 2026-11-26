@@ -138,6 +138,13 @@ export default function CalendarAddModal({
       showErrorMessage("반복 요일을 선택해주세요");
       return;
     }
+    // 하루 일정·반복 일정은 같은 날 안에서 시작 → 종료여야 함
+    // (시간은 "HH:mm" 24시간 형식이라 문자열 비교로 순서 판단 가능)
+    const isAllDayForCheck = scheduleType === "PERIOD" || form.isAllDay;
+    if (!isAllDayForCheck && form.endTime <= form.startTime) {
+      showErrorMessage("종료 시간은 시작 시간보다 늦어야 해요");
+      return;
+    }
 
     const isAllDay = scheduleType === "PERIOD" ? true : form.isAllDay;
     const startAt = isAllDay

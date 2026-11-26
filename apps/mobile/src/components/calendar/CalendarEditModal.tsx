@@ -118,6 +118,12 @@ export default function CalendarEditModal({
     getInitialRepeatDays(schedule)
   );
   const [form, setForm] = useState(getInitialForm(schedule));
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showErrorMessage = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(""), 1800);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -259,6 +265,22 @@ export default function CalendarEditModal({
 
   const handleSave = () => {
     if (!schedule) return;
+
+    if (!form.title.trim()) {
+      showErrorMessage("일정 제목을 입력해주세요");
+      return;
+    }
+    if (scheduleType !== "NORMAL" && form.endDate < form.startDate) {
+      showErrorMessage("종료 날짜는 시작 날짜보다 늦어야 해요");
+      return;
+    }
+    // 하루 일정·반복 일정은 같은 날 안에서 시작 → 종료여야 함
+    const isAllDayForCheck = scheduleType === "PERIOD" || form.isAllDay;
+    if (!isAllDayForCheck && form.endTime <= form.startTime) {
+      showErrorMessage("종료 시간은 시작 시간보다 늦어야 해요");
+      return;
+    }
+
     if (isRecurringSchedule(schedule)) {
       setScopeAction("save");
       setIsScopeModalOpen(true);
@@ -308,6 +330,21 @@ export default function CalendarEditModal({
           style={{ height: "65%" }}
           className="relative rounded-t-3xl border-[0.5px] border-[#D6DDE5]/60 bg-white px-5"
         >
+          {!!errorMessage && (
+            <View
+              style={{
+                position: "absolute",
+                top: -160,
+                alignSelf: "center",
+                zIndex: 50,
+              }}
+              className="rounded-full bg-[#2C2C2C] px-5 py-2"
+            >
+              <Text className="text-sm font-semibold text-white">
+                {errorMessage}
+              </Text>
+            </View>
+          )}
           {isEditingParticipants ? (
             <View className="flex-1 ">
               <View className="mb-3 h-[50px] mt-8 justify-center rounded-2xl bg-[#F6F8FA] px-6">
@@ -477,6 +514,7 @@ export default function CalendarEditModal({
                       ? "마지막 날짜를 선택해주세요"
                       : "반복 종료 날짜를 선택해주세요"
                   }
+                  minDate={form.startDate}
                   onChange={(date) =>
                     setForm((prev) => ({ ...prev, endDate: date }))
                   }
